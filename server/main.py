@@ -1,12 +1,20 @@
-"""Main entry point of the Server/Data recorder function"""
+"""Main entry point of the Server/Data recorder function."""
 import argparse
 import subprocess
+import os
+
+from api.config import env_config
 
 
 # %% Main Entry Point
 if __name__ == "__main__":
     # %%% Setup Input Arguments
     parser = argparse.ArgumentParser(description='Start the ground station backend.')
+
+    env = "development"
+    msg = 'Environment to run the server in. The default is {:s}'.format(env)
+    parser.add_argument('--env', type=str, help=msg, default=env,
+                        choices=env_config.keys())
 
     port = 8000
     msg = 'Port number to listen on. The default is {:d}'.format(port)
@@ -22,12 +30,13 @@ if __name__ == "__main__":
     # %% Process input arguments
     args = parser.parse_args()
 
+    env = args.env
     port = args.port
     num_workers = args.num_workers
 
-    # run_server = args.run_server
-
     # %%% Startup web server
+    os.environ["LAGER_GUST_ENV"] = env
+
     # TODO: figure out what to do with stdout/err of subproc
     # TODO: figure out if need to avoid zombies
     server_proc = subprocess.Popen(['gunicorn',
