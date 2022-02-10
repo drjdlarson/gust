@@ -1,2 +1,2 @@
 # gaus
-GCS for Autonomous UAS Swarms
+GCS for UAS Swarming and Teaming
