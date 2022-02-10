@@ -1,2 +1,2 @@
-# gaus
-GCS for UAS Swarming and Teaming
+# gust
+GCS for UAS Swarming and Teaming (GUST)
