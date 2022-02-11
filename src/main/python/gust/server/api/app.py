@@ -2,15 +2,14 @@
 from flask import Flask
 from flask_restx import Api
 
-from api.config import env_config
+from gust.server.api.config import env_config
 
 api = Api()
 
 
 def create_app(config_name):
-    #import our resource folder to avoid circular
-    #dependency error
-    import resources
+    # import our resource folder to avoid circular dependency error
+    import gust.server.resources
 
     app = Flask(__name__)
 

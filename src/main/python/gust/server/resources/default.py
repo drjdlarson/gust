@@ -1,5 +1,5 @@
 from flask_restx import Resource
-from api.app import api
+from gust.server.api.app import api
 
 @api.route('/adder/<int:a>/<int:b>')
 class SimpleAdder(Resource):
