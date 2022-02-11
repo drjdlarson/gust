@@ -5,6 +5,7 @@ from functools import partial
 from fbs_runtime.application_context.PyQt5 import ApplicationContext
 
 from gust.gui.launcher import Launcher
+import gust.server.settings as settings
 import gust.server as server
 
 
@@ -29,6 +30,12 @@ def register_sigint(app):
 
 
 if __name__ == '__main__':
+    server.parse_args(*sys.argv)
+
+    if settings.DAEMON:
+        server.start_server()
+        sys.exit(0)
+
     appctxt = ApplicationContext()       # 1. Instantiate ApplicationContext
 
     window = Launcher()

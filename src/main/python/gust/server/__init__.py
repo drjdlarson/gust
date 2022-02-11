@@ -18,6 +18,9 @@ def parse_args(*args):
     parser.add_argument('--env', type=str, help=msg, default=settings.ENV,
                         choices=env_config.keys())
 
+    msg = 'Flag indicating the server should start in the background with no GUI launcher'
+    parser.add_argument('--daemon', '-d', action='store_true', help=msg)
+
     msg = ('Port number to listen on. '
            + 'The default is {:d}'.format(settings.PORT))
     parser.add_argument('--port', '-p',
@@ -32,6 +35,7 @@ def parse_args(*args):
     args = parser.parse_args()
 
     settings.ENV = args.env
+    settings.DAEMON = args.daemon
     settings.PORT = args.port
     settings.NUM_WORKERS = args.num_workers
 

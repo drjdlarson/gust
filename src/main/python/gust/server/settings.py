@@ -5,6 +5,7 @@ PORT = 8000
 ENV = 'development'
 ENV_KEY = 'LAGER_GUST_ENV'
 NUM_WORKERS = 1
+DAEMON = False
 
 
 # %% Main Entry Point
