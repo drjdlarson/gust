@@ -1,13 +1,13 @@
 import argparse
-import subprocess
 import os
-import atexit
+from PyQt5.QtCore import QProcess
 
 from gust.server.api.config import env_config
 import gust.server.settings as settings
 
 
 SERVER_PROC = None
+
 
 def parse_args(*args):
 
@@ -44,8 +44,8 @@ def start_server():
     global SERVER_PROC
     os.environ[settings.ENV_KEY] = settings.ENV
 
-    # TODO: figure out what to do with stdout/err of subproc
-    SERVER_PROC = subprocess.Popen(['gunicorn',
-                                    '-b 127.0.0.1:{:d}'.format(settings.PORT),
-                                    '-w {:d}'.format(settings.NUM_WORKERS),
-                                    'gust.server.wsgi:app'])
+    SERVER_PROC = QProcess()
+    SERVER_PROC.setProcessChannelMode(QProcess.MergedChannels)
+    SERVER_PROC.start("gunicorn", ['-b 127.0.0.1:{:d}'.format(settings.PORT),
+                                   '-w {:d}'.format(settings.NUM_WORKERS),
+                                   'gust.server.wsgi:app'])

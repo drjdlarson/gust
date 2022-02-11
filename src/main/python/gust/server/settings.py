@@ -2,6 +2,7 @@
 
 # %% Web server startup
 PORT = 8000
+IP = '127.0.0.1'
 ENV = 'development'
 ENV_KEY = 'LAGER_GUST_ENV'
 NUM_WORKERS = 1

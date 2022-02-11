@@ -5,6 +5,7 @@ import requests
 from time import sleep
 
 from gust.gui.ui.launcher import Ui_Launcher
+from gust.gui import server_window
 import gust.server
 
 
@@ -16,6 +17,8 @@ class Launcher(QMainWindow, Ui_Launcher):
         # connect buttons
         self.pushButton_client.clicked.connect(self.clicked_client)
         self.pushButton_server.clicked.connect(self.clicked_server)
+
+        self._serverWindow = None
 
     def setupUi(self, mainWindow):
         super().setupUi(mainWindow)
@@ -32,14 +35,6 @@ class Launcher(QMainWindow, Ui_Launcher):
 
     @pyqtSlot()
     def clicked_server(self):
-        print('clicked server')
-        gust.server.start_server()
-
-    def closeEvent(self, event):
-        # nicely close all
-        if gust.server.SERVER_PROC is not None:
-            gust.server.SERVER_PROC.terminate()
-
-        sys.stdout.flush()
-        sys.stderr.flush()
-        sleep(0.25)
+        self._serverWindow = server_window.ServerWindow()
+        self._serverWindow.show()
+        self.close()

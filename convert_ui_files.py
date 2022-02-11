@@ -6,7 +6,7 @@ import subprocess
 
 
 PROGRAM = 'pyuic5'
-UI_DIR = 'src/main/python/gui/ui'
+UI_DIR = 'src/main/python/gust/gui/ui'
 
 
 def path_leaf(path):
