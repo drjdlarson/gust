@@ -1,12 +1,19 @@
 import argparse
 import os
+import platform
 from PyQt5.QtCore import QProcess
 
 from gust.server.api.config import env_config
 import gust.server.settings as settings
+import gust.database as database
 
 
 SERVER_PROC = None
+PROGRAM = "gunicorn"
+START_CMD = ''
+
+_DB_CON_BASE_NAME = 'SERVER'
+_SERVER_NUM = 0
 
 
 def parse_args(*args):
@@ -40,12 +47,39 @@ def parse_args(*args):
     settings.NUM_WORKERS = args.num_workers
 
 
+def _build_db_con_name():
+    global _DB_CON_BASE_NAME, _SERVER_NUM
+    return '{:s}_{:02d}'.format(_DB_CON_BASE_NAME, _SERVER_NUM)
+
 def start_server():
-    global SERVER_PROC
+    global SERVER_PROC, START_CMD, PROGRAM, _SERVER_NUM
     os.environ[settings.ENV_KEY] = settings.ENV
+
+    if 'windows' in platform.system().lower():
+        PROGRAM = "waitress-serve"
+        args = ['--listen={:s}:{:d}'.format(settings.IP, settings.PORT),
+                '--threads={:d}'.format(settings.NUM_WORKERS),
+                'gust.server.wsgi:app']
+    else:
+        args = ['-b 127.0.0.1:{:d}'.format(settings.PORT),
+                '-w {:d}'.format(settings.NUM_WORKERS),
+                'gust.server.wsgi:app']
 
     SERVER_PROC = QProcess()
     SERVER_PROC.setProcessChannelMode(QProcess.MergedChannels)
-    SERVER_PROC.start("gunicorn", ['-b 127.0.0.1:{:d}'.format(settings.PORT),
-                                   '-w {:d}'.format(settings.NUM_WORKERS),
-                                   'gust.server.wsgi:app'])
+    SERVER_PROC.start(PROGRAM, args)
+
+    START_CMD = PROGRAM + ' ' + ' '.join(args)
+
+    res, err = database.connect_to_database(con_name=_build_db_con_name())
+
+    _SERVER_NUM += 1
+
+    return res, err
+
+
+def stop_server(self):
+    if SERVER_PROC is not None:
+        # SERVER_PROC.terminate()
+        SERVER_PROC.kill()
+        SERVER_PROC.waitForBytesWritten(500)

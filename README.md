@@ -10,7 +10,7 @@ This requires
 - flask
 - flask-restx
 - requests
-- gunicorn
+- gunicorn (linux/mac) and/or waitress (windows)
 
  This should all work in either a virtual environment or a conda environment (everything installed with pip). For freezing (packaging) and creating installer files a custom fork of fbs is required (TODO: setup actual fork and link it here).
 
