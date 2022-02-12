@@ -78,7 +78,14 @@
      </layout>
     </item>
     <item>
-     <widget class="QTextEdit" name="textEdit_output"/>
+     <widget class="QTextEdit" name="textEdit_output">
+      <property name="font">
+       <font>
+        <family>Monospace</family>
+        <pointsize>9</pointsize>
+       </font>
+      </property>
+     </widget>
     </item>
    </layout>
   </widget>

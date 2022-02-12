@@ -1,11 +1,11 @@
 import sys
 from time import sleep
 from PyQt5.QtWidgets import QMainWindow
-from PyQt5.QtCore import pyqtSlot
+from PyQt5.QtCore import pyqtSlot, QTimer
 from PyQt5.QtGui import QIntValidator
 
 from gust.gui.ui.server_window import Ui_ServerWindow
-import gust.server as server
+import gust.server.server as server
 import gust.server.settings as settings
 
 
@@ -30,20 +30,22 @@ class ServerWindow(QMainWindow, Ui_ServerWindow):
 
     def _stop_server(self):
         if server.stop_server():
-            self.update_console_text()
-
-            msg = '---------------- Stopping Server Process -----------------'
+            msg = ('----------------------------------------------------------\n'
+                  + '----------------- Stopped Server Process -----------------\n'
+                  + '----------------------------------------------------------\n')
             self.textEdit_output.append(msg)
 
     @pyqtSlot()
     def update_console_text(self):
         outputBytes = server.SERVER_PROC.readAll().data()
         outputUnicode = outputBytes.decode('utf-8')
-        self.textEdit_output.append( outputUnicode )
+        self.textEdit_output.append(outputUnicode)
 
     @pyqtSlot()
     def clicked_start(self):
-        msg = '---------------- Starting Server Process -----------------'
+        msg = ('----------------------------------------------------------\n'
+               + '---------------- Starting Server Process -----------------\n'
+               + '----------------------------------------------------------')
         self.textEdit_output.append(msg)
 
         res, err = server.start_server()
@@ -76,4 +78,3 @@ class ServerWindow(QMainWindow, Ui_ServerWindow):
 
         sys.stdout.flush()
         sys.stderr.flush()
-        sleep(0.25)
