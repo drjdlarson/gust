@@ -1,4 +1,5 @@
 """Entry point."""
+import os
 import sys
 import argparse
 import signal
@@ -9,6 +10,7 @@ from gust.gui.launcher import Launcher
 import gust.server.server as server
 import gust.server.settings as server_settings
 import gust.wsgi_apps.api.settings as api_settings
+from gust.plugins.plugin_monitor import pluginMonitor
 
 
 DAEMON = False
@@ -81,6 +83,9 @@ def main(*args):
 
     register_sigterm(window)
     register_sigint(window)
+
+    plug_readme = appctxt.get_resource('plugins/README.md')
+    pluginMonitor.plugin_dir = os.path.dirname(plug_readme)
 
     exit_code = appctxt.app.exec_()      # 2. Invoke appctxt.app.exec_()
     sys.exit(exit_code)
