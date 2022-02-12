@@ -29,11 +29,10 @@ class ServerWindow(QMainWindow, Ui_ServerWindow):
         super().setupUi(mainWindow)
 
     def _stop_server(self):
-        if server.SERVER_PROC is not None:
-            server.stop_server()
+        if server.stop_server():
             self.update_console_text()
 
-            msg = '\n\n---------------- Stopping Server Process -----------------\n\n\n'
+            msg = '---------------- Stopping Server Process -----------------'
             self.textEdit_output.append(msg)
 
     @pyqtSlot()
@@ -50,11 +49,12 @@ class ServerWindow(QMainWindow, Ui_ServerWindow):
         res, err = server.start_server()
 
         self.textEdit_output.append(server.START_CMD)
-        self.textEdit_output.append('\n\n')
+        self.textEdit_output.append('\n')
 
-        server.SERVER_PROC.readyReadStandardOutput.connect(self.update_console_text)
+        if res:
+            server.SERVER_PROC.readyReadStandardOutput.connect(self.update_console_text)
 
-        if not res:
+        else:
             msg = 'FAILED TO START SERVER:\n{:s}'.format(err)
             self.textEdit_output.append(msg)
 

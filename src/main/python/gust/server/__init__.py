@@ -12,6 +12,8 @@ SERVER_PROC = None
 PROGRAM = "gunicorn"
 START_CMD = ''
 
+_SERVER_RUNNING = False
+
 _DB_CON_BASE_NAME = 'SERVER'
 _SERVER_NUM = 0
 
@@ -52,34 +54,50 @@ def _build_db_con_name():
     return '{:s}_{:02d}'.format(_DB_CON_BASE_NAME, _SERVER_NUM)
 
 def start_server():
-    global SERVER_PROC, START_CMD, PROGRAM, _SERVER_NUM
-    os.environ[settings.ENV_KEY] = settings.ENV
+    global SERVER_PROC, START_CMD, PROGRAM, _SERVER_NUM, _SERVER_RUNNING
 
-    if 'windows' in platform.system().lower():
-        PROGRAM = "waitress-serve"
-        args = ['--listen={:s}:{:d}'.format(settings.IP, settings.PORT),
-                '--threads={:d}'.format(settings.NUM_WORKERS),
-                'gust.server.wsgi:app']
+    if _SERVER_RUNNING:
+        succ = False
+        err = 'Server already started!!!'
+
     else:
-        args = ['-b 127.0.0.1:{:d}'.format(settings.PORT),
-                '-w {:d}'.format(settings.NUM_WORKERS),
-                'gust.server.wsgi:app']
+        os.environ[settings.ENV_KEY] = settings.ENV
 
-    SERVER_PROC = QProcess()
-    SERVER_PROC.setProcessChannelMode(QProcess.MergedChannels)
-    SERVER_PROC.start(PROGRAM, args)
+        if 'windows' in platform.system().lower():
+            PROGRAM = "waitress-serve"
+            args = ['--listen={:s}:{:d}'.format(settings.IP, settings.PORT),
+                    '--threads={:d}'.format(settings.NUM_WORKERS),
+                    'gust.server.wsgi:app']
+        else:
+            args = ['-b {:s}:{:d}'.format(settings.IP, settings.PORT),
+                    '-w {:d}'.format(settings.NUM_WORKERS),
+                    'gust.server.wsgi:app']
 
-    START_CMD = PROGRAM + ' ' + ' '.join(args)
+        SERVER_PROC = QProcess()
+        SERVER_PROC.setProcessChannelMode(QProcess.MergedChannels)
+        SERVER_PROC.start(PROGRAM, args)
 
-    res, err = database.connect_to_database(con_name=_build_db_con_name())
+        START_CMD = PROGRAM + ' ' + ' '.join(args)
+
+        # succ, err = database.connect_to_database(con_name=_build_db_con_name())
+
+        succ = _SERVER_RUNNING = True
+        err = None
 
     _SERVER_NUM += 1
 
-    return res, err
+    return succ, err
+    # return res, err
 
 
-def stop_server(self):
-    if SERVER_PROC is not None:
+def stop_server():
+    global SERVER_PROC, _SERVER_RUNNING
+
+    succ = SERVER_PROC is not None and _SERVER_RUNNING
+    if succ:
         # SERVER_PROC.terminate()
         SERVER_PROC.kill()
         SERVER_PROC.waitForBytesWritten(500)
+        _SERVER_RUNNING = False  # SERVER_PROC still remains as an instance
+
+    return succ
