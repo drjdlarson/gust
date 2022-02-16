@@ -2,9 +2,10 @@
 import sys
 import os
 import logging
+import traceback
 from functools import partial
 from PyQt5.QtWidgets import QMainWindow
-from PyQt5.QtCore import pyqtSlot, QModelIndex, pyqtSignal
+from PyQt5.QtCore import pyqtSlot, QModelIndex, pyqtSignal, QRunnable, QThreadPool, QObject
 from PyQt5.QtGui import QIntValidator, QTextCursor
 from PyQt5.QtSql import QSqlTableModel
 
@@ -15,7 +16,52 @@ from gust.plugins.plugin_monitor import pluginMonitor
 import gust.database as database
 
 
-class ServerWindow(QMainWindow, Ui_ServerWindow, logging.StreamHandler):
+class WorkerSignals(QObject):
+    '''
+    Defines the signals available from a running worker thread.
+
+    Supported signals are:
+
+    finished
+        No data
+
+    error
+        tuple (exctype, value, traceback.format_exc() )
+
+    result
+        object data returned from processing, anything
+
+    '''
+    finished = pyqtSignal()
+    error = pyqtSignal(tuple)
+    result = pyqtSignal(object)
+
+
+class Worker(QRunnable):
+    def __init__(self, fn, *args, **kwargs):
+        super().__init__()
+        # Store constructor arguments (re-used for processing)
+        self.fn = fn
+        self.args = args
+        self.kwargs = kwargs
+        self.signals = WorkerSignals()
+
+    @pyqtSlot()
+    def run(self):
+        try:
+            result = self.fn(*self.args, **self.kwargs)
+
+        except Exception:
+            traceback.print_exc()
+            exctype, value = sys.exc_info()[:2]
+            self.signals.error.emit((exctype, value, traceback.format_exc()))
+        else:
+            self.signals.result.emit(result)  # Return the result of the processing
+        finally:
+            self.signals.finished.emit()  # Done
+
+
+class ServerWindow(QMainWindow, Ui_ServerWindow):
     text_update = pyqtSignal(str)
 
     def __init__(self, ctx):
@@ -28,6 +74,7 @@ class ServerWindow(QMainWindow, Ui_ServerWindow, logging.StreamHandler):
 
         self.ctx = ctx
         self.lineEdit_port.setValidator(QIntValidator())
+        self.threadpool = QThreadPool()
 
         settings.PORT = int(self.lineEdit_port.text())
         settings.IP = self.lineEdit_IP.text()
@@ -99,7 +146,6 @@ class ServerWindow(QMainWindow, Ui_ServerWindow, logging.StreamHandler):
     # end hacks
 
     def update_console_text(self, text):
-        # self.textEdit_output.append(text)
         self.textEdit_output.moveCursor(QTextCursor.End)
         self.textEdit_output.insertPlainText(text)
         self.textEdit_output.moveCursor(QTextCursor.End)
@@ -108,23 +154,27 @@ class ServerWindow(QMainWindow, Ui_ServerWindow, logging.StreamHandler):
     def clicked_plugScan(self):
         self._scan_plugins()
 
-    @pyqtSlot()
-    def clicked_addPlugin(self):
-        new_items = self.listWidget_availPlugins.selectedItems()
-
+    def _add_plugin(self, new_items):
         if len(new_items) > 0:
             new_items = [item.text() for item in new_items]
             for plugin_name in new_items:
                 database.add_plugin(plugin_name)
 
-            self.sel_plug_model.setTable("PluginCollection")
-            self.sel_plug_model.select()
-            self.selPluginsView.resizeColumnsToContents()
+    @pyqtSlot()
+    def _update_sel_plug_model(self):
+        self.sel_plug_model.setTable("PluginCollection")
+        self.sel_plug_model.select()
+        self.selPluginsView.resizeColumnsToContents()
 
     @pyqtSlot()
-    def clicked_removePlugin(self):
-        rows_to_rm = set([index.row()
-                          for index in self.selPluginsView.selectedIndexes()])
+    def clicked_addPlugin(self):
+        new_items = self.listWidget_availPlugins.selectedItems()
+
+        worker = Worker(self._add_plugin, new_items)
+        worker.signals.finished.connect(self._update_sel_plug_model)
+        self.threadpool.start(worker)
+
+    def _remove_plugin(self, rows_to_rm):
         n_to_rm = len(rows_to_rm)
         if n_to_rm > 0:
             col_ids_to_rm = [None] * n_to_rm
@@ -134,8 +184,15 @@ class ServerWindow(QMainWindow, Ui_ServerWindow, logging.StreamHandler):
                 col_ids_to_rm[ii] = self.selPluginsView.model().data(ind)
 
             database.remove_plugin_by_col_id(col_ids_to_rm)
-            self.sel_plug_model.setTable("PluginCollection")
-            self.sel_plug_model.select()
+
+    @pyqtSlot()
+    def clicked_removePlugin(self):
+        rows_to_rm = set([index.row()
+                          for index in self.selPluginsView.selectedIndexes()])
+
+        worker = Worker(self._remove_plugin, rows_to_rm)
+        worker.signals.finished.connect(self._update_sel_plug_model)
+        self.threadpool.start(worker)
 
     # hacks to redirect from subprocess to stdout of main process
     def _sub_proc_print(self, line, prefix):

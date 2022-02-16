@@ -1,6 +1,7 @@
 """Handle database operations."""
 import os
 import logging
+from time import sleep
 
 from PyQt5.QtSql import QSqlDatabase, QSqlQuery
 
@@ -11,6 +12,8 @@ DB_DRIVER = "QSQLITE"
 _DB = None
 
 logger = logging.getLogger('[database]')
+
+# TODO: make this thread safe
 
 def db_name():
     """Full path of database file.
@@ -46,7 +49,9 @@ def open_db():
 
     query = _start_query()
 
-    cmd = 'CREATE TABLE PluginCollection ( collection_id INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE, name VARCHAR(32) );'
+    cmd = '''CREATE TABLE PluginCollection (
+        collection_id INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE,
+        name VARCHAR(32) );'''
     logger.debug(cmd)
     res = query.exec_(cmd)
     if not res:
@@ -81,21 +86,23 @@ def _create_new_ids_table(p_name):
     # create temp table for copying PluginCollection, not always required
     rec = _DB.record("PluginCollection")
     col_names = [rec.fieldName(ii) for ii in range(rec.count())]
-    fmt = 'CREATE TABLE _tmp (collection_id INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE, name VARCHAR(32)'
+    fmt = '''CREATE TABLE _tmp (
+        collection_id INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE,
+        name VARCHAR(32)'''
     existing_fks = []
     for col in col_names:
         if col in ('collection_id', 'name'):
             continue
-        fmt += ', {:s} INTEGER UNIQUE DEFAULT NULL'.format(col)
+        fmt += ',\n{:8s}{:s} INTEGER UNIQUE DEFAULT NULL'.format('', col)
         existing_fks.append(col)
 
     new_fk = '{:s}_id'.format(p_name)
-    fmt += ', {:s} INTEGER UNIQUE DEFAULT NULL'.format(new_fk)
+    fmt += ',\n{:8s}{:s} INTEGER UNIQUE DEFAULT NULL'.format('', new_fk)
     combined_fks = existing_fks + [new_fk, ]
 
     fk_fmt = ''
     for ii, col in enumerate(combined_fks):
-        fk_fmt += ', FOREIGN KEY ({:s}) REFERENCES {:s}s(id) ON UPDATE CASCADE ON DELETE CASCADE'.format(col, col)
+        fk_fmt += ',\n{:8s}FOREIGN KEY ({:s}) REFERENCES {:s}s(id) ON UPDATE CASCADE ON DELETE CASCADE'.format('', col, col)
 
     cmd = '{:s}{:s});'.format(fmt, fk_fmt)
     logger.debug(cmd)
@@ -172,7 +179,7 @@ def _add_new_id_val(p_name):
 
     cmd = 'SELECT LAST_VALUE(id) OVER (ORDER BY id DESC) FROM {:s}_ids'.format(p_name)
     logger.debug(cmd)
-    query = QSqlQuery(cmd)
+    query.exec_(cmd)
 
     query.first()
     return int(query.value(0))
@@ -235,7 +242,6 @@ def add_plugin(p_name):
 
 
 def remove_plugin(p_name, p_id):
-    print(_DB.tables())
     if '{:s}_ids'.format(p_name) in _DB.tables():
         query = _start_query()
         cmd = 'DELETE FROM {:s}_ids WHERE id = {:d}'.format(p_name, p_id)
@@ -251,16 +257,23 @@ def remove_plugin(p_name, p_id):
 
 
 def remove_plugin_by_col_id(col_ids):
+    query = _start_query()
     for c_id in col_ids:
         cmd = 'SELECT name FROM PluginCollection WHERE collection_id = {:d}'.format(c_id)
         logger.debug(cmd)
-        query = QSqlQuery(cmd)
+        res = query.exec_(cmd)
+        if not res:
+            logger.critical(query.lastError().text())
+            break
         query.first()
         p_name = query.value(0)
 
         cmd = 'SELECT {:s}_id FROM PluginCollection WHERE collection_id = {:d}'.format(p_name, c_id)
         logger.debug(cmd)
-        query = QSqlQuery(cmd)
+        res = query.exec_(cmd)
+        if not res:
+            logger.critical(query.lastError().text())
+            break
         query.first()
         p_id = int(query.value(0))
 
@@ -278,8 +291,12 @@ def get_plugin_names(distinct):
     else:
         extra = ''
 
+    query = _start_query()
     cmd = 'SELECT {s} name FROM PluginCollection'.format(extra)
-    query = QSqlQuery(cmd)
+    res = query.exec_(cmd)
+    if not res:
+        logger.critical(query.lastError().text())
+
     query.first()
 
     plugin_names = []
