@@ -1,13 +1,13 @@
 """Entry point."""
 import os
 import sys
+import logging
 import argparse
 import signal
 from functools import partial
 from fbs_runtime.application_context.PyQt5 import ApplicationContext
 
 from gust.gui.launcher import Launcher
-import gust.server.server as server
 import gust.server.settings as server_settings
 import gust.wsgi_apps.api.settings as api_settings
 from gust.plugins.plugin_monitor import pluginMonitor
@@ -15,7 +15,7 @@ from gust.plugins.plugin_monitor import pluginMonitor
 
 DAEMON = False
 
-def parse_args(*args):
+def parse_args():
     global DAEMON
 
     parser = argparse.ArgumentParser(description='Start the ground station backend.')
@@ -67,18 +67,19 @@ def register_sigint(app):
     signal.signal(signal.SIGINT, handler)
 
 
-def main(*args):
+def main():
     global DAEMON
 
-    parse_args(*args)
+    parse_args()
 
     if DAEMON:
-        server.start_server()
-        sys.exit(0)
+        print('Not implemented yet!!')
+        # server.start_server()
+        sys.exit(1)
 
     appctxt = ApplicationContext()       # 1. Instantiate ApplicationContext
 
-    window = Launcher()
+    window = Launcher(appctxt)
     window.show()
 
     register_sigterm(window)
@@ -91,4 +92,5 @@ def main(*args):
     sys.exit(exit_code)
 
 # %% Start entry point
-main(*sys.argv)
+logging.basicConfig(level=logging.DEBUG)
+main()

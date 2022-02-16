@@ -1,4 +1,5 @@
 import sys
+import logging
 from PyQt5.QtWidgets import QMainWindow, QMessageBox
 from PyQt5.QtCore import pyqtSlot
 import requests
@@ -10,8 +11,9 @@ import gust.server
 
 
 class Launcher(QMainWindow, Ui_Launcher):
-    def __init__(self):
+    def __init__(self, ctx):
         super().__init__()
+        self.ctx = ctx
         self.setupUi(self)
 
         # connect buttons
@@ -35,6 +37,17 @@ class Launcher(QMainWindow, Ui_Launcher):
 
     @pyqtSlot()
     def clicked_server(self):
-        self._serverWindow = server_window.ServerWindow()
+        self._serverWindow = server_window.ServerWindow(self.ctx)
+
+        # fix logger so it only outputs to the new output console in the backend
+        fmt = logging.getLogger().handlers[0].formatter
+        logging.getLogger().handlers = []
+        hndl = logging.StreamHandler(stream=self._serverWindow)
+        hndl.setFormatter(fmt)
+        logging.getLogger().addHandler(hndl)
+
+        self._serverWindow.setup()
         self._serverWindow.show()
+
+
         self.close()

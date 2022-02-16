@@ -20,9 +20,9 @@ _SERVER_NUM = 0
 _REST_API_APP = 'gust.wsgi_apps.wsgi:rest_api'
 
 
-def _build_db_con_name():
-    global _DB_CON_BASE_NAME, _SERVER_NUM
-    return '{:s}_{:02d}'.format(_DB_CON_BASE_NAME, _SERVER_NUM)
+def _build_db_con_name(server_num):
+    global _DB_CON_BASE_NAME
+    return '{:s}_{:02d}'.format(_DB_CON_BASE_NAME, server_num)
 
 
 def start_server():
@@ -53,12 +53,14 @@ def start_server():
 
         START_CMD = program + ' ' + ' '.join(args)
 
-        # succ, err = database.connect_to_database(con_name=_build_db_con_name())
+        # initialize database
+
+        # succ, err = database.connect_to_database(con_name=_build_db_con_name(_SERVER_NUM))
 
         succ = _SERVER_RUNNING = True
         err = None
 
-    _SERVER_NUM += 1
+        _SERVER_NUM += 1
 
     return succ, err
     # return res, err
