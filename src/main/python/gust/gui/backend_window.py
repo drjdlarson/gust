@@ -9,10 +9,10 @@ from PyQt5.QtCore import pyqtSlot, QModelIndex, pyqtSignal, QRunnable, QThreadPo
 from PyQt5.QtGui import QIntValidator, QTextCursor
 from PyQt5.QtSql import QSqlTableModel
 
-from gust.gui.ui.server_window import Ui_ServerWindow
+from gust.gui.ui.backend_window import Ui_BackendWindow
 import gust.server.server as server
 import gust.server.settings as settings
-from gust.plugins.plugin_monitor import pluginMonitor
+from gust.plugin_monitor import pluginMonitor
 import gust.database as database
 
 
@@ -61,7 +61,7 @@ class Worker(QRunnable):
             self.signals.finished.emit()  # Done
 
 
-class ServerWindow(QMainWindow, Ui_ServerWindow):
+class BackendWindow(QMainWindow, Ui_BackendWindow):
     text_update = pyqtSignal(str)
 
     def __init__(self, ctx):

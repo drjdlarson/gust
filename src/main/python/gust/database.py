@@ -208,7 +208,7 @@ def add_plugin(p_name):
     p_id : int
         ID of the plugin that was added.
     """
-    from gust.plugins.plugin_monitor import pluginMonitor
+    from gust.plugin_monitor import pluginMonitor
     global _DB
 
     if '{:s}_ids'.format(p_name) not in _DB.tables():

@@ -10,7 +10,7 @@ from fbs_runtime.application_context.PyQt5 import ApplicationContext
 from gust.gui.launcher import Launcher
 import gust.server.settings as server_settings
 import gust.wsgi_apps.api.settings as api_settings
-from gust.plugins.plugin_monitor import pluginMonitor
+from gust.plugin_monitor import pluginMonitor
 
 
 DAEMON = False

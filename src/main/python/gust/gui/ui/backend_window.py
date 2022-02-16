@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'src/main/python/gust/gui/ui/server_window.ui'
+# Form implementation generated from reading ui file 'src/main/python/gust/gui/ui/backend_window.ui'
 #
 # Created by: PyQt5 UI code generator 5.15.4
 #
@@ -11,11 +11,11 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 
 
-class Ui_ServerWindow(object):
-    def setupUi(self, ServerWindow):
-        ServerWindow.setObjectName("ServerWindow")
-        ServerWindow.resize(914, 745)
-        self.centralwidget = QtWidgets.QWidget(ServerWindow)
+class Ui_BackendWindow(object):
+    def setupUi(self, BackendWindow):
+        BackendWindow.setObjectName("BackendWindow")
+        BackendWindow.resize(914, 745)
+        self.centralwidget = QtWidgets.QWidget(BackendWindow)
         self.centralwidget.setObjectName("centralwidget")
         self.verticalLayout = QtWidgets.QVBoxLayout(self.centralwidget)
         self.verticalLayout.setObjectName("verticalLayout")
@@ -93,39 +93,39 @@ class Ui_ServerWindow(object):
         self.textEdit_output.setTextInteractionFlags(QtCore.Qt.TextSelectableByKeyboard|QtCore.Qt.TextSelectableByMouse)
         self.textEdit_output.setObjectName("textEdit_output")
         self.verticalLayout.addWidget(self.textEdit_output)
-        ServerWindow.setCentralWidget(self.centralwidget)
-        self.menubar = QtWidgets.QMenuBar(ServerWindow)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 914, 20))
+        BackendWindow.setCentralWidget(self.centralwidget)
+        self.menubar = QtWidgets.QMenuBar(BackendWindow)
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 914, 22))
         self.menubar.setObjectName("menubar")
-        ServerWindow.setMenuBar(self.menubar)
-        self.statusbar = QtWidgets.QStatusBar(ServerWindow)
+        BackendWindow.setMenuBar(self.menubar)
+        self.statusbar = QtWidgets.QStatusBar(BackendWindow)
         self.statusbar.setObjectName("statusbar")
-        ServerWindow.setStatusBar(self.statusbar)
+        BackendWindow.setStatusBar(self.statusbar)
 
-        self.retranslateUi(ServerWindow)
-        QtCore.QMetaObject.connectSlotsByName(ServerWindow)
+        self.retranslateUi(BackendWindow)
+        QtCore.QMetaObject.connectSlotsByName(BackendWindow)
 
-    def retranslateUi(self, ServerWindow):
+    def retranslateUi(self, BackendWindow):
         _translate = QtCore.QCoreApplication.translate
-        ServerWindow.setWindowTitle(_translate("ServerWindow", "Backend Console"))
-        self.label_2.setText(_translate("ServerWindow", "Selected Plugins:"))
-        self.pushButton_stop.setText(_translate("ServerWindow", "Stop"))
-        self.pushButton_start.setText(_translate("ServerWindow", "Start"))
-        self.label_port.setText(_translate("ServerWindow", "Port:"))
-        self.label.setText(_translate("ServerWindow", "Available Plugins:"))
-        self.lineEdit_IP.setText(_translate("ServerWindow", "127.0.0.1"))
-        self.lineEdit_port.setText(_translate("ServerWindow", "8000"))
-        self.label_IP.setText(_translate("ServerWindow", "IP Address:"))
-        self.pushButton_plugScan.setText(_translate("ServerWindow", "Rescan Plugins"))
-        self.pushButton_addPlugin.setText(_translate("ServerWindow", "Add"))
-        self.pushButton_removePlugin.setText(_translate("ServerWindow", "Remove"))
+        BackendWindow.setWindowTitle(_translate("BackendWindow", "Backend Console"))
+        self.label_2.setText(_translate("BackendWindow", "Selected Plugins:"))
+        self.pushButton_stop.setText(_translate("BackendWindow", "Stop"))
+        self.pushButton_start.setText(_translate("BackendWindow", "Start"))
+        self.label_port.setText(_translate("BackendWindow", "Port:"))
+        self.label.setText(_translate("BackendWindow", "Available Plugins:"))
+        self.lineEdit_IP.setText(_translate("BackendWindow", "127.0.0.1"))
+        self.lineEdit_port.setText(_translate("BackendWindow", "8000"))
+        self.label_IP.setText(_translate("BackendWindow", "IP Address:"))
+        self.pushButton_plugScan.setText(_translate("BackendWindow", "Rescan Plugins"))
+        self.pushButton_addPlugin.setText(_translate("BackendWindow", "Add"))
+        self.pushButton_removePlugin.setText(_translate("BackendWindow", "Remove"))
 
 
 if __name__ == "__main__":
     import sys
     app = QtWidgets.QApplication(sys.argv)
-    ServerWindow = QtWidgets.QMainWindow()
-    ui = Ui_ServerWindow()
-    ui.setupUi(ServerWindow)
-    ServerWindow.show()
+    BackendWindow = QtWidgets.QMainWindow()
+    ui = Ui_BackendWindow()
+    ui.setupUi(BackendWindow)
+    BackendWindow.show()
     sys.exit(app.exec_())
