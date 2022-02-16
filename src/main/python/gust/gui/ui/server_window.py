@@ -89,6 +89,8 @@ class Ui_ServerWindow(object):
         font.setFamily("Monospace")
         font.setPointSize(9)
         self.textEdit_output.setFont(font)
+        self.textEdit_output.setLineWrapMode(QtWidgets.QTextEdit.NoWrap)
+        self.textEdit_output.setTextInteractionFlags(QtCore.Qt.TextSelectableByKeyboard|QtCore.Qt.TextSelectableByMouse)
         self.textEdit_output.setObjectName("textEdit_output")
         self.verticalLayout.addWidget(self.textEdit_output)
         ServerWindow.setCentralWidget(self.centralwidget)

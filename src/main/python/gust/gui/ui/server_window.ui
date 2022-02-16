@@ -168,6 +168,12 @@
         <pointsize>9</pointsize>
        </font>
       </property>
+      <property name="lineWrapMode">
+       <enum>QTextEdit::NoWrap</enum>
+      </property>
+      <property name="textInteractionFlags">
+       <set>Qt::TextSelectableByKeyboard|Qt::TextSelectableByMouse</set>
+      </property>
      </widget>
     </item>
    </layout>

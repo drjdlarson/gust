@@ -41,18 +41,18 @@ class ServerWindow(QMainWindow, Ui_ServerWindow, logging.StreamHandler):
         self.lineEdit_IP.textChanged.connect(self.changed_ip)
         self.lineEdit_port.textChanged.connect(self.changed_port)
 
-        self.sel_plug_model = QSqlTableModel(self)
-        self.sel_plug_model.setTable("PluginCollection")
-        self.sel_plug_model.select()
-        self.selPluginsView.setModel(self.sel_plug_model)
-        self.selPluginsView.resizeColumnsToContents()
-
     def setup(self):
         self._scan_plugins()
 
         # connect to database
         database.DB_PATH = os.path.dirname(self.ctx.get_resource('resources_base_placeholder'))
         database.open_db()
+
+        self.sel_plug_model = QSqlTableModel(self)
+        self.sel_plug_model.setTable("PluginCollection")
+        self.sel_plug_model.select()
+        self.selPluginsView.setModel(self.sel_plug_model)
+        self.selPluginsView.resizeColumnsToContents()
 
     def __del__(self):
         database.close_db()
@@ -119,7 +119,7 @@ class ServerWindow(QMainWindow, Ui_ServerWindow, logging.StreamHandler):
 
             self.sel_plug_model.setTable("PluginCollection")
             self.sel_plug_model.select()
-            # self.selPluginsView.resizeColumnsToContents()
+            self.selPluginsView.resizeColumnsToContents()
 
     @pyqtSlot()
     def clicked_removePlugin(self):

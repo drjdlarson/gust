@@ -10,6 +10,7 @@ DB_DRIVER = "QSQLITE"
 
 _DB = None
 
+logger = logging.getLogger('[database]')
 
 def db_name():
     """Full path of database file.
@@ -38,7 +39,7 @@ def open_db():
     _DB = QSqlDatabase.addDatabase(DB_DRIVER)
     fpath = db_name()
     if os.path.exists(fpath):
-        logging.debug('Removing existing database {}'.format(fpath))
+        logger.debug('Removing existing database {}'.format(fpath))
         os.remove(fpath)
     _DB.setDatabaseName(fpath)
     _DB.open()
@@ -46,10 +47,10 @@ def open_db():
     query = _start_query()
 
     cmd = 'CREATE TABLE PluginCollection ( collection_id INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE, name VARCHAR(32) );'
-    logging.debug(cmd)
+    logger.debug(cmd)
     res = query.exec_(cmd)
     if not res:
-        logging.critical(query.lastError().text())
+        logger.critical(query.lastError().text())
 
 
 def close_db():
@@ -72,10 +73,10 @@ def _create_new_ids_table(p_name):
 
     # create new table, not always required
     cmd = 'CREATE TABLE {:s}_ids ( id INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE );'.format(p_name)
-    logging.debug(cmd)
+    logger.debug(cmd)
     res = query.exec_(cmd)
     if not res:
-        logging.critical(query.lastError().text())
+        logger.critical(query.lastError().text())
 
     # create temp table for copying PluginCollection, not always required
     rec = _DB.record("PluginCollection")
@@ -97,10 +98,10 @@ def _create_new_ids_table(p_name):
         fk_fmt += ', FOREIGN KEY ({:s}) REFERENCES {:s}s(id) ON UPDATE CASCADE ON DELETE CASCADE'.format(col, col)
 
     cmd = '{:s}{:s});'.format(fmt, fk_fmt)
-    logging.debug(cmd)
+    logger.debug(cmd)
     res = query.exec_(cmd)
     if not res:
-        logging.critical(query.lastError().text())
+        logger.critical(query.lastError().text())
 
     # copy PluginCollection to temp table, not always required
     if len(existing_fks) > 0:
@@ -108,48 +109,69 @@ def _create_new_ids_table(p_name):
         cmd = 'INSERT INTO _tmp(name, {:s}) SELECT name, {:s} FROM PluginCollection;'.format(joined, joined)
     else:
         cmd = 'INSERT INTO _tmp(name) SELECT name FROM PluginCollection;'
-    logging.debug(cmd)
+    logger.debug(cmd)
     res = query.exec_(cmd)
     if not res:
-        logging.critical(query.lastError().text())
+        logger.critical(query.lastError().text())
 
     # drop PluginCollection table, not always required
     cmd = 'DROP TABLE PluginCollection;'
-    logging.debug(cmd)
+    logger.debug(cmd)
     res = query.exec_(cmd)
     if not res:
-        logging.critical(query.lastError().text())
+        logger.critical(query.lastError().text())
 
     # rename temp table, not always required
     cmd = 'ALTER TABLE _tmp RENAME to PluginCollection;'
-    logging.debug(cmd)
+    logger.debug(cmd)
     res = query.exec_(cmd)
     if not res:
-        logging.critical(query.lastError().text())
+        logger.critical(query.lastError().text())
 
 
-def _create_name_id_data_table(p_name, p_id, schema):
+def _create_name_id_data_table(p_name, p_id, schema_fields):
     query = _start_query()
 
-    # TODO: add data fields based on schema
-    cmd = 'CREATE TABLE {:s}_{:d}_data ( time_id INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE, p_id INTEGER, FOREIGN KEY (p_id) REFERENCES {:s}_ids(id) ON UPDATE CASCADE ON DELETE CASCADE );'.format(p_name, p_id, p_name)
-    logging.debug(cmd)
+    base = '''CREATE TABLE {:s}_{:d}_data (
+        time_id INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE,
+        p_id INTEGER'''.format(p_name, p_id)
+    tail = ''',
+        FOREIGN KEY (p_id) REFERENCES {:s}_ids(id) ON UPDATE CASCADE ON DELETE CASCADE );'''.format(p_name)
+
+    mid = ''
+    for key, val in schema_fields:
+        if val.lower() == 'int':
+            dtype = 'INTEGER'
+        elif val.lower() in ('float', 'double'):
+            dtype = 'REAL'
+        elif val.lower() == 'str':
+            dtype = 'TEXT'
+        else:
+            msg = 'Database does not support data type {} from schema for plugin {}'
+            logger.critical(msg.format(val, p_name))
+            continue
+
+        mid += ',\n{:8s}{:s} {:s}'.format('', key, dtype)
+
+    cmd = '{:s}{:s}{:s}'.format(base, mid, tail)
+
+    logger.debug(cmd)
     res = query.exec_(cmd)
     if not res:
-        logging.critical(query.lastError().text())
+        logger.critical(query.lastError().text())
 
 
 def _add_new_id_val(p_name):
     query = _start_query()
 
     cmd = 'INSERT INTO {:s}_ids (id) VALUES (NULL);'.format(p_name)
-    logging.debug(cmd)
+    logger.debug(cmd)
     res = query.exec_(cmd)
     if not res:
-        logging.critical(query.lastError().text())
+        logger.critical(query.lastError().text())
 
     cmd = 'SELECT LAST_VALUE(id) OVER (ORDER BY id DESC) FROM {:s}_ids'.format(p_name)
-    logging.debug(cmd)
+    logger.debug(cmd)
     query = QSqlQuery(cmd)
 
     query.first()
@@ -160,10 +182,10 @@ def _add_new_pc_val(p_name, p_id):
     query = _start_query()
 
     cmd = 'INSERT INTO PluginCollection (name, {:s}_id) VALUES (\'{:s}\', {:d});'.format(p_name, p_name, p_id)
-    logging.debug(cmd)
+    logger.debug(cmd)
     res = query.exec_(cmd)
     if not res:
-        logging.critical(query.lastError().text())
+        logger.critical(query.lastError().text())
 
 
 def add_plugin(p_name):
@@ -192,11 +214,10 @@ def add_plugin(p_name):
         # add new val to pc table
         _add_new_pc_val(p_name, p_id)
 
-        schema = pluginMonitor.extract_schema_fields(p_name)
-
         # create name_id_data
         if '{:s}_{:d}_data'.format(p_name, p_id) not in _DB.tables():
-            _create_name_id_data_table(p_name, p_id, schema)
+            schema_fields = pluginMonitor.extract_schema_data_fields(p_name)
+            _create_name_id_data_table(p_name, p_id, schema_fields)
 
     else:
         # add new val to name_id table
@@ -205,12 +226,10 @@ def add_plugin(p_name):
         # add new val to pc table
         _add_new_pc_val(p_name, p_id)
 
+        # create name_id_data
         if '{:s}_{:d}_data'.format(p_name, p_id) not in _DB.tables():
-            # TODO: find schema file
-            schema = None
-
-            # create name_id_data
-            _create_name_id_data_table(p_name, p_id, schema)
+            schema_fields = pluginMonitor.extract_schema_data_fields(p_name)
+            _create_name_id_data_table(p_name, p_id, schema_fields)
 
     return p_id
 
@@ -220,10 +239,10 @@ def remove_plugin(p_name, p_id):
     if '{:s}_ids'.format(p_name) in _DB.tables():
         query = _start_query()
         cmd = 'DELETE FROM {:s}_ids WHERE id = {:d}'.format(p_name, p_id)
-        logging.debug(cmd)
+        logger.debug(cmd)
         res = query.exec_(cmd)
         if not res:
-            logging.critical(query.lastError().text())
+            logger.critical(query.lastError().text())
 
         return res
 
@@ -234,19 +253,19 @@ def remove_plugin(p_name, p_id):
 def remove_plugin_by_col_id(col_ids):
     for c_id in col_ids:
         cmd = 'SELECT name FROM PluginCollection WHERE collection_id = {:d}'.format(c_id)
-        logging.debug(cmd)
+        logger.debug(cmd)
         query = QSqlQuery(cmd)
         query.first()
         p_name = query.value(0)
 
         cmd = 'SELECT {:s}_id FROM PluginCollection WHERE collection_id = {:d}'.format(p_name, c_id)
-        logging.debug(cmd)
+        logger.debug(cmd)
         query = QSqlQuery(cmd)
         query.first()
         p_id = int(query.value(0))
 
         if not remove_plugin(p_name, p_id):
-            logging.critical('Failed to completely remove Plugin: {} ID: {}'.format(p_name, p_id))
+            logger.critical('Failed to completely remove Plugin: {} ID: {}'.format(p_name, p_id))
 
 
 def add_plugin_data(p_name, p_id, data):

@@ -40,7 +40,8 @@ class Launcher(QMainWindow, Ui_Launcher):
         self._serverWindow = server_window.ServerWindow(self.ctx)
 
         # fix logger so it only outputs to the new output console in the backend
-        fmt = logging.getLogger().handlers[0].formatter
+        # fmt = logging.getLogger().handlers[0].formatter
+        fmt = logging.Formatter('%(name)s %(levelname)s %(asctime)s - %(message)s')
         logging.getLogger().handlers = []
         hndl = logging.StreamHandler(stream=self._serverWindow)
         hndl.setFormatter(fmt)

@@ -53,17 +53,12 @@ def start_server():
 
         START_CMD = program + ' ' + ' '.join(args)
 
-        # initialize database
-
-        # succ, err = database.connect_to_database(con_name=_build_db_con_name(_SERVER_NUM))
-
         succ = _SERVER_RUNNING = True
         err = None
 
         _SERVER_NUM += 1
 
     return succ, err
-    # return res, err
 
 
 def stop_server():

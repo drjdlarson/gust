@@ -8,6 +8,8 @@ import json
 from PyQt5.QtCore import QProcess, QObject, pyqtSlot
 from PyQt5 import QtNetwork
 
+logger = logging.getLogger('[plugin-monitor]')
+
 
 class PluginMonitor(QObject):
     def __new__(cls):
@@ -47,7 +49,7 @@ class PluginMonitor(QObject):
         return plugins
 
     def scan_for_plugins(self):
-        logging.info('[plugin-monitor] Scanning for plugins')
+        logger.info('Scanning for plugins')
 
         folders = next(os.walk(self.plugin_dir))[1]
 
@@ -70,7 +72,7 @@ class PluginMonitor(QObject):
             # add data to database
             if not database.add_plugin_data(p_name, p_id, data):
                 msg = 'Failed to log data for plugin: {} with ID: {}'
-                logging.critical(msg.format(p_name, p_id))
+                logger.critical(msg.format(p_name, p_id))
 
     def _start_server(self):
         if self.udp_sock.state() == QtNetwork.QAbstractSocket.SocketState.UnconnectedState:
@@ -88,7 +90,7 @@ class PluginMonitor(QObject):
         for p_name in des_plugins:
             plugin_ids = None
             for p_id in plugin_ids:
-                logging.info('[plugin-monitor] Starting plugin: {:s} ID: {:d}'.format(p_name, p_id))
+                logger.info('Starting plugin: {:s} ID: {:d}'.format(p_name, p_id))
 
                 proc = QProcess()
                 proc.setProcessChannelMode(QProcess.MergedChannels)
@@ -106,7 +108,7 @@ class PluginMonitor(QObject):
 
     @pyqtSlot()
     def start_monitor(self):
-        logging.info('[plugin-monitor] Starting monitor')
+        logger.info('Starting monitor')
         if not self._start_server():
             pass
             # raise RuntimeError()
@@ -124,8 +126,32 @@ class PluginMonitor(QObject):
 
         return True
 
-    def extract_schema_fields(self, p_name):
-        pass
+    def extract_schema_data_fields(self, p_name):
+        schema = self.load_schema_file(p_name)
+
+        fields = []
+        for key, val in schema['data'].items():
+            if type(val).__name__ == 'dict':
+                msg = 'Dictionaries are not supported. Found in plugin {:s}'
+                logger.critical(msg.format(p_name))
+                continue
+            fields.append((key, val))
+
+        return fields
+
+    def load_schema_file(self, p_name):
+        fpath = self.find_schema_file(p_name)
+        with open(fpath, 'r') as fin:
+            schema = json.load(fin)
+
+        return schema
+
+    def find_schema_file(self, p_name):
+        fpath = os.path.join(self.plugin_dir, p_name, '{:s}_schema.json'.format(p_name))
+        if not os.path.exists(fpath):
+            logger.critical('Failed to find schema file {:s}'.format(fpath))
+            return None
+        return fpath
 
 
 pluginMonitor = PluginMonitor()
