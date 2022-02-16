@@ -281,7 +281,38 @@ def remove_plugin_by_col_id(col_ids):
             logger.critical('Failed to completely remove Plugin: {} ID: {}'.format(p_name, p_id))
 
 
-def add_plugin_data(p_name, p_id, data):
+def add_plugin_data(p_name, p_id, data, schema):
+    tbl = '{:s}_{:d}_data'.format(p_name, p_id)
+    if tbl not in _DB.tables():
+        return False
+
+    query = _start_query()
+    cmd = '''INSERT INTO {:s} (
+        p_id'''.format(tbl)
+
+    for key, val in schema:
+        cmd += ',\n{:8s}{:s}'.format('', key)
+
+    cmd += ''')\nVALUES (
+        {:d}'''.format(p_id)
+
+    for key, dtype in schema:
+        if key not in data:
+            logger.critical('Missing {:s} in packet from Plugin: {:s} ID: {:d}'.format(key, p_name, p_id))
+            return False
+
+        if dtype == 'str':
+            cmd += ',\n{:8s}''{}'''.format('', data[key])
+        else:
+            cmd += ',\n{:8s}{}'.format('', data[key])
+
+    cmd += ');'
+    logger.debug(cmd)
+    res = query.exec_(cmd)
+    if not res:
+        logger.critical(query.lastError().text())
+        return False
+
     return True
 
 
@@ -292,15 +323,39 @@ def get_plugin_names(distinct):
         extra = ''
 
     query = _start_query()
-    cmd = 'SELECT {s} name FROM PluginCollection'.format(extra)
+    cmd = 'SELECT {:s} name FROM PluginCollection'.format(extra)
+    logger.debug(cmd)
     res = query.exec_(cmd)
     if not res:
         logger.critical(query.lastError().text())
+        return []
 
-    query.first()
-
+    query.seek(-1)
     plugin_names = []
     while query.next():
         plugin_names.append(query.value(0))
 
     return plugin_names
+
+
+def get_plugin_ids(p_name):
+    query = _start_query()
+
+    tbl = '{:s}_ids'.format(p_name)
+    if tbl not in _DB.tables():
+        logger.critical('Failed to find id table for plugin {:s}'.format(p_name))
+        return []
+
+    cmd = 'SELECT id FROM {:s}'.format(tbl)
+    logger.debug(cmd)
+    res = query.exec_(cmd)
+    if not res:
+        logger.critical(query.lastError().text())
+        return []
+
+    query.seek(-1)
+    p_ids = []
+    while query.next():
+        p_ids.append(query.value(0))
+
+    return p_ids

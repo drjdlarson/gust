@@ -69,31 +69,39 @@ class PluginMonitor(QObject):
             p_id = packet['id']
             data = packet['data']
 
+            logger.info('Rec from Plugin: {:s} ID: {:d} Data: {:}'.format(p_name, p_id, data))
+
             # add data to database
-            if not database.add_plugin_data(p_name, p_id, data):
+            schema = self.extract_schema_data_fields(p_name)
+            if not database.add_plugin_data(p_name, p_id, data, schema):
                 msg = 'Failed to log data for plugin: {} with ID: {}'
                 logger.critical(msg.format(p_name, p_id))
 
     def _start_server(self):
-        if self.udp_sock.state() == QtNetwork.QAbstractSocket.SocketState.UnconnectedState:
-            self.udp_sock.bind(self.port)
-            self.udp_sock.readyRead.connect(self._proc_pending_data)
+        # if self.udp_sock.state() == QtNetwork.QAbstractSocket.SocketState.UnconnectedState:
+        self.udp_sock.bind(self.port)
+        self.udp_sock.readyRead.connect(self._proc_pending_data)
 
-        return self.udp_sock.state() == QtNetwork.QAbstractSocket.SocketState.ConnectedState
+        return True
+        # return self.udp_sock.state() == QtNetwork.QAbstractSocket.SocketState.ConnectedState
 
     def _start_plugins(self):
         import gust.database as database
 
         # get data from database
         des_plugins = database.get_plugin_names(True)
+        logger.info('found desired plugins: {}'.format(des_plugins))
 
         for p_name in des_plugins:
-            plugin_ids = None
+            plugin_ids = database.get_plugin_ids(p_name)
+            cwd = os.path.join(self.plugin_dir, p_name)
             for p_id in plugin_ids:
                 logger.info('Starting plugin: {:s} ID: {:d}'.format(p_name, p_id))
+                logger.debug('Working directory is {:s}'.format(cwd))
 
                 proc = QProcess()
                 proc.setProcessChannelMode(QProcess.MergedChannels)
+                proc.setWorkingDirectory(cwd)
 
                 program = self.get_plugin_exe(p_name)
                 args = ['-p {:d}'.format(self.port),
@@ -110,10 +118,9 @@ class PluginMonitor(QObject):
     def start_monitor(self):
         logger.info('Starting monitor')
         if not self._start_server():
-            pass
-            # raise RuntimeError()
+            raise RuntimeError()
 
-        if not self._start_plugins:
+        if not self._start_plugins():
             raise RuntimeError()
 
         return True
@@ -123,6 +130,8 @@ class PluginMonitor(QObject):
             proc.terminate()
 
         self.running_procs = []
+        self.running_names = []
+        self.running_ids = []
 
         return True
 
