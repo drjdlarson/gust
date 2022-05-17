@@ -1,5 +1,5 @@
 # gust
-GCS for UAS Swarming and Teaming (GUST)
+GCS for Unmanned System Teams (GUST)
 
 # Setup
 This requires
