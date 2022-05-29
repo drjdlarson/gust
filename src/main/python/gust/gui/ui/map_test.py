@@ -11,7 +11,7 @@ class MyApp(QWidget):
     def __init__(self):
         super().__init__()
         self.setWindowTitle('Folium in PyQt Example')
-        self.window_width, self.window_height = 1600, 1200
+        self.window_width, self.window_height = 1600, 1000
         self.setMinimumSize(self.window_width, self.window_height)
 
         layout = QVBoxLayout()
@@ -19,8 +19,8 @@ class MyApp(QWidget):
 
         coordinate = (37.8199286, -122.4782551)
         m = folium.Map(
-        	tiles='OpenStreetMap',
-
+        	tiles='https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+            attr='Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community',
             zoom_start=13,
         	location=coordinate
         )
