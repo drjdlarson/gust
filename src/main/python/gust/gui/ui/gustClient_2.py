@@ -10,32 +10,26 @@
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 
-import sys
-import io
-import folium # pip install folium
-from PyQt5.QtWidgets import QApplication, QWidget, QHBoxLayout, QVBoxLayout
-from PyQt5.QtWebEngineWidgets import QWebEngineView # pip install PyQtWebEngine
 
-
-class Ui_MainWindow(object):
-    def setupUi(self, MainWindow):
-        MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(1301, 909)
+class Ui_MainWindow_main(object):
+    def setupUi(self, MainWindow_main):
+        MainWindow_main.setObjectName("MainWindow_main")
+        MainWindow_main.resize(1161, 661)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(MainWindow.sizePolicy().hasHeightForWidth())
-        MainWindow.setSizePolicy(sizePolicy)
-        MainWindow.setMaximumSize(QtCore.QSize(16777215, 16777215))
+        sizePolicy.setHeightForWidth(MainWindow_main.sizePolicy().hasHeightForWidth())
+        MainWindow_main.setSizePolicy(sizePolicy)
+        MainWindow_main.setMaximumSize(QtCore.QSize(16777215, 16777215))
         font = QtGui.QFont()
         font.setPointSize(14)
         font.setBold(False)
         font.setUnderline(False)
         font.setWeight(50)
-        MainWindow.setFont(font)
-        MainWindow.setStyleSheet("background-color: rgb(211, 215, 207);")
-        MainWindow.setTabShape(QtWidgets.QTabWidget.Rounded)
-        self.widget_main = QtWidgets.QWidget(MainWindow)
+        MainWindow_main.setFont(font)
+        MainWindow_main.setStyleSheet("background-color: rgb(211, 215, 207);")
+        MainWindow_main.setTabShape(QtWidgets.QTabWidget.Rounded)
+        self.widget_main = QtWidgets.QWidget(MainWindow_main)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -52,10 +46,16 @@ class Ui_MainWindow(object):
         self.verticalLayout = QtWidgets.QVBoxLayout(self.verticalWidget)
         self.verticalLayout.setSizeConstraint(QtWidgets.QLayout.SetMaximumSize)
         self.verticalLayout.setObjectName("verticalLayout")
-        self.graphicsView_dummyHUD = QtWidgets.QGraphicsView(self.verticalWidget)
-        self.graphicsView_dummyHUD.setMaximumSize(QtCore.QSize(500, 500))
-        self.graphicsView_dummyHUD.setObjectName("graphicsView_dummyHUD")
-        self.verticalLayout.addWidget(self.graphicsView_dummyHUD)
+        self.widget_hud = HudWidget(self.verticalWidget)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.widget_hud.sizePolicy().hasHeightForWidth())
+        self.widget_hud.setSizePolicy(sizePolicy)
+        self.widget_hud.setMinimumSize(QtCore.QSize(308, 308))
+        self.widget_hud.setMaximumSize(QtCore.QSize(400, 400))
+        self.widget_hud.setObjectName("widget_hud")
+        self.verticalLayout.addWidget(self.widget_hud)
         self.label_seluav = QtWidgets.QLabel(self.verticalWidget)
         self.label_seluav.setMaximumSize(QtCore.QSize(16777215, 50))
         self.label_seluav.setStyleSheet("background-color: rgba(0,0,0,0);\n"
@@ -314,27 +314,21 @@ class Ui_MainWindow(object):
         self.formLayout_info.setWidget(8, QtWidgets.QFormLayout.FieldRole, self.label_current)
         self.verticalLayout.addWidget(self.formLayout_3)
         self.horizontalLayout_2.addWidget(self.verticalWidget)
-        self.verticalLayout_3 = QtWidgets.QVBoxLayout()
-        self.verticalLayout_3.setObjectName("verticalLayout_3")
-
-        coordinate = (39,-87)
-        m = folium.Map(
-        	tiles='https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-            attr='Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community',
-            zoom_start=13,
-        	location=coordinate
-        )
-
-        data=io.BytesIO()
-        m.save(data,close_file=False)
-
-        self.webView_map_test = QWebEngineView()
-        self.webView_map_test.setHtml(data.getvalue().decode())
-        self.webView_map_test.setObjectName("webView_map_test")
-        self.verticalLayout_3.addWidget(self.webView_map_test)
-
+        self.line_2 = QtWidgets.QFrame(self.widget_main)
+        self.line_2.setFrameShape(QtWidgets.QFrame.VLine)
+        self.line_2.setFrameShadow(QtWidgets.QFrame.Sunken)
+        self.line_2.setObjectName("line_2")
+        self.horizontalLayout_2.addWidget(self.line_2)
         self.verticalLayout_2 = QtWidgets.QVBoxLayout()
         self.verticalLayout_2.setObjectName("verticalLayout_2")
+        self.widget_map = MapWidget(self.widget_main)
+        self.widget_map.setObjectName("widget_map")
+        self.verticalLayout_2.addWidget(self.widget_map)
+        self.line = QtWidgets.QFrame(self.widget_main)
+        self.line.setFrameShape(QtWidgets.QFrame.HLine)
+        self.line.setFrameShadow(QtWidgets.QFrame.Sunken)
+        self.line.setObjectName("line")
+        self.verticalLayout_2.addWidget(self.line)
         self.horizontalLayout = QtWidgets.QHBoxLayout()
         self.horizontalLayout.setObjectName("horizontalLayout")
         self.pushButton_addrow = QtWidgets.QPushButton(self.widget_main)
@@ -344,13 +338,13 @@ class Ui_MainWindow(object):
         self.horizontalLayout.addItem(spacerItem)
         self.verticalLayout_2.addLayout(self.horizontalLayout)
         self.tableWidget = QtWidgets.QTableWidget(self.widget_main)
+        self.tableWidget.setMinimumSize(QtCore.QSize(800, 100))
         self.tableWidget.setMaximumSize(QtCore.QSize(16777215, 200))
         font = QtGui.QFont()
         font.setKerning(True)
         self.tableWidget.setFont(font)
-        self.tableWidget.setFrameShape(QtWidgets.QFrame.WinPanel)
+        self.tableWidget.setFrameShape(QtWidgets.QFrame.StyledPanel)
         self.tableWidget.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAsNeeded)
-        self.tableWidget.setSizeAdjustPolicy(QtWidgets.QAbstractScrollArea.AdjustToContentsOnFirstShow)
         self.tableWidget.setCornerButtonEnabled(True)
         self.tableWidget.setObjectName("tableWidget")
         self.tableWidget.setColumnCount(8)
@@ -372,49 +366,51 @@ class Ui_MainWindow(object):
         item = QtWidgets.QTableWidgetItem()
         self.tableWidget.setHorizontalHeaderItem(7, item)
         self.verticalLayout_2.addWidget(self.tableWidget)
-        self.verticalLayout_3.addLayout(self.verticalLayout_2)
-        self.horizontalLayout_2.addLayout(self.verticalLayout_3)
-        MainWindow.setCentralWidget(self.widget_main)
+        self.verticalLayout_2.setStretch(0, 1)
+        self.horizontalLayout_2.addLayout(self.verticalLayout_2)
+        MainWindow_main.setCentralWidget(self.widget_main)
 
-        self.retranslateUi(MainWindow)
-        QtCore.QMetaObject.connectSlotsByName(MainWindow)
+        self.retranslateUi(MainWindow_main)
+        QtCore.QMetaObject.connectSlotsByName(MainWindow_main)
 
-    def retranslateUi(self, MainWindow):
+    def retranslateUi(self, MainWindow_main):
         _translate = QtCore.QCoreApplication.translate
-        MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
-        self.widget_main.setToolTip(_translate("MainWindow", "<html><head/><body><p align=\"center\"><br/></p></body></html>"))
-        self.label_seluav.setText(_translate("MainWindow", "Current DRONE NAME"))
-        self.label_altitude.setText(_translate("MainWindow", "Altitude"))
-        self.label_vspeed.setText(_translate("MainWindow", "V. Speed"))
-        self.label_airspeed.setText(_translate("MainWindow", "Airspeed"))
-        self.label_gndspeed.setText(_translate("MainWindow", "Gnd. Speed"))
-        self.label_voltage.setText(_translate("MainWindow", "Voltage"))
-        self.label_current.setText(_translate("MainWindow", "Current"))
-        self.pushButton_addrow.setText(_translate("MainWindow", "Add a vehicle"))
+        MainWindow_main.setWindowTitle(_translate("MainWindow_main", "MainWindow"))
+        self.widget_main.setToolTip(_translate("MainWindow_main", "<html><head/><body><p align=\"center\"><br/></p></body></html>"))
+        self.label_seluav.setText(_translate("MainWindow_main", "Current DRONE NAME"))
+        self.label_altitude.setText(_translate("MainWindow_main", "Altitude"))
+        self.label_vspeed.setText(_translate("MainWindow_main", "V. Speed"))
+        self.label_airspeed.setText(_translate("MainWindow_main", "Airspeed"))
+        self.label_gndspeed.setText(_translate("MainWindow_main", "Gnd. Speed"))
+        self.label_voltage.setText(_translate("MainWindow_main", "Voltage"))
+        self.label_current.setText(_translate("MainWindow_main", "Current"))
+        self.pushButton_addrow.setText(_translate("MainWindow_main", "Add a vehicle"))
+        self.tableWidget.setSortingEnabled(True)
         item = self.tableWidget.horizontalHeaderItem(0)
-        item.setText(_translate("MainWindow", "VEHICLE"))
+        item.setText(_translate("MainWindow_main", "VEHICLE"))
         item = self.tableWidget.horizontalHeaderItem(1)
-        item.setText(_translate("MainWindow", "MODE"))
+        item.setText(_translate("MainWindow_main", "MODE"))
         item = self.tableWidget.horizontalHeaderItem(2)
-        item.setText(_translate("MainWindow", "FLYING TO"))
+        item.setText(_translate("MainWindow_main", "FLYING TO"))
         item = self.tableWidget.horizontalHeaderItem(3)
-        item.setText(_translate("MainWindow", "TIME IN AIR"))
+        item.setText(_translate("MainWindow_main", "TIME IN AIR"))
         item = self.tableWidget.horizontalHeaderItem(4)
-        item.setText(_translate("MainWindow", "ALTITUDE"))
+        item.setText(_translate("MainWindow_main", "ALTITUDE"))
         item = self.tableWidget.horizontalHeaderItem(5)
-        item.setText(_translate("MainWindow", "VOLTAGE"))
+        item.setText(_translate("MainWindow_main", "VOLTAGE"))
         item = self.tableWidget.horizontalHeaderItem(6)
-        item.setText(_translate("MainWindow", "CURRENT"))
+        item.setText(_translate("MainWindow_main", "CURRENT"))
         item = self.tableWidget.horizontalHeaderItem(7)
-        item.setText(_translate("MainWindow", "DISCONNECT"))
-
+        item.setText(_translate("MainWindow_main", "DISCONNECT"))
+from hud_widget_2 import HudWidget
+from map_widget import MapWidget
 
 
 if __name__ == "__main__":
     import sys
     app = QtWidgets.QApplication(sys.argv)
-    MainWindow = QtWidgets.QMainWindow()
-    ui = Ui_MainWindow()
-    ui.setupUi(MainWindow)
-    MainWindow.show()
+    MainWindow_main = QtWidgets.QMainWindow()
+    ui = Ui_MainWindow_main()
+    ui.setupUi(MainWindow_main)
+    MainWindow_main.show()
     sys.exit(app.exec_())

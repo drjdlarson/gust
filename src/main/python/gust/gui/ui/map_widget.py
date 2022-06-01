@@ -7,17 +7,15 @@ from PyQt5.QtWebEngineWidgets import QWebEngineView # pip install PyQtWebEngine
 """
 Folium in PyQt5
 """
-class MyApp(QWidget):
-    def __init__(self):
-        super().__init__()
+class MapWidget(QWidget):
+    def __init__(self,*args,**kwargs):
+        QWidget.__init__(self,*args,**kwargs)
         self.setWindowTitle('Folium in PyQt Example')
-        self.window_width, self.window_height = 1600, 1000
-        self.setMinimumSize(self.window_width, self.window_height)
 
         layout = QVBoxLayout()
         self.setLayout(layout)
 
-        coordinate = (37.8199286, -122.4782551)
+        coordinate = (33.158, -87.458)
         m = folium.Map(
         	tiles='https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
             attr='Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community',
@@ -42,7 +40,7 @@ if __name__ == '__main__':
         }
     ''')
 
-    myApp = MyApp()
+    myApp = MapWidget()
     myApp.show()
 
     try:

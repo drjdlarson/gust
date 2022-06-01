@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>MainWindow</class>
- <widget class="QMainWindow" name="MainWindow">
+ <class>MainWindow_main</class>
+ <widget class="QMainWindow" name="MainWindow_main">
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1301</width>
-    <height>909</height>
+    <width>1161</width>
+    <height>661</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -55,7 +55,7 @@
    <property name="autoFillBackground">
     <bool>false</bool>
    </property>
-   <layout class="QHBoxLayout" name="horizontalLayout_2">
+   <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="0,0,0">
     <item>
      <widget class="QWidget" name="verticalWidget" native="true">
       <property name="maximumSize">
@@ -69,11 +69,23 @@
         <enum>QLayout::SetMaximumSize</enum>
        </property>
        <item>
-        <widget class="QGraphicsView" name="graphicsView_dummyHUD">
+        <widget class="HudWidget" name="widget_hud" native="true">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="minimumSize">
+          <size>
+           <width>308</width>
+           <height>308</height>
+          </size>
+         </property>
          <property name="maximumSize">
           <size>
-           <width>500</width>
-           <height>500</height>
+           <width>400</width>
+           <height>400</height>
           </size>
          </property>
         </widget>
@@ -132,16 +144,7 @@ font: 75 20pt &quot;URW Bookman L&quot;;</string>
           <property name="verticalSpacing">
            <number>5</number>
           </property>
-          <property name="leftMargin">
-           <number>5</number>
-          </property>
-          <property name="topMargin">
-           <number>5</number>
-          </property>
-          <property name="rightMargin">
-           <number>5</number>
-          </property>
-          <property name="bottomMargin">
+          <property name="margin">
            <number>5</number>
           </property>
           <item row="3" column="0">
@@ -571,118 +574,125 @@ color: rgb(0, 0, 0);
      </widget>
     </item>
     <item>
-     <layout class="QVBoxLayout" name="verticalLayout_3">
+     <widget class="Line" name="line_2">
+      <property name="orientation">
+       <enum>Qt::Vertical</enum>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <layout class="QVBoxLayout" name="verticalLayout_2" stretch="1,0,0,0">
       <item>
-       <widget class="QWebView" name="webView_map_test">
-        <property name="url">
-         <url>
-          <string>about:blank</string>
-         </url>
+       <widget class="MapWidget" name="widget_map" native="true"/>
+      </item>
+      <item>
+       <widget class="Line" name="line">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
         </property>
        </widget>
       </item>
       <item>
-       <layout class="QVBoxLayout" name="verticalLayout_2">
+       <layout class="QHBoxLayout" name="horizontalLayout">
         <item>
-         <layout class="QHBoxLayout" name="horizontalLayout">
-          <item>
-           <widget class="QPushButton" name="pushButton_addrow">
-            <property name="text">
-             <string>Add a vehicle</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <spacer name="horizontalSpacer">
-            <property name="font">
-             <font>
-              <kerning>true</kerning>
-             </font>
-            </property>
-            <property name="orientation">
-             <enum>Qt::Horizontal</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>40</width>
-              <height>20</height>
-             </size>
-            </property>
-           </spacer>
-          </item>
-         </layout>
+         <widget class="QPushButton" name="pushButton_addrow">
+          <property name="text">
+           <string>Add a vehicle</string>
+          </property>
+         </widget>
         </item>
         <item>
-         <widget class="QTableWidget" name="tableWidget">
-          <property name="maximumSize">
-           <size>
-            <width>16777215</width>
-            <height>200</height>
-           </size>
-          </property>
+         <spacer name="horizontalSpacer">
           <property name="font">
            <font>
             <kerning>true</kerning>
            </font>
           </property>
-          <property name="frameShape">
-           <enum>QFrame::StyledPanel</enum>
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
           </property>
-          <property name="horizontalScrollBarPolicy">
-           <enum>Qt::ScrollBarAsNeeded</enum>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>40</width>
+            <height>20</height>
+           </size>
           </property>
-          <property name="sizeAdjustPolicy">
-           <enum>QAbstractScrollArea::AdjustToContentsOnFirstShow</enum>
-          </property>
-          <property name="sortingEnabled">
-           <bool>true</bool>
-          </property>
-          <property name="cornerButtonEnabled">
-           <bool>true</bool>
-          </property>
-          <column>
-           <property name="text">
-            <string>VEHICLE</string>
-           </property>
-          </column>
-          <column>
-           <property name="text">
-            <string>MODE</string>
-           </property>
-          </column>
-          <column>
-           <property name="text">
-            <string>FLYING TO</string>
-           </property>
-          </column>
-          <column>
-           <property name="text">
-            <string>TIME IN AIR</string>
-           </property>
-          </column>
-          <column>
-           <property name="text">
-            <string>ALTITUDE</string>
-           </property>
-          </column>
-          <column>
-           <property name="text">
-            <string>VOLTAGE</string>
-           </property>
-          </column>
-          <column>
-           <property name="text">
-            <string>CURRENT</string>
-           </property>
-          </column>
-          <column>
-           <property name="text">
-            <string>DISCONNECT</string>
-           </property>
-          </column>
-         </widget>
+         </spacer>
         </item>
        </layout>
+      </item>
+      <item>
+       <widget class="QTableWidget" name="tableWidget">
+        <property name="minimumSize">
+         <size>
+          <width>800</width>
+          <height>100</height>
+         </size>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>16777215</width>
+          <height>200</height>
+         </size>
+        </property>
+        <property name="font">
+         <font>
+          <kerning>true</kerning>
+         </font>
+        </property>
+        <property name="frameShape">
+         <enum>QFrame::StyledPanel</enum>
+        </property>
+        <property name="horizontalScrollBarPolicy">
+         <enum>Qt::ScrollBarAsNeeded</enum>
+        </property>
+        <property name="sortingEnabled">
+         <bool>true</bool>
+        </property>
+        <property name="cornerButtonEnabled">
+         <bool>true</bool>
+        </property>
+        <column>
+         <property name="text">
+          <string>VEHICLE</string>
+         </property>
+        </column>
+        <column>
+         <property name="text">
+          <string>MODE</string>
+         </property>
+        </column>
+        <column>
+         <property name="text">
+          <string>FLYING TO</string>
+         </property>
+        </column>
+        <column>
+         <property name="text">
+          <string>TIME IN AIR</string>
+         </property>
+        </column>
+        <column>
+         <property name="text">
+          <string>ALTITUDE</string>
+         </property>
+        </column>
+        <column>
+         <property name="text">
+          <string>VOLTAGE</string>
+         </property>
+        </column>
+        <column>
+         <property name="text">
+          <string>CURRENT</string>
+         </property>
+        </column>
+        <column>
+         <property name="text">
+          <string>DISCONNECT</string>
+         </property>
+        </column>
+       </widget>
       </item>
      </layout>
     </item>
@@ -691,9 +701,16 @@ color: rgb(0, 0, 0);
  </widget>
  <customwidgets>
   <customwidget>
-   <class>QWebView</class>
-   <extends></extends>
-   <header>QtWebKitWidgets/QWebView</header>
+   <class>MapWidget</class>
+   <extends>QWidget</extends>
+   <header>map_widget.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>HudWidget</class>
+   <extends>QWidget</extends>
+   <header>hud_widget_2</header>
+   <container>1</container>
   </customwidget>
  </customwidgets>
  <resources/>
