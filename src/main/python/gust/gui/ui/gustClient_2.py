@@ -14,7 +14,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_MainWindow_main(object):
     def setupUi(self, MainWindow_main):
         MainWindow_main.setObjectName("MainWindow_main")
-        MainWindow_main.resize(1161, 661)
+        MainWindow_main.resize(1285, 865)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -46,14 +46,14 @@ class Ui_MainWindow_main(object):
         self.verticalLayout = QtWidgets.QVBoxLayout(self.verticalWidget)
         self.verticalLayout.setSizeConstraint(QtWidgets.QLayout.SetMaximumSize)
         self.verticalLayout.setObjectName("verticalLayout")
-        self.widget_hud = HudWidget(self.verticalWidget)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
+        self.widget_hud = pyG5AIWidget(self.verticalWidget)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.widget_hud.sizePolicy().hasHeightForWidth())
         self.widget_hud.setSizePolicy(sizePolicy)
-        self.widget_hud.setMinimumSize(QtCore.QSize(308, 308))
-        self.widget_hud.setMaximumSize(QtCore.QSize(400, 400))
+        self.widget_hud.setMinimumSize(QtCore.QSize(480, 360))
+        self.widget_hud.setMaximumSize(QtCore.QSize(480, 360))
         self.widget_hud.setObjectName("widget_hud")
         self.verticalLayout.addWidget(self.widget_hud)
         self.label_seluav = QtWidgets.QLabel(self.verticalWidget)
@@ -347,7 +347,7 @@ class Ui_MainWindow_main(object):
         self.tableWidget.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAsNeeded)
         self.tableWidget.setCornerButtonEnabled(True)
         self.tableWidget.setObjectName("tableWidget")
-        self.tableWidget.setColumnCount(8)
+        self.tableWidget.setColumnCount(10)
         self.tableWidget.setRowCount(0)
         item = QtWidgets.QTableWidgetItem()
         self.tableWidget.setHorizontalHeaderItem(0, item)
@@ -365,6 +365,10 @@ class Ui_MainWindow_main(object):
         self.tableWidget.setHorizontalHeaderItem(6, item)
         item = QtWidgets.QTableWidgetItem()
         self.tableWidget.setHorizontalHeaderItem(7, item)
+        item = QtWidgets.QTableWidgetItem()
+        self.tableWidget.setHorizontalHeaderItem(8, item)
+        item = QtWidgets.QTableWidgetItem()
+        self.tableWidget.setHorizontalHeaderItem(9, item)
         self.verticalLayout_2.addWidget(self.tableWidget)
         self.verticalLayout_2.setStretch(0, 1)
         self.horizontalLayout_2.addLayout(self.verticalLayout_2)
@@ -401,9 +405,13 @@ class Ui_MainWindow_main(object):
         item = self.tableWidget.horizontalHeaderItem(6)
         item.setText(_translate("MainWindow_main", "CURRENT"))
         item = self.tableWidget.horizontalHeaderItem(7)
+        item.setText(_translate("MainWindow_main", "RELAY"))
+        item = self.tableWidget.horizontalHeaderItem(8)
+        item.setText(_translate("MainWindow_main", "ENGINE"))
+        item = self.tableWidget.horizontalHeaderItem(9)
         item.setText(_translate("MainWindow_main", "DISCONNECT"))
-from hud_widget_2 import HudWidget
 from map_widget import MapWidget
+from pyG5 import pyG5AIWidget
 
 
 if __name__ == "__main__":

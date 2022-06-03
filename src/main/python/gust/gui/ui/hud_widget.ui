@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>392</width>
-    <height>319</height>
+    <width>470</width>
+    <height>441</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -36,7 +36,7 @@
        <property name="minimumSize">
         <size>
          <width>308</width>
-         <height>20</height>
+         <height>25</height>
         </size>
        </property>
        <property name="maximumSize">
@@ -71,9 +71,15 @@
     <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="0,1,0">
      <item>
       <widget class="QFrame" name="frame_left">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
        <property name="minimumSize">
         <size>
-         <width>25</width>
+         <width>30</width>
          <height>150</height>
         </size>
        </property>
@@ -83,7 +89,6 @@
        <property name="frameShadow">
         <enum>QFrame::Raised</enum>
        </property>
-       <zorder>frame_center</zorder>
       </widget>
      </item>
      <item>
@@ -98,9 +103,15 @@
      </item>
      <item>
       <widget class="QFrame" name="frame_right">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
        <property name="minimumSize">
         <size>
-         <width>25</width>
+         <width>30</width>
          <height>150</height>
         </size>
        </property>
@@ -116,6 +127,9 @@
    </item>
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout">
+     <property name="spacing">
+      <number>10</number>
+     </property>
      <item>
       <widget class="QLabel" name="label_arm">
        <property name="font">

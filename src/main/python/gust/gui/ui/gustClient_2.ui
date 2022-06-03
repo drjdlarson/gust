@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1161</width>
-    <height>661</height>
+    <width>1285</width>
+    <height>865</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -69,23 +69,23 @@
         <enum>QLayout::SetMaximumSize</enum>
        </property>
        <item>
-        <widget class="HudWidget" name="widget_hud" native="true">
+        <widget class="pyG5AIWidget" name="widget_hud" native="true">
          <property name="sizePolicy">
-          <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
            <horstretch>0</horstretch>
            <verstretch>0</verstretch>
           </sizepolicy>
          </property>
          <property name="minimumSize">
           <size>
-           <width>308</width>
-           <height>308</height>
+           <width>480</width>
+           <height>360</height>
           </size>
          </property>
          <property name="maximumSize">
           <size>
-           <width>400</width>
-           <height>400</height>
+           <width>480</width>
+           <height>360</height>
           </size>
          </property>
         </widget>
@@ -689,6 +689,16 @@ color: rgb(0, 0, 0);
         </column>
         <column>
          <property name="text">
+          <string>RELAY</string>
+         </property>
+        </column>
+        <column>
+         <property name="text">
+          <string>ENGINE</string>
+         </property>
+        </column>
+        <column>
+         <property name="text">
           <string>DISCONNECT</string>
          </property>
         </column>
@@ -707,9 +717,9 @@ color: rgb(0, 0, 0);
    <container>1</container>
   </customwidget>
   <customwidget>
-   <class>HudWidget</class>
+   <class>pyG5AIWidget</class>
    <extends>QWidget</extends>
-   <header>hud_widget_2</header>
+   <header>pyG5.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>
