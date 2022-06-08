@@ -14,7 +14,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_MainWindow_main(object):
     def setupUi(self, MainWindow_main):
         MainWindow_main.setObjectName("MainWindow_main")
-        MainWindow_main.resize(1285, 865)
+        MainWindow_main.resize(1285, 808)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -45,8 +45,9 @@ class Ui_MainWindow_main(object):
         self.verticalWidget.setObjectName("verticalWidget")
         self.verticalLayout = QtWidgets.QVBoxLayout(self.verticalWidget)
         self.verticalLayout.setSizeConstraint(QtWidgets.QLayout.SetMaximumSize)
+        self.verticalLayout.setSpacing(6)
         self.verticalLayout.setObjectName("verticalLayout")
-        self.widget_hud = pyG5AIWidget(self.verticalWidget)
+        self.widget_hud = AttIndWidget(self.verticalWidget)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -66,7 +67,7 @@ class Ui_MainWindow_main(object):
         self.verticalLayout.addWidget(self.label_seluav)
         self.formLayout_3 = QtWidgets.QWidget(self.verticalWidget)
         self.formLayout_3.setMaximumSize(QtCore.QSize(16777215, 16777215))
-        self.formLayout_3.setStyleSheet("background-color: rgb(195, 204, 147);")
+        self.formLayout_3.setStyleSheet("background-color: rgb(192, 220, 255);")
         self.formLayout_3.setObjectName("formLayout_3")
         self.formLayout_info = QtWidgets.QFormLayout(self.formLayout_3)
         self.formLayout_info.setSizeConstraint(QtWidgets.QLayout.SetDefaultConstraint)
@@ -313,6 +314,43 @@ class Ui_MainWindow_main(object):
         self.label_current.setObjectName("label_current")
         self.formLayout_info.setWidget(8, QtWidgets.QFormLayout.FieldRole, self.label_current)
         self.verticalLayout.addWidget(self.formLayout_3)
+        self.line_3 = QtWidgets.QFrame(self.verticalWidget)
+        self.line_3.setFrameShape(QtWidgets.QFrame.HLine)
+        self.line_3.setFrameShadow(QtWidgets.QFrame.Sunken)
+        self.line_3.setObjectName("line_3")
+        self.verticalLayout.addWidget(self.line_3)
+        self.horizontalWidget = QtWidgets.QWidget(self.verticalWidget)
+        self.horizontalWidget.setMinimumSize(QtCore.QSize(0, 80))
+        self.horizontalWidget.setLayoutDirection(QtCore.Qt.LeftToRight)
+        self.horizontalWidget.setStyleSheet("background-color: rgb(192, 220, 255);")
+        self.horizontalWidget.setObjectName("horizontalWidget")
+        self.horizontalLayout_4 = QtWidgets.QHBoxLayout(self.horizontalWidget)
+        self.horizontalLayout_4.setContentsMargins(20, -1, 20, -1)
+        self.horizontalLayout_4.setSpacing(30)
+        self.horizontalLayout_4.setObjectName("horizontalLayout_4")
+        self.pushButton_RTL = QtWidgets.QPushButton(self.horizontalWidget)
+        self.pushButton_RTL.setMinimumSize(QtCore.QSize(90, 50))
+        self.pushButton_RTL.setStyleSheet("background-color: rgb(48,132,70);\n"
+"color: rgb(255, 255, 255);\n"
+"font: 75 20pt \"Padauk Book [PYRS]\";")
+        self.pushButton_RTL.setObjectName("pushButton_RTL")
+        self.horizontalLayout_4.addWidget(self.pushButton_RTL)
+        self.pushButton_disarm = QtWidgets.QPushButton(self.horizontalWidget)
+        self.pushButton_disarm.setMinimumSize(QtCore.QSize(150, 50))
+        self.pushButton_disarm.setStyleSheet("background-color: rgb(48,132,70);\n"
+"color: rgb(255, 255, 255);\n"
+"font: 75 20pt \"Padauk Book [PYRS]\";")
+        self.pushButton_disarm.setObjectName("pushButton_disarm")
+        self.horizontalLayout_4.addWidget(self.pushButton_disarm)
+        self.pushButton_engineSw = QtWidgets.QPushButton(self.horizontalWidget)
+        self.pushButton_engineSw.setMinimumSize(QtCore.QSize(90, 50))
+        self.pushButton_engineSw.setStyleSheet("background-color: rgb(48,132,70);\n"
+"color: rgb(255, 255, 255);\n"
+"font: 75 20pt \"Padauk Book [PYRS]\";")
+        self.pushButton_engineSw.setObjectName("pushButton_engineSw")
+        self.horizontalLayout_4.addWidget(self.pushButton_engineSw)
+        self.verticalLayout.addWidget(self.horizontalWidget)
+        self.verticalLayout.setStretch(2, 1)
         self.horizontalLayout_2.addWidget(self.verticalWidget)
         self.line_2 = QtWidgets.QFrame(self.widget_main)
         self.line_2.setFrameShape(QtWidgets.QFrame.VLine)
@@ -372,6 +410,7 @@ class Ui_MainWindow_main(object):
         self.verticalLayout_2.addWidget(self.tableWidget)
         self.verticalLayout_2.setStretch(0, 1)
         self.horizontalLayout_2.addLayout(self.verticalLayout_2)
+        self.horizontalLayout_2.setStretch(1, 1)
         MainWindow_main.setCentralWidget(self.widget_main)
 
         self.retranslateUi(MainWindow_main)
@@ -388,6 +427,9 @@ class Ui_MainWindow_main(object):
         self.label_gndspeed.setText(_translate("MainWindow_main", "Gnd. Speed"))
         self.label_voltage.setText(_translate("MainWindow_main", "Voltage"))
         self.label_current.setText(_translate("MainWindow_main", "Current"))
+        self.pushButton_RTL.setText(_translate("MainWindow_main", "RTL"))
+        self.pushButton_disarm.setText(_translate("MainWindow_main", "Engine OFF"))
+        self.pushButton_engineSw.setText(_translate("MainWindow_main", "Disarm"))
         self.pushButton_addrow.setText(_translate("MainWindow_main", "Add a vehicle"))
         self.tableWidget.setSortingEnabled(True)
         item = self.tableWidget.horizontalHeaderItem(0)
@@ -410,8 +452,8 @@ class Ui_MainWindow_main(object):
         item.setText(_translate("MainWindow_main", "ENGINE"))
         item = self.tableWidget.horizontalHeaderItem(9)
         item.setText(_translate("MainWindow_main", "DISCONNECT"))
+from attitude_ind_widget import AttIndWidget
 from map_widget import MapWidget
-from pyG5 import pyG5AIWidget
 
 
 if __name__ == "__main__":

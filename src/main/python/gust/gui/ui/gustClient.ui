@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1342</width>
-    <height>910</height>
+    <width>1286</width>
+    <height>952</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -116,16 +116,7 @@ font: 75 20pt &quot;URW Bookman L&quot;;</string>
         <property name="verticalSpacing">
          <number>5</number>
         </property>
-        <property name="leftMargin">
-         <number>5</number>
-        </property>
-        <property name="topMargin">
-         <number>5</number>
-        </property>
-        <property name="rightMargin">
-         <number>5</number>
-        </property>
-        <property name="bottomMargin">
+        <property name="margin">
          <number>5</number>
         </property>
         <item row="3" column="0">

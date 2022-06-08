@@ -14,7 +14,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_Form_hud(object):
     def setupUi(self, Form_hud):
         Form_hud.setObjectName("Form_hud")
-        Form_hud.resize(470, 441)
+        Form_hud.resize(488, 513)
         Form_hud.setMinimumSize(QtCore.QSize(308, 308))
         Form_hud.setMouseTracking(False)
         self.verticalLayout = QtWidgets.QVBoxLayout(Form_hud)

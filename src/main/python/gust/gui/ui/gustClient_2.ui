@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1285</width>
-    <height>865</height>
+    <height>808</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -55,7 +55,7 @@
    <property name="autoFillBackground">
     <bool>false</bool>
    </property>
-   <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="0,0,0">
+   <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="0,1,0">
     <item>
      <widget class="QWidget" name="verticalWidget" native="true">
       <property name="maximumSize">
@@ -64,12 +64,15 @@
         <height>16777215</height>
        </size>
       </property>
-      <layout class="QVBoxLayout" name="verticalLayout">
+      <layout class="QVBoxLayout" name="verticalLayout" stretch="0,0,1,0,0">
+       <property name="spacing">
+        <number>6</number>
+       </property>
        <property name="sizeConstraint">
         <enum>QLayout::SetMaximumSize</enum>
        </property>
        <item>
-        <widget class="pyG5AIWidget" name="widget_hud" native="true">
+        <widget class="AttIndWidget" name="widget_hud" native="true">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
            <horstretch>0</horstretch>
@@ -120,7 +123,7 @@ font: 75 20pt &quot;URW Bookman L&quot;;</string>
           </size>
          </property>
          <property name="styleSheet">
-          <string notr="true">background-color: rgb(195, 204, 147);</string>
+          <string notr="true">background-color: rgb(192, 220, 255);</string>
          </property>
          <layout class="QFormLayout" name="formLayout_info">
           <property name="sizeConstraint">
@@ -570,6 +573,94 @@ color: rgb(0, 0, 0);
          </layout>
         </widget>
        </item>
+       <item>
+        <widget class="Line" name="line_3">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QWidget" name="horizontalWidget" native="true">
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>80</height>
+          </size>
+         </property>
+         <property name="layoutDirection">
+          <enum>Qt::LeftToRight</enum>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">background-color: rgb(192, 220, 255);</string>
+         </property>
+         <layout class="QHBoxLayout" name="horizontalLayout_4">
+          <property name="spacing">
+           <number>30</number>
+          </property>
+          <property name="leftMargin">
+           <number>20</number>
+          </property>
+          <property name="rightMargin">
+           <number>20</number>
+          </property>
+          <item>
+           <widget class="QPushButton" name="pushButton_RTL">
+            <property name="minimumSize">
+             <size>
+              <width>90</width>
+              <height>50</height>
+             </size>
+            </property>
+            <property name="styleSheet">
+             <string notr="true">background-color: rgb(48,132,70);
+color: rgb(255, 255, 255);
+font: 75 20pt &quot;Padauk Book [PYRS]&quot;;</string>
+            </property>
+            <property name="text">
+             <string>RTL</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="pushButton_disarm">
+            <property name="minimumSize">
+             <size>
+              <width>150</width>
+              <height>50</height>
+             </size>
+            </property>
+            <property name="styleSheet">
+             <string notr="true">background-color: rgb(48,132,70);
+color: rgb(255, 255, 255);
+font: 75 20pt &quot;Padauk Book [PYRS]&quot;;</string>
+            </property>
+            <property name="text">
+             <string>Engine OFF</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="pushButton_engineSw">
+            <property name="minimumSize">
+             <size>
+              <width>90</width>
+              <height>50</height>
+             </size>
+            </property>
+            <property name="styleSheet">
+             <string notr="true">background-color: rgb(48,132,70);
+color: rgb(255, 255, 255);
+font: 75 20pt &quot;Padauk Book [PYRS]&quot;;</string>
+            </property>
+            <property name="text">
+             <string>Disarm</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
       </layout>
      </widget>
     </item>
@@ -583,7 +674,9 @@ color: rgb(0, 0, 0);
     <item>
      <layout class="QVBoxLayout" name="verticalLayout_2" stretch="1,0,0,0">
       <item>
-       <widget class="MapWidget" name="widget_map" native="true"/>
+       <widget class="MapWidget" name="widget_map" native="true">
+        <zorder>horizontalLayoutWidget</zorder>
+       </widget>
       </item>
       <item>
        <widget class="Line" name="line">
@@ -717,9 +810,9 @@ color: rgb(0, 0, 0);
    <container>1</container>
   </customwidget>
   <customwidget>
-   <class>pyG5AIWidget</class>
+   <class>AttIndWidget</class>
    <extends>QWidget</extends>
-   <header>pyG5.h</header>
+   <header>attitude_ind_widget.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>
