@@ -7,6 +7,8 @@ from time import sleep
 
 from gust.gui.ui.launcher import Ui_Launcher
 from gust.gui import backend_window
+from gust.gui import frontend_window
+from gust.gui import log_window
 import gust.server
 
 
@@ -19,21 +21,30 @@ class Launcher(QMainWindow, Ui_Launcher):
         # connect buttons
         self.pushButton_client.clicked.connect(self.clicked_client)
         self.pushButton_server.clicked.connect(self.clicked_server)
+        self.pushButton_log.clicked.connect(self.clicked_log)
 
         self._backendWindow = None
+        self._frontendWindow= None
+        self._logWindow=None
 
     def setupUi(self, mainWindow):
         super().setupUi(mainWindow)
 
     @pyqtSlot()
     def clicked_client(self):
-        print('clicked client')
-        url = "http://localhost:8000/adder/{}/{}".format(40, 2)
-        r = requests.get(url)
-        json = r.json()
-        answer = json['calc']
-        QMessageBox.question(self, "Message", "Answer: {}".format(str(answer)),
-                             QMessageBox.Ok, QMessageBox.Ok)
+        # print('clicked client')
+        # url = "http://localhost:8000/adder/{}/{}".format(40, 2)
+        # r = requests.get(url)
+        # json = r.json()
+        # answer = json['calc']
+        # QMessageBox.question(self, "Message", "Answer: {}".format(str(answer)),
+        #                      QMessageBox.Ok, QMessageBox.Ok)
+
+        self._frontendWindow=frontend_window.FrontendWindow(
+            self.ctx)
+
+        self._frontendWindow.show()
+        self.close()
 
     @pyqtSlot()
     def clicked_server(self):
@@ -52,3 +63,10 @@ class Launcher(QMainWindow, Ui_Launcher):
 
 
         self.close()
+
+    @pyqtSlot()
+    def clicked_log(self):
+        self._logWindow=log_window.LogWindow(
+            self.ctx)
+
+        self._logWindow.show()

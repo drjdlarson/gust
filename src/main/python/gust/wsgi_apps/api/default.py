@@ -3,7 +3,12 @@ from gust.wsgi_apps.api.app import api
 
 BASE = '/api'
 
-@api.route('{:s}/<int:a>/<int:b>'.format(BASE))
-class SimpleAdder(Resource):
-    def get(self, a, b):
-        return {'calc': a + b}
+@api.route('{:s}/addvehicle'.format(BASE))
+class Addvehicle(Resource):
+    def get(self):
+        return {"Newvehicle":22}
+
+@api.route('{:s}/engineOff'.format(BASE))
+class engineOff(Resource):
+    def get(self):
+        return {"Engine Status":0}
