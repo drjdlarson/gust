@@ -26,6 +26,7 @@ from PyQt5.QtWidgets import (
     QApplication
 )
 
+
 g5Width = 480
 g5CenterX = g5Width / 2
 g5Height = 360

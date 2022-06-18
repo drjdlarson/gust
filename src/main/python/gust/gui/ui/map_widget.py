@@ -10,17 +10,19 @@ Folium in PyQt5
 class MapWidget(QWidget):
     def __init__(self,*args,**kwargs):
         QWidget.__init__(self,*args,**kwargs)
-        self.setWindowTitle('Folium in PyQt Example')
+        self.setWindowTitle('Folium in PyQt')
 
         layout = QVBoxLayout()
         self.setLayout(layout)
 
-        coordinate = (33.158, -87.458)
+        self.latitude=0
+        self.longitude=0
+        self.coordinate = (self.latitude,self.longitude)
         m = folium.Map(
         	tiles='https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
             attr='Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community',
             zoom_start=13,
-        	location=coordinate
+        	location=self.coordinate
         )
 
         # save map data to data object
