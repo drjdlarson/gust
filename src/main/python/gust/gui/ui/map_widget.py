@@ -7,6 +7,8 @@ from PyQt5.QtWebEngineWidgets import QWebEngineView # pip install PyQtWebEngine
 """
 Folium in PyQt5
 """
+
+
 class MapWidget(QWidget):
     def __init__(self,*args,**kwargs):
         QWidget.__init__(self,*args,**kwargs)
@@ -17,6 +19,8 @@ class MapWidget(QWidget):
 
         self.latitude=0
         self.longitude=0
+
+
         self.coordinate = (self.latitude,self.longitude)
         m = folium.Map(
         	tiles='https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',

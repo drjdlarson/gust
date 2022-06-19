@@ -14,12 +14,12 @@ from PyQt5.QtCore import pyqtSlot, QModelIndex, pyqtSignal, QThreadPool
 from PyQt5.QtGui import QIntValidator, QTextCursor
 import requests
 from gust.gui.ui.conn import Ui_MainWindow
-from gust.gui.ui.gustClient import Ui_MainWindow_main
+
 
 
 URL_BASE="http://localhost:8000/api/"
 
-class ConWindow(QMainWindow,Ui_MainWindow,Ui_MainWindow_main):
+class ConWindow(QMainWindow,Ui_MainWindow):
     """Main interface for the connection window"""
 
     def __init__(self,ctx):
@@ -27,16 +27,17 @@ class ConWindow(QMainWindow,Ui_MainWindow,Ui_MainWindow_main):
         self.ctx=ctx
         self.setupUi(self)
 
-    #     #pushbuttons
+
+    #     self.frontend_window=FrontendWindow()
     #     self.pushButton_connect.clicked.connect(self.clicked_connect)
-    #     #self.pushbutton_cancel.clicked.connect(self.clicked_cancel)
+    #      #self.pushbutton_cancel.clicked.connect(self.clicked_cancel)
 
     # def clicked_connect(self):
 
-    #     #adding a row in the table
-    #     rowPos=self.tableWidget.rowCount()
-    #     self.tableWidget.insertRow(rowPos)
-    #     ConWindow.close()
+    # #     #adding a row in the table
+    #      rowPos=self.frontend_window.tableWidget.rowCount()
+    #      self.frontend_window.tableWidget.insertRow(rowPos)
+    #      ConWindow.close()
 
     def setupUi(self, mainWindow):
         """Sets up the user interface."""

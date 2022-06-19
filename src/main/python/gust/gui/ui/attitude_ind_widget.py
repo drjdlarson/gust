@@ -26,17 +26,16 @@ from PyQt5.QtWidgets import (
     QApplication
 )
 
-
 g5Width = 480
 g5CenterX = g5Width / 2
 g5Height = 360
 g5CenterY = g5Height / 2
-
 g5Diag = sqrt(g5Width ** 2 + g5Height ** 2)
-
 mstokt = 1.94384
 
+
 class AttIndWidget(QWidget):
+
     def __init__(self, *args, **kwargs):
         QWidget.__init__(self,*args,**kwargs)
 
@@ -51,72 +50,7 @@ class AttIndWidget(QWidget):
         self.setLayout(self.layout)
 
 
-class pyG5Widget(QWidget):
-    """Base class for the G5 wdiget view."""
-
-    def __init__(self, *args,**kwargs):
-        """g5Widget Constructor.
-        Args:
-            parent: Parent Widget
-        Returns:
-            self
-        """
-        QWidget.__init__(self, *args,**kwargs)
-
-        self.logger = logging.getLogger(self.__class__.__name__)
-
-
-        """property name, default value"""
-        propertyList = [
-            ("rollAngle", 50),
-            ("pitchAngle",-10),
-            ("gs",38),
-            ("kias", 32),       #airspeed
-            ("altitude", 75),
-            ("vh_ind_fpm", -240),
-            ("headingBug", 0),
-            ("arm",0),
-            ("gnssfix",0),
-            ("mode",0)
-        ]
-
-        def _make_setter(val):
-            """Generate a setter function."""
-
-            @wraps(val)
-            def setter(inputVal):
-                setattr(self, "_{}".format(val), inputVal)
-                self.repaint()
-
-            return setter
-
-        for prop in propertyList:
-            setattr(self, "_{}".format(prop[0]), prop[1])
-            setattr(self, "{}".format(prop[0]), _make_setter(prop[0]))
-
-    def setPen(self, width, color, style=Qt.SolidLine):
-        """Set the pen color and width."""
-        pen = self.qp.pen()
-        pen.setColor(color)
-        pen.setWidth(width)
-        pen.setStyle(style)
-        self.qp.setPen(pen)
-
-    @pyqtSlot(dict)
-    def drefHandler(self, retValues):
-        """Handle the DREF update."""
-        for idx, value in retValues.items():
-            try:
-                setattr(self, value[3], value[0])
-            except Exception as e:
-                self.logger.error("failed to set value {}: {}".format(value[5], e))
-        self.repaint()
-
-
-
-
-
-class pyG5AIWidget(pyG5Widget):
+class pyG5AIWidget(QWidget):
     """Generate G5 wdiget view."""
 
     def __init__(self, *args, **kwargs):
@@ -126,13 +60,30 @@ class pyG5AIWidget(pyG5Widget):
         Returns:
             self
         """
-        pyG5Widget.__init__(self, *args, **kwargs)
+        QWidget.__init__(self, *args, **kwargs)
 
-        self.setFixedSize(g5Width,g5Height)
+        self.roll_angle=20
+        self.pitch_angle=10
+        self.gndspeed=5
+        self.airspeed=6
+        self.altitude=75
+        self.vspeed=-7
+        self.heading=354
+        self.arm=0
+        self.gnss_fix=1
+        self.mode=2
 
-                # parameters
+        # parameters
         self.rollArcRadius = g5CenterY * 0.8
         self._pitchScale = 25
+
+    def setPen(self, width, color, style=Qt.SolidLine):
+        """Set the pen color and width."""
+        pen = self.qp.pen()
+        pen.setColor(color)
+        pen.setWidth(width)
+        pen.setStyle(style)
+        self.qp.setPen(pen)
 
     def paintEvent(self, event):
         """Paint the widget."""
@@ -158,12 +109,12 @@ class pyG5AIWidget(pyG5Widget):
 
         # draw the rotating part depending on the roll angle
         self.qp.translate(g5CenterX, g5CenterY)
-        self.qp.rotate(-self._rollAngle)
+        self.qp.rotate(-self.roll_angle)
 
         #draw the ground
         grad = QLinearGradient(
             g5CenterX,
-            +self._pitchAngle / self._pitchScale * g5CenterY,
+            +self.pitch_angle / self._pitchScale * g5CenterY,
             g5CenterX,
             +g5Diag,
         )
@@ -175,7 +126,7 @@ class pyG5AIWidget(pyG5Widget):
             QRectF(
                 QPointF(
                     -g5Diag,
-                    +self._pitchAngle / self._pitchScale * g5CenterY,
+                    +self.pitch_angle / self._pitchScale * g5CenterY,
                 ),
                 QPointF(
                     +g5Diag,
@@ -193,7 +144,7 @@ class pyG5AIWidget(pyG5Widget):
             pitch += 2.5
             height = (
                 pitch / self._pitchScale * g5CenterY
-                + self._pitchAngle / self._pitchScale * g5CenterY
+                + self.pitch_angle / self._pitchScale * g5CenterY
             )
             self.qp.drawLine(
                 QPointF(
@@ -218,7 +169,7 @@ class pyG5AIWidget(pyG5Widget):
             pitch -= 2.5
             height = (
                 pitch / self._pitchScale * g5CenterY
-                + self._pitchAngle / self._pitchScale * g5CenterY
+                + self.pitch_angle / self._pitchScale * g5CenterY
             )
             self.qp.drawLine(
                 QPointF(
@@ -422,12 +373,12 @@ class pyG5AIWidget(pyG5Widget):
         # set default font size
         self.qp.setFont(font)
 
-        currentTape = int(self._kias + tapeScale / 2)
-        while currentTape > max(0, self._kias - tapeScale / 2):
+        currentTape = int(self.airspeed + tapeScale / 2)
+        while currentTape > max(0, self.airspeed - tapeScale / 2):
             if (currentTape % 10) == 0:
 
                 tapeHeight = (
-                    1 - 2 * (currentTape - self._kias) / tapeScale
+                    1 - 2 * (currentTape - self.airspeed) / tapeScale
                 ) * g5CenterY
                 self.qp.drawLine(
                     QPointF(speedBoxLeftAlign + speedBoxWdith + 5, tapeHeight),
@@ -449,11 +400,11 @@ class pyG5AIWidget(pyG5Widget):
                 self.qp.drawLine(
                     QPointF(
                         speedBoxLeftAlign + speedBoxWdith + 8,
-                        (1 - 2 * (currentTape - self._kias) / tapeScale) * g5CenterY,
+                        (1 - 2 * (currentTape - self.airspeed) / tapeScale) * g5CenterY,
                     ),
                     QPointF(
                         speedBoxLeftAlign + speedBoxWdith + 15,
-                        (1 - 2 * (currentTape - self._kias) / tapeScale) * g5CenterY,
+                        (1 - 2 * (currentTape - self.airspeed) / tapeScale) * g5CenterY,
                     ),
                 )
 
@@ -504,7 +455,7 @@ class pyG5AIWidget(pyG5Widget):
                 speedBoxHeight,
             ),
             Qt.AlignHCenter | Qt.AlignVCenter,
-            "{:03d}".format(int(self._kias)),
+            "{:03d}".format(int(self.airspeed)),
         )
 
         # draw the Ground Speed box on top
@@ -524,7 +475,7 @@ class pyG5AIWidget(pyG5Widget):
         self.qp.drawText(
             rect,
             Qt.AlignHCenter | Qt.AlignVCenter,
-            "GS {:03d} kt".format(int(self._gs)),
+            "GS {:03d} kt".format(int(self.gndspeed)),
         )
         #################################################
         # ALTITUDE TAPE
@@ -585,7 +536,7 @@ class pyG5AIWidget(pyG5Widget):
 
             currentTape -= 1
         # tapeHeight = (vsScale - currentTape) / vsScale * g5Height
-        vsHeight = -self._vh_ind_fpm / 100 / vsScale * g5Height
+        vsHeight = -self.vspeed / 100 / vsScale * g5Height
         vsRect = QRectF(g5Width, g5CenterY, -vsIndicatorWidth, vsHeight)
 
         self.setPen(0, Qt.transparent)
@@ -603,13 +554,13 @@ class pyG5AIWidget(pyG5Widget):
         self.qp.setFont(font)
 
         # altitude tape
-        currentTape = int(self._altitude + altTapeScale / 2)
+        currentTape = int(self.altitude + altTapeScale / 2)
 
-        while currentTape > self._altitude - altTapeScale / 2:
+        while currentTape > self.altitude - altTapeScale / 2:
             if (currentTape % 20) == 0:
 
                 tapeHeight = (
-                    1 - 2 * (currentTape - self._altitude) / altTapeScale
+                    1 - 2 * (currentTape - self.altitude) / altTapeScale
                 ) * g5CenterY
                 self.qp.drawLine(
                     QPointF(altTapeLeftAlign - 1.5 * altBoxSpikedimension, tapeHeight),
@@ -670,7 +621,7 @@ class pyG5AIWidget(pyG5Widget):
                 altBoxHeight,
             ),
             Qt.AlignHCenter | Qt.AlignVCenter,
-            "{:05d}".format(int(self._altitude)),
+            "{:05d}".format(int(self.altitude)),
         )
 
 
@@ -689,12 +640,19 @@ class pyG5AIWidget(pyG5Widget):
         self.qp.setBrush(QBrush(QColor(0,0,0,180)))
         self.qp.drawRect(rect)
 
-        if self._gnssfix==1:
+        if self.gnss_fix==1:
             self.setPen(3, Qt.white)
             self.qp.drawText(
                 rect,
                 Qt.AlignCenter | Qt.AlignVCenter,
                 "3D FIX",
+            )
+
+        elif self.gnss_fix==2:
+            self.setPen(3,Qt.white)
+            self.qp.drawText(
+                rect,Qt.AlignCenter | Qt.AlignVCenter,
+                "RTK FIX",
             )
         else:
             self.setPen(3,Qt.red)
@@ -713,7 +671,7 @@ class pyG5AIWidget(pyG5Widget):
         self.setPen(2,Qt.transparent)
         self.qp.drawRect(rect)
 
-        if self._arm==1:
+        if self.arm==1:
             self.setPen(3, Qt.white)
             self.qp.drawText(
                 rect,
@@ -737,26 +695,26 @@ class pyG5AIWidget(pyG5Widget):
         self.setPen(2,Qt.transparent)
         self.qp.drawRect(rect)
 
-        if self._mode==0:
+        if self.mode==0:
             self.setPen(3, Qt.white)
             self.qp.drawText(
                 rect,
                 Qt.AlignCenter | Qt.AlignVCenter,
                 "STABILIZE",
             )
-        elif self._mode==1:
+        elif self.mode==1:
             self.setPen(3,Qt.white)
             self.qp.drawText(
                 rect,Qt.AlignCenter | Qt.AlignVCenter,
                 "POS_HOLD",
             )
-        elif self._mode==2:
+        elif self.mode==2:
             self.setPen(3,Qt.white)
             self.qp.drawText(
                 rect,Qt.AlignCenter | Qt.AlignVCenter,
                 "AUTO",
             )
-        elif self._mode==3:
+        elif self.mode==3:
             self.setPen(3,Qt.yellow)
             self.qp.drawText(
                 rect,Qt.AlignCenter | Qt.AlignVCenter,

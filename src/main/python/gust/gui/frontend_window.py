@@ -18,7 +18,7 @@ import requests
 from gust.gui.ui.gustClient import Ui_MainWindow_main
 from gust.gui import con_window, confirmation_window, log_window, sensors_window
 from gust.gui.ui.map_widget import MapWidget
-from gust.gui.ui.attitude_ind_widget import pyG5Widget
+from gust.gui.ui.attitude_ind_widget import pyG5AIWidget
 
 URL_BASE="http://localhost:8000/api/"
 
@@ -29,9 +29,6 @@ class FrontendWindow(QMainWindow, Ui_MainWindow_main):
         super().__init__()
         self.ctx=ctx
         self.setupUi(self)
-
-        self.map_widget=MapWidget()
-        self.att_ind_widget=pyG5Widget()
 
         #Pushbuttons
         self.pushButton_addvehicle.clicked.connect(self.clicked_addvehicle)
@@ -199,7 +196,6 @@ class FrontendWindow(QMainWindow, Ui_MainWindow_main):
         url="{}longitude".format(URL_BASE)
         r=requests.get(url).json()
         longitude=r['Longitude']
-
 
 
 
