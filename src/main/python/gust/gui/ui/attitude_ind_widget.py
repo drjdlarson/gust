@@ -6,19 +6,16 @@ Created on Sat Jun  4 11:53:26 2022
 @author: lagerprocessor
 """
 
-import logging
 import sys
 from math import cos, radians, sin, sqrt
-from functools import wraps
 
-from PyQt5.QtCore import QLine, QPoint, QPointF, QRectF, Qt, pyqtSlot
+from PyQt5.QtCore import QLine, QPoint, QPointF, QRectF, Qt
 from PyQt5.QtGui import (
     QBrush,
     QPainter,
     QPolygonF,
     QColor,
     QLinearGradient,
-    QRadialGradient,
 )
 from PyQt5.QtWidgets import (
     QWidget,
@@ -34,44 +31,43 @@ g5Diag = sqrt(g5Width ** 2 + g5Height ** 2)
 mstokt = 1.94384
 
 
-class AttIndWidget(QWidget):
+# class AttIndWidget(QWidget):
 
-    def __init__(self, *args, **kwargs):
-        QWidget.__init__(self,*args,**kwargs)
+#     def __init__(self, *args, **kwargs):
+#         QWidget.__init__(self,*args,**kwargs)
 
-        self.setWindowTitle("Attitude Indicator")
-        self.setFixedSize(g5Width, g5Height)
+#         self.setWindowTitle("Attitude Indicator")
+#         self.setFixedSize(g5Width, g5Height)
 
-        self.layout=QVBoxLayout()
-        self.AIview=pyG5AIWidget()
-        self.layout.addWidget(self.AIview)
-        self.layout.setSpacing(0)
-        self.layout.setContentsMargins(0,0,0,0)
-        self.setLayout(self.layout)
+#         self.layout=QVBoxLayout()
+#         self.AIview=pyG5AIWidget()
+#         self.layout.addWidget(self.AIview)
+#         self.layout.setSpacing(0)
+#         self.layout.setContentsMargins(0,0,0,0)
+#         self.setLayout(self.layout)
 
 
 class pyG5AIWidget(QWidget):
     """Generate G5 wdiget view."""
 
-    def __init__(self, *args, **kwargs):
-        """g5Widget Constructor.
-        Args:
-            parent: Parent Widget
-        Returns:
-            self
-        """
-        QWidget.__init__(self, *args, **kwargs)
+    def __init__(self, parent):
 
-        self.roll_angle=20
-        self.pitch_angle=10
-        self.gndspeed=5
-        self.airspeed=6
-        self.altitude=75
-        self.vspeed=-7
-        self.heading=354
-        self.arm=0
-        self.gnss_fix=1
-        self.mode=2
+        self.roll_angle = 0
+        self.pitch_angle = 0
+        self.gndspeed = 0
+        self.airspeed = 0
+        self.altitude = 0
+        self.vspeed = 0
+        self.heading = 0
+        self.arm = 0
+        self.gnss_fix = 0
+        self.mode = 0
+
+        super().__init__(parent = parent)
+
+        self.setWindowTitle("Attitude Indicator")
+        self.setFixedSize(g5Width, g5Height)
+        self.setContentsMargins(0, 0, 0, 0)
 
         # parameters
         self.rollArcRadius = g5CenterY * 0.8
@@ -633,14 +629,14 @@ class pyG5AIWidget(QWidget):
         rect = QRectF(
             0,
             g5Height - tasHeight,
-            g5Width/3,
+            g5Width / 3,
             tasHeight,
         )
-        self.setPen(2,Qt.transparent)
-        self.qp.setBrush(QBrush(QColor(0,0,0,180)))
+        self.setPen(2, Qt.transparent)
+        self.qp.setBrush(QBrush(QColor(0, 0, 0, 180)))
         self.qp.drawRect(rect)
 
-        if self.gnss_fix==1:
+        if self.gnss_fix == 1:
             self.setPen(3, Qt.white)
             self.qp.drawText(
                 rect,
@@ -648,30 +644,30 @@ class pyG5AIWidget(QWidget):
                 "3D FIX",
             )
 
-        elif self.gnss_fix==2:
-            self.setPen(3,Qt.white)
+        elif self.gnss_fix == 2:
+            self.setPen(3, Qt.white)
             self.qp.drawText(
-                rect,Qt.AlignCenter | Qt.AlignVCenter,
+                rect, Qt.AlignCenter | Qt.AlignVCenter,
                 "RTK FIX",
             )
         else:
-            self.setPen(3,Qt.red)
+            self.setPen(3, Qt.red)
             self.qp.drawText(
-                rect,Qt.AlignCenter | Qt.AlignVCenter,
+                rect, Qt.AlignCenter | Qt.AlignVCenter,
                 "NO FIX",
             )
 
         # Arming Status on the center
         rect = QRectF(
-            g5Width/3,
+            g5Width / 3,
             g5Height - tasHeight,
-            g5Width/3,
+            g5Width / 3,
             tasHeight,
         )
-        self.setPen(2,Qt.transparent)
+        self.setPen(2, Qt.transparent)
         self.qp.drawRect(rect)
 
-        if self.arm==1:
+        if self.arm == 1:
             self.setPen(3, Qt.white)
             self.qp.drawText(
                 rect,
@@ -679,45 +675,45 @@ class pyG5AIWidget(QWidget):
                 "ARMED",
             )
         else:
-            self.setPen(3,Qt.red)
+            self.setPen(3, Qt.red)
             self.qp.drawText(
-                rect,Qt.AlignCenter | Qt.AlignVCenter,
+                rect, Qt.AlignCenter | Qt.AlignVCenter,
                 "DISARMED",
             )
 
         # Flight Mode on the right
         rect = QRectF(
-            2*g5Width/3,
+            2 * g5Width / 3,
             g5Height - tasHeight,
-            g5Width/3,
+            g5Width / 3,
             tasHeight,
         )
-        self.setPen(2,Qt.transparent)
+        self.setPen(2, Qt.transparent)
         self.qp.drawRect(rect)
 
-        if self.mode==0:
+        if self.mode == 0:
             self.setPen(3, Qt.white)
             self.qp.drawText(
                 rect,
                 Qt.AlignCenter | Qt.AlignVCenter,
                 "STABILIZE",
             )
-        elif self.mode==1:
-            self.setPen(3,Qt.white)
+        elif self.mode == 1:
+            self.setPen(3, Qt.white)
             self.qp.drawText(
-                rect,Qt.AlignCenter | Qt.AlignVCenter,
+                rect, Qt.AlignCenter | Qt.AlignVCenter,
                 "POS_HOLD",
             )
-        elif self.mode==2:
-            self.setPen(3,Qt.white)
+        elif self.mode == 2:
+            self.setPen(3, Qt.white)
             self.qp.drawText(
-                rect,Qt.AlignCenter | Qt.AlignVCenter,
+                rect, Qt.AlignCenter | Qt.AlignVCenter,
                 "AUTO",
             )
-        elif self.mode==3:
-            self.setPen(3,Qt.yellow)
+        elif self.mode == 3:
+            self.setPen(3, Qt.yellow)
             self.qp.drawText(
-                rect,Qt.AlignCenter | Qt.AlignVCenter,
+                rect, Qt.AlignCenter | Qt.AlignVCenter,
                 "RTL",
             )
 
@@ -757,18 +753,18 @@ class pyG5AIWidget(QWidget):
         return QLine(startPoint, endPoint)
 
 
-if __name__ == '__main__':
-    app = QApplication(sys.argv)
-    app.setStyleSheet('''
-        QWidget {
-            font-size: 35px;
-        }
-    ''')
+# if __name__ == '__main__':
+#     app = QApplication(sys.argv)
+#     app.setStyleSheet('''
+#         QWidget {
+#             font-size: 35px;
+#         }
+#     ''')
 
-    myApp = AttIndWidget()
-    myApp.show()
+#     myApp = pyG5AIWidget()
+#     myApp.show()
 
-    try:
-        sys.exit(app.exec_())
-    except SystemExit:
-        print('Closing Window...')
+#     try:
+#         sys.exit(app.exec_())
+#     except SystemExit:
+#         print('Closing Window...')

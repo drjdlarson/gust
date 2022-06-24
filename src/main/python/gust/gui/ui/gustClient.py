@@ -49,7 +49,7 @@ class Ui_MainWindow_main(object):
         self.verticalLayout.setSizeConstraint(QtWidgets.QLayout.SetMaximumSize)
         self.verticalLayout.setSpacing(6)
         self.verticalLayout.setObjectName("verticalLayout")
-        self.widget_hud = AttIndWidget(self.verticalWidget)
+        self.widget_hud = pyG5AIWidget(self.verticalWidget)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -529,7 +529,7 @@ class Ui_MainWindow_main(object):
         item.setText(_translate("MainWindow_main", "ENGINE"))
         item = self.tableWidget.horizontalHeaderItem(9)
         item.setText(_translate("MainWindow_main", "DISCONNECT"))
-from gust.gui.ui.attitude_ind_widget import AttIndWidget
+from gust.gui.ui.attitude_ind_widget import pyG5AIWidget
 from gust.gui.ui.map_widget import MapWidget
 
 

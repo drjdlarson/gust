@@ -19,26 +19,35 @@ from gust.gui.ui.conn import Ui_MainWindow
 
 URL_BASE="http://localhost:8000/api/"
 
-class ConWindow(QMainWindow,Ui_MainWindow):
+class ConWindow(QMainWindow, Ui_MainWindow):
     """Main interface for the connection window"""
 
-    def __init__(self,ctx):
+    def __init__(self, ctx):
         super().__init__()
-        self.ctx=ctx
+        self.ctx = ctx
         self.setupUi(self)
 
+    # #     self.pushButton_connect.clicked.connect(self.clicked_connect)
+    # #     #self.pushbutton_cancel.clicked.connect(self.clicked_cancel)
 
-    #     self.frontend_window=FrontendWindow()
-    #     self.pushButton_connect.clicked.connect(self.clicked_connect)
-    #      #self.pushbutton_cancel.clicked.connect(self.clicked_cancel)
+    # # def clicked_connect(self):
+    # #       #adding a row in the table
+    # #       self.front=FrontendWindow()
+    # #       rowPos=self.front.tableWidget.rowCount()
+    # #       self.front.tableWidget.insertRow(rowPos)
+    # #       self.close()
 
     # def clicked_connect(self):
+    #       #adding a row in the table
 
-    # #     #adding a row in the table
-    #      rowPos=self.frontend_window.tableWidget.rowCount()
-    #      self.frontend_window.tableWidget.insertRow(rowPos)
-    #      ConWindow.close()
+    #       rowPos=self.tableWidget.rowCount()
+    #       self.tableWidget.insertRow(rowPos)
+    #       self.close()
+
 
     def setupUi(self, mainWindow):
         """Sets up the user interface."""
         super().setupUi(mainWindow)
+
+# from gust.gui.ui.gustClient import Ui_MainWindow_main
+# from gust.gui.frontend_window import FrontendWindow

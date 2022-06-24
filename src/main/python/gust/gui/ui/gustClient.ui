@@ -81,7 +81,7 @@
         <enum>QLayout::SetMaximumSize</enum>
        </property>
        <item>
-        <widget class="AttIndWidget" name="widget_hud" native="true">
+        <widget class="pyG5AIWidget" name="widget_hud" native="true">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
            <horstretch>0</horstretch>
@@ -1008,15 +1008,15 @@ font: 14pt &quot;Umpush&quot;;</string>
  </widget>
  <customwidgets>
   <customwidget>
-   <class>AttIndWidget</class>
-   <extends>QWidget</extends>
-   <header>gust.gui.ui.attitude_ind_widget.h</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
    <class>MapWidget</class>
    <extends>QWidget</extends>
    <header>gust.gui.ui.map_widget.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>pyG5AIWidget</class>
+   <extends>QWidget</extends>
+   <header>gust.gui.ui.attitude_ind_widget.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>
