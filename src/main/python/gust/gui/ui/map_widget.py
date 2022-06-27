@@ -51,8 +51,8 @@ class MapWidget(QWidget):
     def clear_drone_list(self):
         self.drone_icon_list = []
 
-    def add_drone(self, name, latitude, longitude, heading, track, ctx):
-        self.drone_icon_list.append(DroneHelper(name, latitude, longitude, heading, track, ctx))
+    def add_drone(self, name, latitude, longitude, heading, track, mode, ctx):
+        self.drone_icon_list.append(DroneHelper(name, latitude, longitude, heading, track, mode, ctx))
 
     def update_map(self):
         map_kwargs = dict(tiles='https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
@@ -75,7 +75,6 @@ class MapWidget(QWidget):
         for drone in self.drone_icon_list:
             drone.update_map(m)
 
-
         # save map data to data object
         data = io.BytesIO()
         m.save(data, close_file=False)
@@ -87,19 +86,21 @@ class MapWidget(QWidget):
 
 
 class DroneHelper():
-    def __init__(self, name, latitude, longitude, heading, track, ctx):
+    def __init__(self, name, latitude, longitude, heading, track, mode, ctx):
         self.name = name
         self.latitude = latitude
         self.longitude = longitude
         self.heading = heading
         self.track = track
-
-
+        self.mode = mode
+        self.ctx = ctx
 
         self.icon = mpimg.imread(ctx.get_resource('map_widget/redarrow.png'))
 
+
+
     def update_map(self, m):
-        print(self.heading)
+        self.icon = self.icon_selector()
         marker = folium.Marker(
             location=[self.latitude, self.longitude],
             tooltip=self.name,
@@ -111,7 +112,7 @@ class DroneHelper():
         )
 
 
-        marker.icon.angle = self.heading
+        #marker.icon.angle = self.heading
         marker.add_to(m)
 
         heading_points = self.get_points(self.heading)
@@ -144,6 +145,14 @@ class DroneHelper():
 
         return lat_2, lon_2
 
+    def icon_selector(self):
+        if self.mode == 0:
+            icon_type = mpimg.imread(self.ctx.get_resource('map_widget/greenarrow.png'))
+        elif self.mode == 1:
+            icon_type = mpimg.imread(self.ctx.get_resource('map_widget/bluearrow.png'))
+        elif self.mode == 2 or self.mode == 3:
+            icon_type = mpimg.imread(self.ctx.get_resource('map_widget/redarrow.png'))
+        return icon_type
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)

@@ -51,7 +51,6 @@ class pyG5AIWidget(QWidget):
     """Generate G5 wdiget view."""
 
     def __init__(self, parent):
-
         self.roll_angle = 0
         self.pitch_angle = 0
         self.gndspeed = 0
@@ -72,6 +71,7 @@ class pyG5AIWidget(QWidget):
         # parameters
         self.rollArcRadius = g5CenterY * 0.8
         self._pitchScale = 25
+
 
     def setPen(self, width, color, style=Qt.SolidLine):
         """Set the pen color and width."""

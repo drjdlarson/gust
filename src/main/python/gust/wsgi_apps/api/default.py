@@ -1,5 +1,6 @@
 from flask_restx import Resource
 from gust.wsgi_apps.api.app import api
+import random
 
 BASE = '/api'
 
@@ -51,7 +52,8 @@ class current(Resource):
 @api.route('{:s}/mode'.format(BASE))
 class mode(Resource):
     def get(self):
-        return {"Mode": 2}
+        m = random.randint(0, 3)
+        return {"Mode": m}
 
 @api.route('{:s}/arm'.format(BASE))
 class arm(Resource):
@@ -76,16 +78,22 @@ class pitch_angle(Resource):
 @api.route('{:s}/heading'.format(BASE))
 class heading(Resource):
     def get(self):
-        return {"Heading": 325}
+        return {"Heading": 455}
 
 @api.route('{:s}/next_wp'.format(BASE))
 class next_wp(Resource):
     def get(self):
         return {"Next_wp": 3}
+        # if a == 1:
+        #     return {"Next_wp":2, "fajbf":234}
+        # elif a == 3:
+
 
 @api.route('{:s}/tof'.format(BASE))
 class tof(Resource):
     def get(self):
+        # return {"Drone1": {"tof":240, "connection":1},
+        #         "Drone2": {"tof":300}}
         return {"Tof": 240}
 
 @api.route('{:s}/connection'.format(BASE))
@@ -96,7 +104,7 @@ class connection(Resource):
 @api.route('{:s}/track'.format(BASE))
 class track(Resource):
     def get(self):
-        return {"Track": 330}
+        return {"Track": 450}
 
 @api.route('{:s}/latitude'.format(BASE))
 class latitude(Resource):

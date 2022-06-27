@@ -243,7 +243,6 @@ class FrontendWindow(QMainWindow, Ui_MainWindow_main):
         self.tableWidget.setItem(rowPos, 9, item)
 
 
-
         self.widget_hud.roll_angle = self.roll_angle
         self.widget_hud.pitch_angle = self.pitch_angle
         self.widget_hud.gndspeed = self.gndspeed
@@ -256,8 +255,6 @@ class FrontendWindow(QMainWindow, Ui_MainWindow_main):
         self.widget_hud.mode= self.mode
         self.widget_hud.repaint()
 
-
-        #self.widget_map = MapWidget(self.longitude, self.latitude, self.heading, self.track)
         self.widget_map.clear_drone_list()
         self.widget_map.add_drone(
             self.name,
@@ -265,6 +262,7 @@ class FrontendWindow(QMainWindow, Ui_MainWindow_main):
             self.longitude,
             self.heading,
             self.track,
+            self.mode,
             self.ctx)
         self.widget_map.update_map()
 
