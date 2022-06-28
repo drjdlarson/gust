@@ -39,15 +39,6 @@ class MapWidget(QWidget):
 
         layout.addWidget(self.webView)
 
-        # self.line_1 = QLineEdit()
-        # self.line_1.setText(str(self.latitude))
-        # layout.addWidget(self.line_1)
-        # self.line_2 = QLineEdit()
-        # self.line_2.setText(str(self.longitude))
-        # layout.addWidget(self.line_2)
-
-        #print(self.longitude, self.latitude)
-
     def clear_drone_list(self):
         self.drone_icon_list = []
 
@@ -82,9 +73,6 @@ class MapWidget(QWidget):
         #self.webView = QWebEngineView()
         self.webView.setHtml(data.getvalue().decode())
 
-
-
-
 class DroneHelper():
     def __init__(self, name, latitude, longitude, heading, track, mode, ctx):
         self.name = name
@@ -95,10 +83,6 @@ class DroneHelper():
         self.mode = mode
         self.ctx = ctx
 
-        self.icon = mpimg.imread(ctx.get_resource('map_widget/redarrow.png'))
-
-
-
     def update_map(self, m):
         self.icon = self.icon_selector()
         marker = folium.Marker(
@@ -108,11 +92,7 @@ class DroneHelper():
             icon=folium.features.CustomIcon(ndimage.rotate(self.icon, 360 - (self.heading % 360)),
                                               icon_size=(30, 30),
                                              )
-            #icon=folium.Icon(icon='location-arrow',prefix='fa',angle=0)
         )
-
-
-        #marker.icon.angle = self.heading
         marker.add_to(m)
 
         heading_points = self.get_points(self.heading)

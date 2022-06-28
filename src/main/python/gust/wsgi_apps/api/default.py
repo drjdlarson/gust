@@ -22,7 +22,8 @@ class seluav(Resource):
 @api.route('{:s}/altitude'.format(BASE))
 class altitude(Resource):
     def get(self):
-        return {"Altitude": 76}
+        val = random.randint(70, 77)
+        return {"Altitude": val}
 
 @api.route('{:s}/vspeed'.format(BASE))
 class vspeed(Resource):
@@ -32,7 +33,8 @@ class vspeed(Resource):
 @api.route('{:s}/airspeed'.format(BASE))
 class airspeed(Resource):
     def get(self):
-        return {"Airspeed": 6}
+        val = 42
+        return {"Airspeed": val}
 
 @api.route('{:s}/gndspeed'.format(BASE))
 class gndspeed(Resource):
@@ -73,7 +75,9 @@ class roll_angle(Resource):
 @api.route('{:s}/pitch_angle'.format(BASE))
 class pitch_angle(Resource):
     def get(self):
-        return {"Pitch_angle": -5}
+        val = random.randint(-10, 10)
+
+        return {"Pitch_angle": val}
 
 @api.route('{:s}/heading'.format(BASE))
 class heading(Resource):
