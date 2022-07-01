@@ -103,29 +103,31 @@ class FrontendWindow(QMainWindow, Ui_MainWindow_main):
             self.timer.start(200)
 
 
-    def update_frame(self, passed_list):
+    def update_frame(self, passed_signal):
 
-        self.name = passed_list[0]
-        self.altitude = passed_list[1]
-        self.vspeed = passed_list[2]
-        self.airspeed = passed_list[3]
-        self.gndspeed = passed_list[4]
-        self.voltage = passed_list[5]
-        self.current = passed_list[6]
-        self.engine_sw = passed_list[7]
-        self.relay_sw = passed_list[8]
-        self.mode = passed_list[9]
-        self.arm = passed_list[10]
-        self.gnss_fix = passed_list[11]
-        self.roll_angle = passed_list[12]
-        self.pitch_angle = passed_list[13]
-        self.heading = passed_list[14]
-        self.next_wp = passed_list[15]
-        self.tof_hms = passed_list[16]
-        self.connection = passed_list[17]
-        self.track = passed_list[18]
-        self.latitude = passed_list[19]
-        self.longitude = passed_list[20]
+        self.name = passed_signal['id_1']['name']
+        self.altitude = passed_signal['id_1']['altitude']
+        self.vspeed = passed_signal['id_1']['vspeed']
+        self.airspeed = passed_signal['id_1']['airspeed']
+        self.gndspeed = passed_signal['id_1']['gndspeed']
+        self.voltage = passed_signal['id_1']['voltage']
+        self.current = passed_signal['id_1']['current']
+        self.engine_sw = passed_signal['id_1']['engine_sw']
+        self.relay_sw = passed_signal['id_1']['relay_sw']
+        self.mode = passed_signal['id_1']['mode']
+        self.arm = passed_signal['id_1']['arm']
+        self.gnss_fix = passed_signal['id_1']['gnss_fix']
+        self.roll_angle = passed_signal['id_1']['roll_angle']
+        self.pitch_angle = passed_signal['id_1']['pitch_angle']
+        self.heading = passed_signal['id_1']['heading']
+        self.next_wp = passed_signal['id_1']['next_wp']
+        self.tof = passed_signal['id_1']['tof']
+        self.connection = passed_signal['id_1']['connection']
+        self.track = passed_signal['id_1']['track']
+        self.latitude = passed_signal['id_1']['latitude']
+        self.longitude = passed_signal['id_1']['latitude']
+
+        self.tof_hms = timedelta(seconds=self.tof)
 
         # updating the lcd display
         self.label_seluav.setText(str(self.name))
@@ -210,147 +212,40 @@ class FrontendWindow(QMainWindow, Ui_MainWindow_main):
 
 class DataManager(QtCore.QObject):
 
-    signal = pyqtSignal(list)
+    signal = pyqtSignal(dict)
 
     def __init__(self):
         super().__init__()
         self.rate = None
         self.timer = None
+        self.vehicles_list = {}
 
     @pyqtSlot()
     def run(self):
+        self.vehicles_list = {}
 
-        # selected drone name
-        url = "{}seluav".format(URL_BASE)
-        r = requests.get(url).json()
-        self.name = r['VehicleName']
+        url = "{}attitude_data".format(URL_BASE)
+        attitude_data = requests.get(url).json()
 
-        # altitude
-        url = "{}altitude".format(URL_BASE)
-        r = requests.get(url).json()
-        self.altitude = r['Altitude']
+        url = "{}sys_status".format(URL_BASE)
+        sys_status = requests.get(url).json()
 
-        # vspeed
-        url = "{}vspeed".format(URL_BASE)
-        r = requests.get(url).json()
-        self.vspeed = r['Vspeed']
+        url = "{}sys_data".format(URL_BASE)
+        sys_data = requests.get(url).json()
 
-        # airspeed
-        url = "{}airspeed".format(URL_BASE)
-        r = requests.get(url).json()
-        self.airspeed = r['Airspeed']
+        url = "{}sys_info".format(URL_BASE)
+        sys_info = requests.get(url).json()
 
-        # Ground Speed
-        url = "{}gndspeed".format(URL_BASE)
-        r = requests.get(url).json()
-        self.gndspeed = r['Gndspeed']
+        url = "{}map_data".format(URL_BASE)
+        map_data = requests.get(url).json()
 
-        # Voltage
-        url = "{}voltage".format(URL_BASE)
-        r = requests.get(url).json()
-        self.voltage = r['Voltage']
+        all_signals = [attitude_data, sys_status, sys_data, sys_info, map_data]
 
-        # current
-        url = "{}current".format(URL_BASE)
-        r = requests.get(url).json()
-        self.current = r['Current']
+        for item in all_signals:
+            for key, values in item.items():
+                if key not in self.vehicles_list:
+                    self.vehicles_list[key] = values
+                self.vehicles_list[key].update(values)
 
-        # engine switch
-        url = "{}engine_sw".format(URL_BASE)
-        r = requests.get(url).json()
-        self.engine_sw = r['Engine Status']
-
-        # relay switch
-        url = "{}relay_sw".format(URL_BASE)
-        r = requests.get(url).json()
-        self.relay_sw = r['Relay Status']
-
-        # mode state
-        url = "{}mode".format(URL_BASE)
-        r = requests.get(url).json()
-        self.mode = r['Mode']
-
-        # arm state
-        url = "{}arm".format(URL_BASE)
-        r = requests.get(url).json()
-        self.arm = r['Arm']
-
-        # gnss fix
-        url = "{}gnss_fix".format(URL_BASE)
-        r = requests.get(url).json()
-        self.gnss_fix = r['Gnss_fix']
-
-        # roll angle
-        url = "{}roll_angle".format(URL_BASE)
-        r = requests.get(url).json()
-        self.roll_angle = r['Roll_angle']
-
-        # pitch angle
-        url = "{}pitch_angle".format(URL_BASE)
-        r = requests.get(url).json()
-        self.pitch_angle = r['Pitch_angle']
-
-        # heading
-        url = "{}heading".format(URL_BASE)
-        r = requests.get(url).json()
-        self.heading = r['Heading']
-
-        # next waypoint
-        url = "{}next_wp".format(URL_BASE)
-        r = requests.get(url).json()
-        self.next_wp = r['Next_wp']
-
-        # time of flight
-        url = "{}tof".format(URL_BASE)
-        r = requests.get(url).json()
-        tof = r['Tof']
-        self.tof_hms = timedelta(seconds=tof)
-
-        # connection
-        url = "{}connection".format(URL_BASE)
-        r = requests.get(url).json()
-        self.connection = r['Connection']
-
-        # track
-        url = "{}track".format(URL_BASE)
-        r = requests.get(url).json()
-        self.track = r['Track']
-
-        # latitude
-        url = "{}latitude".format(URL_BASE)
-        r = requests.get(url).json()
-        self.latitude = r['Latitude']
-
-        # Longitude
-        url = "{}longitude".format(URL_BASE)
-        r = requests.get(url).json()
-        print(r)
-
-        self.longitude = r['Longitude']
-
-        self.signal_list = [self.name,
-                            self.altitude,
-                            self.vspeed,
-                            self.airspeed,
-                            self.gndspeed,
-                            self.voltage,
-                            self.current,
-                            self.engine_sw,
-                            self.relay_sw,
-                            self.mode,
-                            self.arm,
-                            self.gnss_fix,
-                            self.roll_angle,
-                            self.pitch_angle,
-                            self.heading,
-                            self.next_wp,
-                            self.tof_hms,
-                            self.connection,
-                            self.track,
-                            self.latitude,
-                            self.longitude
-                            ]
-
-        self.signal.emit(self.signal_list)
-        print("worker {}".format(self.signal_list[1]))
+        self.signal.emit(self.vehicles_list)
         self.timer.start(self.rate)
