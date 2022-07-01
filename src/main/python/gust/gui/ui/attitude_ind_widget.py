@@ -31,21 +31,6 @@ g5Diag = sqrt(g5Width ** 2 + g5Height ** 2)
 mstokt = 1.94384
 
 
-# class AttIndWidget(QWidget):
-
-#     def __init__(self, *args, **kwargs):
-#         QWidget.__init__(self,*args,**kwargs)
-
-#         self.setWindowTitle("Attitude Indicator")
-#         self.setFixedSize(g5Width, g5Height)
-
-#         self.layout=QVBoxLayout()
-#         self.AIview=pyG5AIWidget()
-#         self.layout.addWidget(self.AIview)
-#         self.layout.setSpacing(0)
-#         self.layout.setContentsMargins(0,0,0,0)
-#         self.setLayout(self.layout)
-
 
 class pyG5AIWidget(QWidget):
     """Generate G5 wdiget view."""
@@ -62,7 +47,7 @@ class pyG5AIWidget(QWidget):
         self.gnss_fix = 0
         self.mode = 0
 
-        super().__init__(parent = parent)
+        super().__init__(parent=parent)
 
         self.setWindowTitle("Attitude Indicator")
         self.setFixedSize(g5Width, g5Height)

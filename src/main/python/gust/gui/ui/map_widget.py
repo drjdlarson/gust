@@ -48,7 +48,7 @@ class MapWidget(QWidget):
     def update_map(self):
         map_kwargs = dict(tiles='https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
         attr='Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community',
-        zoom_start=15,
+        zoom_start=11,
         )
         if len(self.drone_icon_list) > 0:
             latitude = 0
@@ -113,7 +113,7 @@ class DroneHelper():
 
     def get_points(self, angle):
         R = 6378.1
-        dis = 1
+        dis = 5
         angle = math.radians(angle)
         lat_1 = math.radians(self.latitude)
         lon_1 = math.radians(self.longitude)

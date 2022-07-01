@@ -11,34 +11,46 @@ BASE = '/api'
 @api.route('{:s}/attitude_data'.format(BASE))
 class AttitudeData(Resource):
     def get(self):
-        return{"id_1": {"roll_angle": 12, "pitch_angle": -4, "altitude": 70, "vspeed": 4, "airspeed": 44, "gndspeed": 46},
-               "id_2": {"roll_angle": 15, "pitch_angle": -5, "altitude": 75, "vspeed": 5, "airspeed": 45, "gndspeed": 45}
+        val1 = int(datetime.now().second)
+        val2 = int(datetime.now().minute)
+        return{1: {"roll_angle": val1 / 2, "pitch_angle": val1 / 3, "altitude": val1, "vspeed": val1 + 20, "airspeed": val1 + 23, "gndspeed": val1 + 15},
+               2: {"roll_angle": - val1 / 2, "pitch_angle": -val1 / 3, "altitude": -val1, "vspeed": val1 - 20, "airspeed": val1 + 5, "gndspeed": val1 + 10}
                }
 
 @api.route('{:s}/sys_status'.format(BASE))
 class SysStatus(Resource):
     def get(self):
-        return{"id_1": {"name": "SUPER P1", "mode": 0, "arm": 0, "gnss_fix": 2},
-               "id_2": {"name": "SUPER P2", "mode": 1, "arm": 1, "gnss_fix": 3}
+        val1 = random.randint(0, 3)
+        val2 = random.randint(0, 2)
+        val3 = random.randint(0, 1)
+        return{1: {"name": "SUPER P1", "mode": val1, "arm": val3, "gnss_fix": val2},
+               2: {"name": "SUPER P2", "mode": val1, "arm": val3, "gnss_fix": val2}
                }
 
 @api.route('{:s}/sys_data'.format(BASE))
 class SysData(Resource):
     def get(self):
-        return{"id_1": {"voltage": 50, "current": 30},
-               "id_2": {"voltage": 21, "current": 11}
+        val2 = int(datetime.now().minute)
+        return{1: {"voltage": val2, "current": val2 + 20},
+               2: {"voltage": val2 + 4, "current": val2 + 10}
                }
 
 @api.route('{:s}/sys_info'.format(BASE))
 class SysInfo(Resource):
     def get(self):
-        return{"id_1": {"next_wp": 2, "tof": 240, "relay_sw": 0, "engine_sw": 0, "connection": 0},
-               "id_2": {"next_wp": 5, "tof": 333, "relay_sw": 1, "engine_sw": 1, "connection": 1}
+        val1 = int(datetime.now().second)
+        val2 = int(datetime.now().minute)
+        val3 = random.randint(0, 30)
+        val4 = random.randint(0, 1)
+        val5 = random.randint(0, 1)
+        return{1: {"next_wp": val3, "tof": 513 + val1, "relay_sw": val4, "engine_sw": val5, "connection": 1},
+               2: {"next_wp": val2 + 1, "tof": 451 + val1, "relay_sw": val5, "engine_sw": val4, "connection": 1}
                }
 
 @api.route('{:s}/map_data'.format(BASE))
 class MapData(Resource):
     def get(self):
-        return{"id_1": {"latitude": 33, "longitude": -90, "heading": 240, "track": 250},
-               "id_2": {"latitude": -20, "longitude": 95, "heading": 145, "track": 155}
+        val1 = int(datetime.now().second)
+        return{1: {"latitude": 33.121560, "longitude": -81.421345, "heading": 240 + 8 * val1, "track": 250 + 4 * val1},
+               2: {"latitude": 33.250450, "longitude": -81.421321, "heading": 145 + 5 * val1, "track": 155 + 4 * val1}
                }
