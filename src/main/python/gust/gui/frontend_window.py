@@ -23,6 +23,7 @@ from gust.gui.ui.attitude_ind_widget import pyG5AIWidget
 
 URL_BASE = "http://localhost:8000/api/"
 
+
 class FrontendWindow(QMainWindow, Ui_MainWindow_main):
     """Main interface for the frontend window."""
 
@@ -52,7 +53,8 @@ class FrontendWindow(QMainWindow, Ui_MainWindow_main):
         header.setSectionResizeMode(QHeaderView.ResizeToContents)
         header.setStretchLastSection(True)
 
-
+        self.once_clicked = False
+        self.tableWidget.cellClicked.connect(self.item_clicked)
 
     def setupUi(self, mainWindow):
         """Sets up the user interface."""
@@ -92,7 +94,6 @@ class FrontendWindow(QMainWindow, Ui_MainWindow_main):
             self.ctx)
         self._sensorsWindow.show()
 
-
     def update_request(self):
         if self.timer is None:
             self.timer = QTimer()
@@ -102,105 +103,109 @@ class FrontendWindow(QMainWindow, Ui_MainWindow_main):
             self.manager.signal.connect(self.update_frame)
             self.timer.start(500)
 
-
-
-    # def find_row(self, row):
-    #     self.lcdNumber_altitude.display(row)
-
-
     def update_frame(self, passed_signal):
 
         self.widget_map.clear_drone_list()
+        self.flight_params = passed_signal
 
         # filling up the table
-        for key in passed_signal:
+        for key in self.flight_params:
             rowPos = int(key) - 1
 
-            item = passed_signal[key]['name']
+            item = self.flight_params[key]['name']
             item = QTableWidgetItem(item)
             item.setTextAlignment(QtCore.Qt.AlignCenter)
             self.tableWidget.setItem(rowPos, 0, item)
 
-            item = passed_signal[key]['mode']
+            item = self.flight_params[key]['mode']
             item = QTableWidgetItem(str(item))
             item.setTextAlignment(QtCore.Qt.AlignCenter)
             self.tableWidget.setItem(rowPos, 1, item)
 
-            item = passed_signal[key]['next_wp']
+            item = self.flight_params[key]['next_wp']
             item = QTableWidgetItem("Waypoint " + str(item))
             item.setTextAlignment(QtCore.Qt.AlignCenter)
             self.tableWidget.setItem(rowPos, 2, item)
 
-            item = passed_signal[key]['tof']
+            item = self.flight_params[key]['tof']
             item = QTableWidgetItem(str(timedelta(seconds=item)))
             item.setTextAlignment(QtCore.Qt.AlignCenter)
             self.tableWidget.setItem(rowPos, 3, item)
 
-            item = passed_signal[key]['altitude']
+            item = self.flight_params[key]['altitude']
             item = QTableWidgetItem(str(item) + " m")
             item.setTextAlignment(QtCore.Qt.AlignCenter)
             self.tableWidget.setItem(rowPos, 4, item)
 
-            item = passed_signal[key]['voltage']
+            item = self.flight_params[key]['voltage']
             item = QTableWidgetItem(str(item) + " V")
             item.setTextAlignment(QtCore.Qt.AlignCenter)
             self.tableWidget.setItem(rowPos, 5, item)
 
-            item = passed_signal[key]['current']
+            item = self.flight_params[key]['current']
             item = QTableWidgetItem(str(item) + " A")
             item.setTextAlignment(QtCore.Qt.AlignCenter)
             self.tableWidget.setItem(rowPos, 6, item)
 
-            item = passed_signal[key]['relay_sw']
+            item = self.flight_params[key]['relay_sw']
             item = QTableWidgetItem(str(item))
             item.setTextAlignment(QtCore.Qt.AlignCenter)
             self.tableWidget.setItem(rowPos, 7, item)
 
-            item = passed_signal[key]['engine_sw']
+            item = self.flight_params[key]['engine_sw']
             item = QTableWidgetItem(str(item))
             item.setTextAlignment(QtCore.Qt.AlignCenter)
             self.tableWidget.setItem(rowPos, 8, item)
 
-            item = passed_signal[key]['connection']
+            item = self.flight_params[key]['connection']
             item = QTableWidgetItem(str(item))
             item.setTextAlignment(QtCore.Qt.AlignCenter)
             self.tableWidget.setItem(rowPos, 9, item)
 
             self.widget_map.add_drone(
-                passed_signal[key]['name'],
-                passed_signal[key]['latitude'],
-                passed_signal[key]['longitude'],
-                passed_signal[key]['heading'],
-                passed_signal[key]['track'],
-                passed_signal[key]['mode'],
+                self.flight_params[key]['name'],
+                self.flight_params[key]['latitude'],
+                self.flight_params[key]['longitude'],
+                self.flight_params[key]['heading'],
+                self.flight_params[key]['track'],
+                self.flight_params[key]['mode'],
                 self.ctx)
 
         self.widget_map.update_map()
-#        self.tableWidget.currentRow().connect(self.find_row)
 
+        if self.once_clicked:
+            self.vehicle_selected()
 
-        # # updating the lcd display
-        # self.label_seluav.setText(str(self.name))
-        # self.lcdNumber_altitude.display(self.altitude)
-        # self.lcdNumber_vspeed.display(self.vspeed)
-        # self.lcdNumber_airspeed.display(self.airspeed)
-        # self.lcdNumber_gndspeed.display(self.gndspeed)
-        # self.lcdNumber_voltage.display(self.voltage)
-        # self.lcdNumber_current.display(self.current)
+    def item_clicked(self, row, column):
+        self.once_clicked = True
+        self.row = row
+        self.vehicle_selected()
 
+    def vehicle_selected(self):
+        key_val = self.row
+        key_val += 1
+        key_pos = str(key_val)
 
-        # self.widget_hud.roll_angle = self.roll_angle
-        # self.widget_hud.pitch_angle = self.pitch_angle
-        # self.widget_hud.gndspeed = self.gndspeed
-        # self.widget_hud.airspeed = self.airspeed
-        # self.widget_hud.altitude = self.altitude
-        # self.widget_hud.vspeed = self.vspeed
-        # self.widget_hud.heading = self.heading
-        # self.widget_hud.arm = self.arm
-        # self.widget_hud.gnss_fix = self.gnss_fix
-        # self.widget_hud.mode= self.mode
-        # self.widget_hud.repaint()
+        # updating the lcd display
+        self.label_seluav.setText(str(self.flight_params[key_pos]['name']))
+        self.lcdNumber_altitude.display(self.flight_params[key_pos]['altitude'])
+        self.lcdNumber_vspeed.display(self.flight_params[key_pos]['vspeed'])
+        self.lcdNumber_airspeed.display(self.flight_params[key_pos]['airspeed'])
+        self.lcdNumber_gndspeed.display(self.flight_params[key_pos]['gndspeed'])
+        self.lcdNumber_voltage.display(self.flight_params[key_pos]['voltage'])
+        self.lcdNumber_current.display(self.flight_params[key_pos]['current'])
 
+        self.widget_hud.roll_angle = self.flight_params[key_pos]['roll_angle']
+        self.widget_hud.pitch_angle = self.flight_params[key_pos]['pitch_angle']
+        self.widget_hud.gndspeed = self.flight_params[key_pos]['gndspeed']
+        self.widget_hud.airspeed = self.flight_params[key_pos]['airspeed']
+        self.widget_hud.altitude = self.flight_params[key_pos]['altitude']
+        self.widget_hud.vspeed = self.flight_params[key_pos]['vspeed']
+        self.widget_hud.heading = self.flight_params[key_pos]['heading']
+        self.widget_hud.arm = self.flight_params[key_pos]['arm']
+        self.widget_hud.gnss_fix = self.flight_params[key_pos]['gnss_fix']
+        self.widget_hud.mode= self.flight_params[key_pos]['mode']
+        self.widget_hud.repaint()
 
     def clicked_default(self):
         self.label_seluav.setText("Current Vehicle Name")

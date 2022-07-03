@@ -710,7 +710,7 @@ color: rgb(255, 255, 255);
 font: 75 16pt &quot;Padauk Book [PYRS]&quot;;</string>
             </property>
             <property name="text">
-             <string>Update</string>
+             <string>&lt;Test&gt;</string>
             </property>
            </widget>
           </item>
@@ -746,7 +746,7 @@ color: rgb(255, 255, 255);
 font: 75 16pt &quot;Padauk Book [PYRS]&quot;;</string>
             </property>
             <property name="text">
-             <string>Default</string>
+             <string>Planning</string>
             </property>
            </widget>
           </item>
