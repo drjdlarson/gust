@@ -30,6 +30,11 @@ class FrontendWindow(QMainWindow, Ui_MainWindow_main):
     def __init__(self, ctx):
         super().__init__()
         self.timer = None
+
+        self._conWindow = None
+        self._confirmationWindow = None
+        self._sensorsWindow = None
+
         self.manager = DataManager()
         self.ctx = ctx
         self.setupUi(self)
@@ -62,8 +67,9 @@ class FrontendWindow(QMainWindow, Ui_MainWindow_main):
 
     @pyqtSlot()
     def clicked_addvehicle(self):
-        self._conWindow = con_window.ConWindow(
-            self.ctx)
+        if self._conWindow is None:
+            self._conWindow = con_window.ConWindow(
+                self.ctx)
         self._conWindow.show()
 
         # adding a row in the table
@@ -72,26 +78,30 @@ class FrontendWindow(QMainWindow, Ui_MainWindow_main):
 
     @pyqtSlot()
     def clicked_engineOff(self):
-        self._confirmationWindow = confirmation_window.ConfirmationWindow(
-            self.ctx)
+        if self._confirmationWindow is None:
+            self._confirmationWindow = confirmation_window.ConfirmationWindow(
+                self.ctx)
         self._confirmationWindow.show()
 
     @pyqtSlot()
     def clicked_RTL(self):
-        self._confirmationWindow = confirmation_window.ConfirmationWindow(
-            self.ctx)
+        if self._confirmationWindow is None:
+            self._confirmationWindow = confirmation_window.ConfirmationWindow(
+                self.ctx)
         self._confirmationWindow.show()
 
     @pyqtSlot()
     def clicked_disarm(self):
-        self._confirmationWindow = confirmation_window.ConfirmationWindow(
-            self.ctx)
+        if self._confirmationWindow is None:
+            self._confirmationWindow = confirmation_window.ConfirmationWindow(
+                self.ctx)
         self._confirmationWindow.show()
 
     @pyqtSlot()
     def clicked_sensors(self):
-        self._sensorsWindow = sensors_window.SensorsWindow(
-            self.ctx)
+        if self._sensorsWindow is None:
+            self._sensorsWindow = sensors_window.SensorsWindow(
+                self.ctx)
         self._sensorsWindow.show()
 
     def update_request(self):
@@ -204,7 +214,7 @@ class FrontendWindow(QMainWindow, Ui_MainWindow_main):
         self.widget_hud.heading = self.flight_params[key_pos]['heading']
         self.widget_hud.arm = self.flight_params[key_pos]['arm']
         self.widget_hud.gnss_fix = self.flight_params[key_pos]['gnss_fix']
-        self.widget_hud.mode= self.flight_params[key_pos]['mode']
+        self.widget_hud.mode = self.flight_params[key_pos]['mode']
         self.widget_hud.repaint()
 
     def clicked_default(self):

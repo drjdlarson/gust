@@ -14,6 +14,7 @@ from PyQt5.QtCore import pyqtSlot, QModelIndex, pyqtSignal, QThreadPool
 from PyQt5.QtGui import QIntValidator, QTextCursor
 import requests
 from gust.gui.ui.conn import Ui_MainWindow
+# from gust.gui.frontend_window import FrontendWindow
 
 
 
@@ -27,15 +28,12 @@ class ConWindow(QMainWindow, Ui_MainWindow):
         self.ctx = ctx
         self.setupUi(self)
 
-    # #     self.pushButton_connect.clicked.connect(self.clicked_connect)
-    # #     #self.pushbutton_cancel.clicked.connect(self.clicked_cancel)
+    #     self.pushButton_connect.clicked.connect(self.clicked_connect)
+    #     self.pushbutton_cancel.clicked.connect(self.clicked_cancel)
 
-    # # def clicked_connect(self):
-    # #       #adding a row in the table
-    # #       self.front=FrontendWindow()
-    # #       rowPos=self.front.tableWidget.rowCount()
-    # #       self.front.tableWidget.insertRow(rowPos)
-    # #       self.close()
+    # def clicked_connect(self):
+    #       # adding a row in the table
+    #       rowPos = self.Front
 
     # def clicked_connect(self):
     #       #adding a row in the table
