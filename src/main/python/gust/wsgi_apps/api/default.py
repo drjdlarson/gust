@@ -8,6 +8,8 @@ now = datetime.now()
 BASE = '/api'
 
 
+
+
 @api.route('{:s}/attitude_data'.format(BASE))
 class AttitudeData(Resource):
     def get(self):
