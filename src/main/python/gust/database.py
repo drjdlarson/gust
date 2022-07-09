@@ -41,9 +41,9 @@ def open_db():
     # create database
     _DB = QSqlDatabase.addDatabase(DB_DRIVER)
     fpath = db_name()
-    if os.path.exists(fpath):
-        logger.debug('Removing existing database {}'.format(fpath))
-        os.remove(fpath)
+    # if os.path.exists(fpath):
+    #     logger.debug('Removing existing database {}'.format(fpath))
+    #     os.remove(fpath)
     _DB.setDatabaseName(fpath)
     _DB.open()
 
