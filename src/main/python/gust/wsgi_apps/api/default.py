@@ -3,10 +3,15 @@ from gust.wsgi_apps.api.app import api
 import random
 from datetime import datetime
 
+import logging
+import gust.database_test as database
+
 now = datetime.now()
 
 BASE = '/api'
 
+
+logger = logging.getLogger('[database_test]')
 
 
 
@@ -19,6 +24,7 @@ class AttitudeData(Resource):
                2: {"roll_angle": - val1 / 2, "pitch_angle": -val1 / 3, "altitude": -val1, "vspeed": val1 - 20, "airspeed": val1 + 5, "gndspeed": val1 + 10}
                }
 
+
 @api.route('{:s}/sys_status'.format(BASE))
 class SysStatus(Resource):
     def get(self):
@@ -29,13 +35,20 @@ class SysStatus(Resource):
                2: {"name": "SUPER P2", "mode": val1, "arm": val3, "gnss_fix": val2}
                }
 
+
 @api.route('{:s}/sys_data'.format(BASE))
 class SysData(Resource):
+    params = ['voltage', 'current']
     def get(self):
-        val2 = int(datetime.now().minute)
-        return{1: {"voltage": val2, "current": val2 + 20},
-               2: {"voltage": val2 + 4, "current": val2 + 10}
-               }
+        sys_data = {}
+        database.open_db()
+        names = database.get_drone_ids(True)
+        for index, drone in enumerate(names):
+            table_name = database.create_drone_rate_table_name(drone, database.DroneRates.RATE1)
+            key = index + 1
+            sys_data[key] = database.get_params(table_name, SysData.params)
+        return sys_data
+
 
 @api.route('{:s}/sys_info'.format(BASE))
 class SysInfo(Resource):
@@ -48,6 +61,7 @@ class SysInfo(Resource):
         return{1: {"next_wp": val3, "tof": 513 + val1, "relay_sw": val4, "engine_sw": val5, "connection": 1},
                2: {"next_wp": val2 + 1, "tof": 451 + val1, "relay_sw": val5, "engine_sw": val4, "connection": 1}
                }
+
 
 @api.route('{:s}/map_data'.format(BASE))
 class MapData(Resource):

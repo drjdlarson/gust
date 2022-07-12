@@ -4,18 +4,27 @@ import os
 import logging
 from time import sleep
 import sys
+import enum
 
 from PyQt5.QtSql import QSqlDatabase, QSqlQuery
 
 DB_FILE = 'dummy_drones.sqlite'
-DB_PATH = './'
-# DB_PATH = '~Projects/gust/src/main/resources/base/'
+DB_PATH = '/home/lagerprocessor/Projects/gust/src/main/resources/base/'
 DB_DRIVER = 'QSQLITE'
 
 _DB = None
 _main_table = "drone_collection"
+
 _rate1_table = 'rate1'
 _rate2_table = 'rate2'
+
+@enum.unique
+class DroneRates(enum.Enum):
+    RATE1 = enum.auto()
+    RATE2 = enum.auto()
+
+    def __str__(self):
+        return self.name.lower()
 
 logger = logging.getLogger('[database_test]')
 logger.setLevel(logging.DEBUG)
@@ -30,6 +39,8 @@ def db_name():
 def open_db():
 
     global _DB
+    if _DB is not None:
+        return
     _DB = QSqlDatabase.addDatabase(DB_DRIVER)
     f_path = db_name()
     _DB.setDatabaseName(f_path)
@@ -38,7 +49,6 @@ def open_db():
 
     if not _DB.open():
         logger.critical("Unable to open database")
-        sys.exit()
 
     if _DB.open():
         logger.info("Database is open")
@@ -118,35 +128,81 @@ def add_vehicle(name):
     query.exec_(cmd)
 
 
-def remove_vehicle(names):
+def remove_vehicle(name):
 
     query = _start_query()
 
-    for name in names:
-        cmd = "DELETE FROM drone_collection WHERE name LIKE '%{}%';".format(name)
-        res = query.exec_(cmd)
-        if not res:
-            logger.warning("Unable to delete {} from drone_collection".format(name))
-        if res:
-            logger.info("Deleted {} from done_collection".format(name))
+    cmd = "DELETE FROM drone_collection WHERE name LIKE '%{}%';".format(name)
+    res = query.exec_(cmd)
+    if not res:
+        logger.warning("Unable to delete {} from drone_collection".format(name))
+    if res:
+        logger.info("Deleted {} from done_collection".format(name))
 
-        drop_rate1 = "DROP TABLE IF EXISTS {}_rate1".format(name)
-        drop_rate2 = "DROP TABLE IF EXISTS {}_rate2".format(name)
-        res_rate1 = query.exec_(drop_rate1)
-        res_rate2 = query.exec_(drop_rate2)
-        if res_rate1 and res_rate2:
-            logger.info("Erased all parameters for {}".format(name))
+    drop_rate1 = "DROP TABLE IF EXISTS {}_rate1".format(name)
+    drop_rate2 = "DROP TABLE IF EXISTS {}_rate2".format(name)
+    res_rate1 = query.exec_(drop_rate1)
+    res_rate2 = query.exec_(drop_rate2)
+    if res_rate1 and res_rate2:
+        logger.info("Erased all parameters for {}".format(name))
+
+
+def get_params(table_name, params):
+    """Get parameters from the database.
+
+    Returns
+    -------
+    dict
+        dictionary of parameter keys and values
+    """
+
+    query = _start_query()
+    req_params = ", ".join(params)
+    cmd = "SELECT {} FROM {}".format(req_params, table_name)
+    val = {}
+    result = query.exec_(cmd)
+    query.last()
+    for param in params:
+        val[param] = query.value(param)
+    return val
+
+def create_drone_rate_table_name(name, rate):
+    return "{:s}_{:s}".format(name, rate)
 
 
 """ Testing stuff"""
 if __name__ == "__main__":
 
-    open_db()
+    flight_data = {}
 
+    open_db()
     # add_vehicle("savage")
-    # get_drone_ids(False)
-    names = ["ALE", "savage", "QUESO"]
-    remove_vehicle(names)
+    names = get_drone_ids(True)
+    # remove_vehicle('savage')
     print(get_drone_ids(True))
+
+    # res = {}
+    # req_params = ['voltage', 'current']
+    # for index, name in enumerate(names):
+    #     table_name = "{}_rate1".format(name)
+    #     params = 'voltage'
+    #     # params = ', '.join(req_params)
+    #     print(get_params(params, table_name))
+    # print(res)
+
+    sys_data = {}
+    for index, drone in enumerate(names):
+        table_name = "{}_rate1".format(drone)
+        query = _start_query()
+        params = ['voltage', 'current']
+        key = index + 1
+        sys_data[key] = get_params(table_name, params)
+
+
+    # query = _start_query()
+    # params = ['voltage', 'current']
+    # table_name = "drone0_rate1"
+    # sys_data = get_params(table_name, params)
+    print(sys_data)
     _DB.close()
     sys.exit()
