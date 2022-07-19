@@ -3,7 +3,7 @@
 """
 Created on Sat Jun  4 11:53:26 2022
 
-@author: lagerprocessor
+@author: abhandari11
 """
 
 import sys
@@ -738,18 +738,18 @@ class pyG5AIWidget(QWidget):
         return QLine(startPoint, endPoint)
 
 
-# if __name__ == '__main__':
-#     app = QApplication(sys.argv)
-#     app.setStyleSheet('''
-#         QWidget {
-#             font-size: 35px;
-#         }
-#     ''')
+if __name__ == '__main__':
+    app = QApplication(sys.argv)
+    app.setStyleSheet('''
+        QWidget {
+            font-size: 35px;
+        }
+    ''')
 
-#     myApp = pyG5AIWidget()
-#     myApp.show()
+    myApp = pyG5AIWidget()
+    myApp.show()
 
-#     try:
-#         sys.exit(app.exec_())
-#     except SystemExit:
-#         print('Closing Window...')
+    try:
+        sys.exit(app.exec_())
+    except SystemExit:
+        print('Closing Window...')

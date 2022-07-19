@@ -15,6 +15,7 @@ logger = logging.getLogger('[database]')
 
 # TODO: make this thread safe
 
+
 def db_name():
     """Full path of database file.
 
@@ -41,9 +42,11 @@ def open_db():
     # create database
     _DB = QSqlDatabase.addDatabase(DB_DRIVER)
     fpath = db_name()
-    if os.path.exists(fpath):
-        logger.debug('Removing existing database {}'.format(fpath))
-        os.remove(fpath)
+
+    # if os.path.exists(fpath):
+    #     logger.debug('Removing existing database {}'.format(fpath))
+    #     os.remove(fpath)
+
     _DB.setDatabaseName(fpath)
     _DB.open()
 
@@ -77,7 +80,8 @@ def _create_new_ids_table(p_name):
     query = _start_query()
 
     # create new table, not always required
-    cmd = 'CREATE TABLE {:s}_ids ( id INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE );'.format(p_name)
+    cmd = 'CREATE TABLE {:s}_ids ( id INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE );'.format(
+        p_name)
     logger.debug(cmd)
     res = query.exec_(cmd)
     if not res:
@@ -102,7 +106,8 @@ def _create_new_ids_table(p_name):
 
     fk_fmt = ''
     for ii, col in enumerate(combined_fks):
-        fk_fmt += ',\n{:8s}FOREIGN KEY ({:s}) REFERENCES {:s}s(id) ON UPDATE CASCADE ON DELETE CASCADE'.format('', col, col)
+        fk_fmt += ',\n{:8s}FOREIGN KEY ({:s}) REFERENCES {:s}s(id) ON UPDATE CASCADE ON DELETE CASCADE'.format(
+            '', col, col)
 
     cmd = '{:s}{:s});'.format(fmt, fk_fmt)
     logger.debug(cmd)
@@ -113,7 +118,8 @@ def _create_new_ids_table(p_name):
     # copy PluginCollection to temp table, not always required
     if len(existing_fks) > 0:
         joined = ', '.join(existing_fks)
-        cmd = 'INSERT INTO _tmp(name, {:s}) SELECT name, {:s} FROM PluginCollection;'.format(joined, joined)
+        cmd = 'INSERT INTO _tmp(name, {:s}) SELECT name, {:s} FROM PluginCollection;'.format(
+            joined, joined)
     else:
         cmd = 'INSERT INTO _tmp(name) SELECT name FROM PluginCollection;'
     logger.debug(cmd)
@@ -177,7 +183,8 @@ def _add_new_id_val(p_name):
     if not res:
         logger.critical(query.lastError().text())
 
-    cmd = 'SELECT LAST_VALUE(id) OVER (ORDER BY id DESC) FROM {:s}_ids'.format(p_name)
+    cmd = 'SELECT LAST_VALUE(id) OVER (ORDER BY id DESC) FROM {:s}_ids'.format(
+        p_name)
     logger.debug(cmd)
     query.exec_(cmd)
 
@@ -188,7 +195,8 @@ def _add_new_id_val(p_name):
 def _add_new_pc_val(p_name, p_id):
     query = _start_query()
 
-    cmd = 'INSERT INTO PluginCollection (name, {:s}_id) VALUES (\'{:s}\', {:d});'.format(p_name, p_name, p_id)
+    cmd = 'INSERT INTO PluginCollection (name, {:s}_id) VALUES (\'{:s}\', {:d});'.format(
+        p_name, p_name, p_id)
     logger.debug(cmd)
     res = query.exec_(cmd)
     if not res:
@@ -259,7 +267,8 @@ def remove_plugin(p_name, p_id):
 def remove_plugin_by_col_id(col_ids):
     query = _start_query()
     for c_id in col_ids:
-        cmd = 'SELECT name FROM PluginCollection WHERE collection_id = {:d}'.format(c_id)
+        cmd = 'SELECT name FROM PluginCollection WHERE collection_id = {:d}'.format(
+            c_id)
         logger.debug(cmd)
         res = query.exec_(cmd)
         if not res:
@@ -268,7 +277,8 @@ def remove_plugin_by_col_id(col_ids):
         query.first()
         p_name = query.value(0)
 
-        cmd = 'SELECT {:s}_id FROM PluginCollection WHERE collection_id = {:d}'.format(p_name, c_id)
+        cmd = 'SELECT {:s}_id FROM PluginCollection WHERE collection_id = {:d}'.format(
+            p_name, c_id)
         logger.debug(cmd)
         res = query.exec_(cmd)
         if not res:
@@ -278,7 +288,8 @@ def remove_plugin_by_col_id(col_ids):
         p_id = int(query.value(0))
 
         if not remove_plugin(p_name, p_id):
-            logger.critical('Failed to completely remove Plugin: {} ID: {}'.format(p_name, p_id))
+            logger.critical(
+                'Failed to completely remove Plugin: {} ID: {}'.format(p_name, p_id))
 
 
 def add_plugin_data(p_name, p_id, data, schema):
@@ -298,7 +309,8 @@ def add_plugin_data(p_name, p_id, data, schema):
 
     for key, dtype in schema:
         if key not in data:
-            logger.critical('Missing {:s} in packet from Plugin: {:s} ID: {:d}'.format(key, p_name, p_id))
+            logger.critical(
+                'Missing {:s} in packet from Plugin: {:s} ID: {:d}'.format(key, p_name, p_id))
             return False
 
         if dtype == 'str':
@@ -343,7 +355,8 @@ def get_plugin_ids(p_name):
 
     tbl = '{:s}_ids'.format(p_name)
     if tbl not in _DB.tables():
-        logger.critical('Failed to find id table for plugin {:s}'.format(p_name))
+        logger.critical(
+            'Failed to find id table for plugin {:s}'.format(p_name))
         return []
 
     cmd = 'SELECT id FROM {:s}'.format(tbl)
