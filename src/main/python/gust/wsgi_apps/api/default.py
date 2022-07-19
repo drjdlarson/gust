@@ -4,7 +4,7 @@ import random
 from datetime import datetime
 
 import logging
-import gust.database_test as database
+import gust.database as database
 
 now = datetime.now()
 
@@ -17,7 +17,7 @@ class AttitudeData(Resource):
 
     def get(self):
         attitude_data = {}
-        database.open()
+        database.open_db()
         names = database.get_drone_ids(True)
         for index, drone in enumerate(names):
             table_name = database.create_drone_rate_table_name(drone, database.DroneRates.RATE2)
@@ -32,7 +32,7 @@ class SysStatus(Resource):
 
     def get(self):
         sys_status = {}
-        database.open()
+        database.open_db()
         names = database.get_drone_ids(True)
         for index, drone in enumerate(names):
             table_name = database.create_drone_rate_table_name(drone, database.DroneRates.RATE1)
