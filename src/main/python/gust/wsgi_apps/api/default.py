@@ -28,7 +28,7 @@ class AttitudeData(Resource):
 
 @api.route('{:s}/sys_status'.format(BASE))
 class SysStatus(Resource):
-    params = ['mode', 'arm', 'gnss_fix']
+    params = ['flt_mode', 'arm', 'gnss_fix']
 
     def get(self):
         sys_status = {}

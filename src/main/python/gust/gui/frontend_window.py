@@ -127,7 +127,7 @@ class FrontendWindow(QMainWindow, Ui_MainWindow_main):
             item.setTextAlignment(QtCore.Qt.AlignCenter)
             self.tableWidget.setItem(rowPos, 0, item)
 
-            item = self.flight_params[key]['mode']
+            item = self.flight_params[key]['flt_mode']
             item = QTableWidgetItem(str(item))
             item.setTextAlignment(QtCore.Qt.AlignCenter)
             self.tableWidget.setItem(rowPos, 1, item)
@@ -178,7 +178,7 @@ class FrontendWindow(QMainWindow, Ui_MainWindow_main):
                 self.flight_params[key]['longitude'],
                 self.flight_params[key]['heading'],
                 self.flight_params[key]['track'],
-                self.flight_params[key]['mode'],
+                self.flight_params[key]['flt_mode'],
                 self.ctx)
 
         self.widget_map.update_map()
@@ -214,7 +214,7 @@ class FrontendWindow(QMainWindow, Ui_MainWindow_main):
         self.widget_hud.heading = self.flight_params[key_pos]['heading']
         self.widget_hud.arm = self.flight_params[key_pos]['arm']
         self.widget_hud.gnss_fix = self.flight_params[key_pos]['gnss_fix']
-        self.widget_hud.mode = self.flight_params[key_pos]['mode']
+        self.widget_hud.mode = self.flight_params[key_pos]['flt_mode']
         self.widget_hud.repaint()
 
     def clicked_default(self):

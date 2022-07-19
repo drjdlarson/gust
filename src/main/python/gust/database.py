@@ -16,7 +16,7 @@ _main_table = "drone_collection"
 
 logger = logging.getLogger('[database]')
 
-# TODO: make this thread safe
+# TODO: make this thread safe, figure out open_db()
 
 
 @enum.unique
@@ -68,14 +68,14 @@ def open_db():
     if not _DB.open():
         logger.critical("Unable to open database")
 
-    query = _start_query()
-    cmd = '''CREATE TABLE PluginCollection (
-        collection_id INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE,
-        name VARCHAR(32) );'''
-    logger.debug(cmd)
-    res = query.exec_(cmd)
-    if not res:
-        logger.critical(query.lastError().text())
+    # query = _start_query()
+    # cmd = '''CREATE TABLE PluginCollection (
+    #     collection_id INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE,
+    #     name VARCHAR(32) );'''
+    # logger.debug(cmd)
+    # res = query.exec_(cmd)
+    # if not res:
+    #     logger.critical(query.lastError().text())
 
 
 def close_db():
@@ -430,22 +430,23 @@ def add_vehicle(name):
     cmd = """CREATE TABLE IF NOT EXISTS {:s} (
      m_time float PRIMARY KEY,
      flt_mode integer,
-     arm_state bool,
+     arm bool,
+     gnss_fix integer,
      voltage float,
      current float,
      next_wp integer,
-     time_of_flight float,
-     relay_switch bool,
-     engine_switch bool,
-     connection_status bool
+     tof float,
+     relay_sw bool,
+     engine_sw bool,
+     connection bool
      );""".format(table_name)
     query.exec_(cmd)
 
     table_name = create_drone_rate_table_name(name, DroneRates.RATE2)
     cmd = """CREATE TABLE IF NOT EXISTS {:s} (
      m_time float PRIMARY KEY,
-     roll float,
-     pitch float,
+     roll_angle float,
+     pitch_angle float,
      heading float,
      track float,
      vspeed float,
