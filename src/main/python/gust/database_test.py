@@ -20,6 +20,7 @@ _rate2_table = 'rate2'
 
 @enum.unique
 class DroneRates(enum.Enum):
+
     RATE1 = enum.auto()
     RATE2 = enum.auto()
 
@@ -56,7 +57,7 @@ def open_db():
 
 def _start_query():
     global _DB
-    query = QSqlQuery()
+    query = QSqlQuery(_DB)
     return query
 
 

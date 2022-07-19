@@ -11,13 +11,10 @@ now = datetime.now()
 BASE = '/api'
 
 
-logger = logging.getLogger('[database_test]')
-
-
-
 @api.route('{:s}/attitude_data'.format(BASE))
 class AttitudeData(Resource):
     params = ['roll_angle', 'pitch_angle', 'altitude', 'vspeed', 'airspeed', 'gndspeed']
+
     def get(self):
         attitude_data = {}
         database.open()
@@ -28,9 +25,11 @@ class AttitudeData(Resource):
             attitude_data[key] = database.get_params(table_name, AttitudeData.params)
         return attitude_data
 
+
 @api.route('{:s}/sys_status'.format(BASE))
 class SysStatus(Resource):
     params = ['mode', 'arm', 'gnss_fix']
+
     def get(self):
         sys_status = {}
         database.open()
@@ -44,10 +43,10 @@ class SysStatus(Resource):
         return sys_status
 
 
-
 @api.route('{:s}/sys_data'.format(BASE))
 class SysData(Resource):
     params = ['voltage', 'current']
+
     def get(self):
         sys_data = {}
         database.open_db()
@@ -62,6 +61,7 @@ class SysData(Resource):
 @api.route('{:s}/sys_info'.format(BASE))
 class SysInfo(Resource):
     params = ['next_wp', 'tof', 'relay_sw', 'engine_sw', 'connection']
+
     def get(self):
         sys_info = {}
         database.open_db()
@@ -76,6 +76,7 @@ class SysInfo(Resource):
 @api.route('{:s}/map_data'.format(BASE))
 class MapData(Resource):
     params = ['latitude', 'longitude', 'heading', 'track']
+
     def get(self):
         map_data = {}
         database.open_db()
