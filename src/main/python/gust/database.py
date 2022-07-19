@@ -6,7 +6,7 @@ import enum
 from PyQt5.QtSql import QSqlDatabase, QSqlQuery
 
 # DB_FILE = 'test_database.sqlite'
-DB_FILE = 'dummy_drones.sqlite'
+DB_FILE = 'dummy.sqlite'
 DB_PATH = '/home/lagerprocessor/Projects/gust/src/main/resources/base/'
 # DB_PATH = './'
 DB_DRIVER = "QSQLITE"
