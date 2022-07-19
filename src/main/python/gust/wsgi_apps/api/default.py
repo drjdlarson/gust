@@ -4,7 +4,7 @@ import random
 from datetime import datetime
 
 import logging
-import gust.database_test as database
+import gust.database as database
 
 now = datetime.now()
 
