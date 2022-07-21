@@ -452,7 +452,7 @@ def add_vehicle(name):
      vspeed float,
      gndspeed float,
      airspeed float,
-     latitutde float,
+     latitude float,
      longitude float,
      altitude float
      );""".format(table_name)
@@ -469,7 +469,6 @@ def remove_vehicle(name):
         logger.warning("Unable to delete {} from drone_collection".format(name))
     if res:
         logger.info("Deleted {} from done_collection".format(name))
-
 
     drop_rate1 = "DROP TABLE IF EXISTS {}".format(create_drone_rate_table_name(name, DroneRates.RATE1))
     drop_rate2 = "DROP TABLE IF EXISTS {}".format(create_drone_rate_table_name(name, DroneRates.RATE2))
@@ -498,5 +497,63 @@ def get_params(table_name, params):
         val[param] = query.value(param)
     return val
 
+
 def create_drone_rate_table_name(name, rate):
     return "{:s}_{:s}".format(name, rate)
+
+
+def write_values(vals, table_name):
+    """
+
+    Parameters
+    ----------
+    vals : dict
+        Set of flight data.
+    table_name : str
+        Table name of where to store data
+        eg. drone0_rate1
+
+    Returns
+    -------
+    None.
+
+    """
+
+    keys = ', '.join(list(vals.keys()))
+    values = str(list(vals.values()))[1:-1]
+    query = _start_query()
+    cmd = "INSERT INTO {} ({}) VALUES ({});".format(table_name, keys, values)
+    res = query.exec_(cmd)
+
+    if not res:
+        logger.warning("Unable to add new values in the database")
+
+
+if __name__ == "__main__":
+    open_db()
+
+    # query = _start_query()
+    # cmd = 'SELECT name FROM sqlite_schema WHERE type ="table"'
+    # query.exec_(cmd)
+    # names = []
+    # while query.next():
+    #     names.append(query.value(0))
+    # print(names)
+
+    # print(get_drone_ids(True))
+    # params = {'m_time': 0.05, 'roll_angle': 22, 'pitch_angle': 23, 'heading': 24, 'track': 25, 'vspeed': 26, 'gndspeed': 27, 'airspeed': 28, 'latitude': 29, 'longitude': 30, 'altitude': 21}
+    # add_vehicle("ALE")
+    # print("ALE is added")
+
+    # # remove_vehicle("ALE")
+    # print(get_drone_ids(True))
+
+    # name = create_drone_rate_table_name("ALE", DroneRates.RATE2)
+    # write_values(params, name)
+
+    # req = params = ['roll_angle', 'pitch_angle', 'altitude', 'vspeed', 'airspeed', 'gndspeed']
+    # result = get_params(name, req)
+    # print(result)
+    remove_vehicle("ALE")
+
+    close_db()

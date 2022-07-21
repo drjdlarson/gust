@@ -49,10 +49,6 @@ class FrontendWindow(QMainWindow, Ui_MainWindow_main):
         self.pushButton_update.clicked.connect(self.update_request)
         self.pushButton_default.clicked.connect(self.clicked_default)
 
-        self._conWindow = None
-        self._confirmationWindow = None
-        self._sensorsWindow = None
-
         header = self.tableWidget.horizontalHeader()
         header.setMinimumSectionSize(120)
         header.setSectionResizeMode(QHeaderView.ResizeToContents)

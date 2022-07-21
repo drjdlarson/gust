@@ -1,10 +1,11 @@
 """Definition of the server window GUI."""
 import sys
 import os
+import random
 import logging
 from functools import partial
 from PyQt5.QtWidgets import QMainWindow
-from PyQt5.QtCore import pyqtSlot, QModelIndex, pyqtSignal, QThreadPool
+from PyQt5.QtCore import pyqtSlot, QModelIndex, pyqtSignal, QThreadPool, QTimer
 from PyQt5.QtGui import QIntValidator, QTextCursor
 from PyQt5.QtSql import QSqlTableModel
 
@@ -27,6 +28,7 @@ class BackendWindow(QMainWindow, Ui_BackendWindow):
     def __init__(self, ctx):
         super().__init__()
         self.setupUi(self)
+        self.timer = None
 
         # setup redirect for stdout/stderr
         self.text_update.connect(self.update_console_text)
@@ -220,6 +222,11 @@ class BackendWindow(QMainWindow, Ui_BackendWindow):
         for ii, proc in enumerate(pluginMonitor.running_procs):
             proc.readyReadStandardOutput.connect(partial(self._print_plug_msg, ii))
 
+        if self.timer is None:
+            self.timer = QTimer()
+            self.timer.timeout.connect(self.pass_data)
+            self.timer.start(2000)
+
     @pyqtSlot()
     def clicked_stop(self):
         """Actions to perform when the stop button is clicked."""
@@ -230,6 +237,9 @@ class BackendWindow(QMainWindow, Ui_BackendWindow):
                    + '------------------- Stopping Backend ---------------------\n'
                    + '----------------------------------------------------------\n\n')
             self.update_console_text(msg)
+
+        if self.timer is not None:
+            self.timer.stop()
 
     @pyqtSlot(str)
     def changed_ip(self, text):
@@ -248,3 +258,31 @@ class BackendWindow(QMainWindow, Ui_BackendWindow):
 
         sys.stdout.flush()
         sys.stderr.flush()
+
+    @pyqtSlot()
+    def pass_data(self):
+        """Writes the set of flight data into database"""
+        import gust.database as database
+
+        msg = '-------getting new dataset-------\n'
+        self.update_console_text(msg)
+
+        # generating random numbers
+        randf1 = round(random.uniform(50, 100), 2)
+        randint1 = random.randint(0, 1)
+        gnss_fix1 = random.randint(0, 2)
+        mode1 = random.randint(0, 3)
+
+        randf2 = round(random.uniform(50, 100), 2)
+        randint2 = random.randint(0, 1)
+        gnss_fix2 = random.randint(0, 2)
+        mode2 = random.randint(0, 3)
+
+        rate2 = {1: {'m_time': randf1, 'roll_angle': randf1, 'pitch_angle': randf1, 'heading': randf1, 'track': randf1, 'vspeed': randf1, 'gndspeed': randf1, 'airspeed': randf1, 'latitude': randf1, 'longitude': randf1, 'altitude': randf1},
+         2: {'m_time': randf2, 'roll_angle': randf2, 'pitch_angle': randf2, 'heading': randf2, 'track': randf2, 'vspeed': randf2, 'gndspeed': randf2, 'airspeed': randf2, 'latitude': randf2, 'longitude': randf2, 'altitude': randf2}}
+
+        rate1 = {1: {'m_time' : randf1, 'flt_mode': mode1, 'arm':randint1, 'gnss_fix': gnss_fix1, 'voltage': randf1, 'current':randf1, 'next_wp': randint1 + 12, 'tof': randf1, ' relay_sw': randint1, 'engine_sw': randint1, 'connection':randint1},
+         2: {'m_time': randf2, 'flt_mode': mode2, 'arm':randint2, 'gnss_fix': gnss_fix2, 'voltage': randf2, 'current':randf2, 'next_wp': randint2 + 15, 'tof': randf2, ' relay_sw': randint2, 'engine_sw': randint2, 'connection':randint2}}
+
+        names = database.get_drone_ids(True)
+        self.update_console_text(str(names))
