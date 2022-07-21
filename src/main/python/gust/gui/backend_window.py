@@ -225,7 +225,7 @@ class BackendWindow(QMainWindow, Ui_BackendWindow):
         if self.timer is None:
             self.timer = QTimer()
             self.timer.timeout.connect(self.pass_data)
-            self.timer.start(2000)
+            self.timer.start(66)
 
     @pyqtSlot()
     def clicked_stop(self):
@@ -263,26 +263,31 @@ class BackendWindow(QMainWindow, Ui_BackendWindow):
     def pass_data(self):
         """Writes the set of flight data into database"""
         import gust.database as database
+        from gust.database import DroneRates
 
-        msg = '-------getting new dataset-------\n'
+        msg = '-------writing into database-------\n'
         self.update_console_text(msg)
 
         # generating random numbers
         randf1 = round(random.uniform(50, 100), 2)
+        randf11 = round(random.uniform(0,20), 2)
+        randf111 = round(random.uniform(-60, 60), 2)
         randint1 = random.randint(0, 1)
         gnss_fix1 = random.randint(0, 2)
         mode1 = random.randint(0, 3)
 
         randf2 = round(random.uniform(50, 100), 2)
+        randf22 = round(random.uniform(0,20), 2)
+        randf222 = round(random.uniform(-60, 60), 2)
         randint2 = random.randint(0, 1)
         gnss_fix2 = random.randint(0, 2)
         mode2 = random.randint(0, 3)
 
-        rate2 = {1: {'m_time': randf1, 'roll_angle': randf1, 'pitch_angle': randf1, 'heading': randf1, 'track': randf1, 'vspeed': randf1, 'gndspeed': randf1, 'airspeed': randf1, 'latitude': randf1, 'longitude': randf1, 'altitude': randf1},
-         2: {'m_time': randf2, 'roll_angle': randf2, 'pitch_angle': randf2, 'heading': randf2, 'track': randf2, 'vspeed': randf2, 'gndspeed': randf2, 'airspeed': randf2, 'latitude': randf2, 'longitude': randf2, 'altitude': randf2}}
+        rate2 = {'rate': DroneRates.RATE2, 1: {'m_time': randf1, 'roll_angle': randf11, 'pitch_angle': randf11, 'heading': randf1, 'track': randf1, 'vspeed': randf1, 'gndspeed': randf1, 'airspeed': randf1, 'latitude': randf111, 'longitude': randf111, 'altitude': randf1},
+         2: {'m_time': randf2, 'roll_angle': randf22, 'pitch_angle': randf22, 'heading': randf2, 'track': randf2, 'vspeed': randf2, 'gndspeed': randf2, 'airspeed': randf2, 'latitude': randf222, 'longitude': randf222, 'altitude': randf2}}
 
-        rate1 = {1: {'m_time' : randf1, 'flt_mode': mode1, 'arm':randint1, 'gnss_fix': gnss_fix1, 'voltage': randf1, 'current':randf1, 'next_wp': randint1 + 12, 'tof': randf1, ' relay_sw': randint1, 'engine_sw': randint1, 'connection':randint1},
+        rate1 = {'rate': DroneRates.RATE1, 1: {'m_time' : randf1, 'flt_mode': mode1, 'arm':randint1, 'gnss_fix': gnss_fix1, 'voltage': randf1, 'current':randf1, 'next_wp': randint1 + 12, 'tof': randf1, ' relay_sw': randint1, 'engine_sw': randint1, 'connection':randint1},
          2: {'m_time': randf2, 'flt_mode': mode2, 'arm':randint2, 'gnss_fix': gnss_fix2, 'voltage': randf2, 'current':randf2, 'next_wp': randint2 + 15, 'tof': randf2, ' relay_sw': randint2, 'engine_sw': randint2, 'connection':randint2}}
 
-        names = database.get_drone_ids(True)
-        self.update_console_text(str(names))
+        all_data = [rate1, rate2]
+        database.write_values(all_data)

@@ -68,14 +68,14 @@ def open_db():
     if not _DB.open():
         logger.critical("Unable to open database")
 
-    # query = _start_query()
-    # cmd = '''CREATE TABLE PluginCollection (
-    #     collection_id INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE,
-    #     name VARCHAR(32) );'''
-    # logger.debug(cmd)
-    # res = query.exec_(cmd)
-    # if not res:
-    #     logger.critical(query.lastError().text())
+    query = _start_query()
+    cmd = '''CREATE TABLE IF NOT EXISTS PluginCollection (
+        collection_id INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE,
+        name VARCHAR(32) );'''
+    logger.debug(cmd)
+    res = query.exec_(cmd)
+    if not res:
+        logger.critical(query.lastError().text())
 
 
 def close_db():
@@ -502,7 +502,7 @@ def create_drone_rate_table_name(name, rate):
     return "{:s}_{:s}".format(name, rate)
 
 
-def write_values(vals, table_name):
+def add_values(vals, table_name):
     """
 
     Parameters
@@ -529,31 +529,35 @@ def write_values(vals, table_name):
         logger.warning("Unable to add new values in the database")
 
 
-if __name__ == "__main__":
-    open_db()
+def get_drone_name(uid):
+    """Gives the vehicle name for corresponding uid. uid indexing starts from 0"""
+    query = _start_query()
+    cmd = "SELECT name FROM drone_collection WHERE uid = {};".format(uid)
+    query.exec_(cmd)
+    query.last()
+    return query.value(0)
 
-    # query = _start_query()
-    # cmd = 'SELECT name FROM sqlite_schema WHERE type ="table"'
-    # query.exec_(cmd)
-    # names = []
-    # while query.next():
-    #     names.append(query.value(0))
-    # print(names)
 
-    # print(get_drone_ids(True))
-    # params = {'m_time': 0.05, 'roll_angle': 22, 'pitch_angle': 23, 'heading': 24, 'track': 25, 'vspeed': 26, 'gndspeed': 27, 'airspeed': 28, 'latitude': 29, 'longitude': 30, 'altitude': 21}
-    # add_vehicle("ALE")
-    # print("ALE is added")
+def write_values(flt_data):
+    """
+    Gets all data from the backend, sorts out vehicle's name and rates.
+    Then, sends it to add_values() to write on the database'
 
-    # # remove_vehicle("ALE")
-    # print(get_drone_ids(True))
+    Parameters
+    ----------
+    flt_data : list
+        List of dictionaries rate1 and rate2.
 
-    # name = create_drone_rate_table_name("ALE", DroneRates.RATE2)
-    # write_values(params, name)
+    Returns
+    -------
+    None.
 
-    # req = params = ['roll_angle', 'pitch_angle', 'altitude', 'vspeed', 'airspeed', 'gndspeed']
-    # result = get_params(name, req)
-    # print(result)
-    remove_vehicle("ALE")
+    """
 
-    close_db()
+    for item in flt_data:
+        rate = item['rate']
+        for key, values in item.items():
+            if type(key) is int:
+                name = get_drone_name(key - 1)      # indexing in "drone_collection" starts from uid = 0.
+                table_name = create_drone_rate_table_name(name, rate)
+                add_values(values, table_name)

@@ -25,7 +25,7 @@ class MapWidget(QWidget):
         m = folium.Map(
             tiles='https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
             attr='Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community',
-            zoom_start=15,
+            zoom_start=1,
             #location=[self.latitude, self.longitude]
         )
 
@@ -48,7 +48,7 @@ class MapWidget(QWidget):
     def update_map(self):
         map_kwargs = dict(tiles='https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
         attr='Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community',
-        zoom_start=11,
+        zoom_start=1,
         )
         if len(self.drone_icon_list) > 0:
             latitude = 0
