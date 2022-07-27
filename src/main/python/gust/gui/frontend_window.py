@@ -63,9 +63,13 @@ class FrontendWindow(QMainWindow, Ui_MainWindow_main):
 
     @pyqtSlot()
     def clicked_addvehicle(self):
+
+        url = "{}get_available_ports".format(URL_BASE)
+        ports = requests.get(url).json()
+
         if self._conWindow is None:
             self._conWindow = con_window.ConWindow(
-                self.ctx)
+                self.ctx, ports['ports'])
         self._conWindow.show()
 
         # adding a row in the table

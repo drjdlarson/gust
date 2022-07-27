@@ -2,13 +2,73 @@ from flask_restx import Resource
 from gust.wsgi_apps.api.app import api
 import random
 from datetime import datetime
+from flask import request
+import serial.tools.list_ports
+
 
 import logging
 import gust.database as database
+from PyQt5.QtCore import pyqtSignal, QObject, pyqtSlot
 
 now = datetime.now()
 
 BASE = '/api'
+logger = logging.getLogger('[URL-Manager]')
+
+
+class Communicator(QObject):
+
+    signal = pyqtSignal(dict)
+    sig_value = {}
+
+    def __init__(self):
+        super().__init__()
+
+    def send_signal(self):
+        self.signal.connect(self.handle_trigger)
+        self.signal.emit(self.sig_value)
+        return self.result
+
+    @pyqtSlot(dict)
+    def handle_trigger(self, passed_signal):
+        logger.critical("we are in the handle_trigger function")
+        # logger.critical("name is {} and port is {}".format(passed_signal['name'], passed_signal['port']))
+        self.result = True
+
+
+
+@api.route('{:s}/connect_drone'.format(BASE))
+class ConnInfo(Resource):
+    def get(self):
+        port = request.args.get('port', default='', type=str)
+        name = request.args.get('name', default='', type=str)
+
+        if len(port) > 0 and len(name) > 0:
+            sig = {'name': name, 'port': port}
+            Communicator.sig_value = sig
+            success = Communicator().send_signal()
+
+            if success:
+                logger.critical("it works")
+                return {'success': success, 'msg': ''}
+            elif not success:
+                return {'success': False, 'msg': "Error Connecting"}
+
+        elif len(port) == 0:
+            return {'success': False, 'msg': 'Invalid port'}
+
+        elif len(name) == 0:
+            return {'success': False, 'msg': 'Invalid name'}
+
+
+@api.route('{:s}/get_available_ports'.format(BASE))
+class PortsData(Resource):
+    def get(self):
+        ports = list(serial.tools.list_ports.comports())
+        available_ports = ['/dev/test']
+        for port in sorted(ports):
+            available_ports.append(port.device)
+        return {'ports': available_ports}
 
 
 @api.route('{:s}/attitude_data'.format(BASE))

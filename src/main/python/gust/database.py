@@ -5,6 +5,9 @@ from time import sleep
 import enum
 from PyQt5.QtSql import QSqlDatabase, QSqlQuery
 
+
+import serial.tools.list_ports
+
 # DB_FILE = 'test_database.sqlite'
 DB_FILE = 'dummy.sqlite'
 DB_PATH = '/home/lagerprocessor/Projects/gust/src/main/resources/base/'
@@ -58,9 +61,9 @@ def open_db():
     _DB = QSqlDatabase.addDatabase(DB_DRIVER)
     fpath = db_name()
 
-    # if os.path.exists(fpath):
-    #     logger.debug('Removing existing database {}'.format(fpath))
-    #     os.remove(fpath)
+    if os.path.exists(fpath):
+        logger.debug('Removing existing database {}'.format(fpath))
+        os.remove(fpath)
 
     _DB.setDatabaseName(fpath)
     _DB.open()
@@ -73,9 +76,24 @@ def open_db():
         collection_id INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE,
         name VARCHAR(32) );'''
     logger.debug(cmd)
-    res = query.exec_(cmd)
-    if not res:
+    res1 = query.exec_(cmd)
+    if not res1:
         logger.critical(query.lastError().text())
+
+    query = _start_query()
+    cmd = """CREATE TABLE IF NOT EXISTS drone_collection (
+    uid INTEGER PRIMARY KEY,
+    name TEXT,
+    UNIQUE(uid, name)
+    );
+    """
+    logger.debug(cmd)
+    res2 = query.exec_(cmd)
+    if not res2:
+        logger.critical(query.lastError().text())
+
+    if res1 and res2:
+        logger.info("Database is now open")
 
 
 def close_db():
@@ -420,10 +438,7 @@ def add_vehicle(name):
     # adding to the main table
     cmd = 'INSERT into drone_collection (uid, name) VALUES ({}, "{}");'.format(count, name)
     logger.info("Adding vehicle {} into drone collection".format(name))
-    res = query.exec_(cmd)
-
-    if not res:
-        logger.critical("Unable to add {} into drone_collection".format(name))
+    res1 = query.exec_(cmd)
 
     # adding the rate tables
     table_name = create_drone_rate_table_name(name, DroneRates.RATE1)
@@ -440,7 +455,7 @@ def add_vehicle(name):
      engine_sw bool,
      connection bool
      );""".format(table_name)
-    query.exec_(cmd)
+    res2 = query.exec_(cmd)
 
     table_name = create_drone_rate_table_name(name, DroneRates.RATE2)
     cmd = """CREATE TABLE IF NOT EXISTS {:s} (
@@ -456,7 +471,10 @@ def add_vehicle(name):
      longitude float,
      altitude float
      );""".format(table_name)
-    query.exec_(cmd)
+    res3 = query.exec_(cmd)
+
+    if res1 and res2 and res3:
+        return True
 
 
 def remove_vehicle(name):
@@ -525,8 +543,8 @@ def add_values(vals, table_name):
     cmd = "INSERT INTO {} ({}) VALUES ({});".format(table_name, keys, values)
     res = query.exec_(cmd)
 
-    if not res:
-        logger.warning("Unable to add new values in the database")
+    # if not res:
+    #     logger.warning("Unable to add new values in the database")
 
 
 def get_drone_name(uid):
@@ -561,3 +579,7 @@ def write_values(flt_data):
                 name = get_drone_name(key - 1)      # indexing in "drone_collection" starts from uid = 0.
                 table_name = create_drone_rate_table_name(name, rate)
                 add_values(values, table_name)
+
+
+if __name__ == "__main__":
+    pass

@@ -49,7 +49,6 @@ class Launcher(QMainWindow, Ui_Launcher):
     @pyqtSlot()
     def clicked_server(self):
         self._backendWindow = backend_window.BackendWindow(self.ctx)
-
         # fix logger so it only outputs to the new output console in the backend
         # fmt = logging.getLogger().handlers[0].formatter
         fmt = logging.Formatter('%(name)s %(levelname)s %(asctime)s - %(message)s')
@@ -61,12 +60,10 @@ class Launcher(QMainWindow, Ui_Launcher):
         self._backendWindow.setup()
         self._backendWindow.show()
 
-
         self.close()
 
     @pyqtSlot()
     def clicked_log(self):
         self._logWindow=log_window.LogWindow(
             self.ctx)
-
         self._logWindow.show()
