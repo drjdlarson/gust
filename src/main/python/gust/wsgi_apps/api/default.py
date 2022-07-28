@@ -8,55 +8,37 @@ import serial.tools.list_ports
 
 import logging
 import gust.database as database
-from PyQt5.QtCore import pyqtSignal, QObject, pyqtSlot
+from PyQt5 import QtCore
+from PyQt5.QtCore import pyqtSignal, QThread, pyqtSlot, QObject
+from gust.radio_manager import RadioManager
 
-now = datetime.now()
 
 BASE = '/api'
 logger = logging.getLogger('[URL-Manager]')
 
 
-class Communicator(QObject):
-
-    signal = pyqtSignal(dict)
-    sig_value = {}
-
-    def __init__(self):
-        super().__init__()
-
-    def send_signal(self):
-        self.signal.connect(self.handle_trigger)
-        self.signal.emit(self.sig_value)
-        return self.result
-
-    @pyqtSlot(dict)
-    def handle_trigger(self, passed_signal):
-        logger.critical("we are in the handle_trigger function")
-        # logger.critical("name is {} and port is {}".format(passed_signal['name'], passed_signal['port']))
-        self.result = True
-
 
 
 @api.route('{:s}/connect_drone'.format(BASE))
 class ConnInfo(Resource):
+
     def get(self):
         port = request.args.get('port', default='', type=str)
         name = request.args.get('name', default='', type=str)
 
         if len(port) > 0 and len(name) > 0:
-            sig = {'name': name, 'port': port}
-            Communicator.sig_value = sig
-            success = Communicator().send_signal()
+
+            # take name and port, add all required tables into the database, and call connect_to_radio in RadioManager.
+            radioManager = RadioManager()
+            success = radioManager.connect_to_radio(name, port)
 
             if success:
-                logger.critical("it works")
                 return {'success': success, 'msg': ''}
             elif not success:
                 return {'success': False, 'msg': "Error Connecting"}
 
         elif len(port) == 0:
             return {'success': False, 'msg': 'Invalid port'}
-
         elif len(name) == 0:
             return {'success': False, 'msg': 'Invalid name'}
 

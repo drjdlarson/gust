@@ -54,11 +54,16 @@ class ConWindow(QMainWindow, Ui_MainWindow):
                 added_data = True
         conn = requests.get(url).json()
 
+        msgBox = QMessageBox()
+
         if conn['success']:
+            msgBox.setIcon(QMessageBox.Information)
+            msgBox.setWindowTitle("Information")
+            msgBox.setText("Connected to vehicle: {}".format(name))
+            msgBox.exec()
             self.close()
 
         else:
-            msgBox = QMessageBox()
             msgBox.setIcon(QMessageBox.Warning)
             msgBox.setWindowTitle("Warning")
             msgBox.setText("Unable to connect: <<{:s}>>".format(conn['msg']))

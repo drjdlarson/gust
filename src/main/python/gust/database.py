@@ -84,7 +84,8 @@ def open_db():
     cmd = """CREATE TABLE IF NOT EXISTS drone_collection (
     uid INTEGER PRIMARY KEY,
     name TEXT,
-    UNIQUE(uid, name)
+    port TEXT,
+    UNIQUE(uid, name, port)
     );
     """
     logger.debug(cmd)
