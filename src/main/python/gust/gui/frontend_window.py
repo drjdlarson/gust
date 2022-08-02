@@ -12,12 +12,13 @@ import time
 from datetime import timedelta
 from functools import partial
 from PyQt5 import QtCore, QtGui, QtWidgets
-from PyQt5. QtWidgets import QMainWindow, QMessageBox, QHeaderView, QTableWidgetItem
+from PyQt5. QtWidgets import QMainWindow, QMessageBox, QHeaderView, QTableWidgetItem, QPushButton
 from PyQt5.QtCore import Qt, pyqtSlot, QModelIndex, pyqtSignal, QThreadPool, QThread, QTimer
 from PyQt5.QtGui import QIntValidator, QTextCursor
 import requests
 from gust.gui.ui.gustClient import Ui_MainWindow_main
-from gust.gui import con_window, confirmation_window, log_window, sensors_window
+from gust.gui import con_window, log_window, sensors_window
+from gust.gui import engine0ff_confirmation, disconnect_confirmation, rtl_confirmation, disarm_confirmation
 from gust.gui.ui.map_widget import MapWidget
 from gust.gui.ui.attitude_ind_widget import pyG5AIWidget
 
@@ -32,7 +33,12 @@ class FrontendWindow(QMainWindow, Ui_MainWindow_main):
         self.timer = None
 
         self._conWindow = None
-        self._confirmationWindow = None
+
+        self._confirm_engineoff_window = None
+        self._confirm_disconnect_window = None
+        self._confirm_rtl_window = None
+        self._confirm_disarm_window = None
+
         self._sensorsWindow = None
 
         self.manager = DataManager()
@@ -49,10 +55,14 @@ class FrontendWindow(QMainWindow, Ui_MainWindow_main):
         self.pushButton_update.clicked.connect(self.update_request)
         self.pushButton_default.clicked.connect(self.clicked_default)
 
+
+        # Setting few features of the table
         header = self.tableWidget.horizontalHeader()
         header.setMinimumSectionSize(120)
         header.setSectionResizeMode(QHeaderView.ResizeToContents)
         header.setStretchLastSection(True)
+
+
 
         self.once_clicked = False
         self.tableWidget.cellClicked.connect(self.item_clicked)
@@ -70,32 +80,41 @@ class FrontendWindow(QMainWindow, Ui_MainWindow_main):
         if self._conWindow is None:
             self._conWindow = con_window.ConWindow(
                 self.ctx, ports['ports'])
-        self._conWindow.show()
 
-        # adding a row in the table
-        rowPos = self.tableWidget.rowCount()
-        self.tableWidget.insertRow(rowPos)
+        if self._conWindow.exec_():
+            # adding a row in the table
+            rowPos = self.tableWidget.rowCount()
+            self.tableWidget.insertRow(rowPos)
+            self.update_request()
+
 
     @pyqtSlot()
     def clicked_engineOff(self):
-        if self._confirmationWindow is None:
-            self._confirmationWindow = confirmation_window.ConfirmationWindow(
-                self.ctx)
-        self._confirmationWindow.show()
+        win = engine0ff_confirmation.EngineOffConfirmation(
+            self.ctx)
+        win.exec_()
+
+        # if self._confirm_engineoff_window is None:
+        #     self._confirm_engineoff_window = engine0ff_confirmation.EngineOffConfirmation(
+        #         self.ctx)
+        #     self._confirm_engineoff_window.exec_()
+
 
     @pyqtSlot()
     def clicked_RTL(self):
-        if self._confirmationWindow is None:
-            self._confirmationWindow = confirmation_window.ConfirmationWindow(
+        if self._confirm_disconnect_window is None:
+            self._confirm_disconnect_window = rtl_confirmation.RTLConfirmation(
                 self.ctx)
-        self._confirmationWindow.show()
+        self._confirm_disconnect_window.exec_()
+
 
     @pyqtSlot()
     def clicked_disarm(self):
-        if self._confirmationWindow is None:
-            self._confirmationWindow = confirmation_window.ConfirmationWindow(
+        if self._confirm_disarm_window is None:
+            self._confirm_disarm_window = disarm_confirmation.DisarmConfirmation(
                 self.ctx)
-        self._confirmationWindow.show()
+        self._confirm_disarm_window.exec_()
+
 
     @pyqtSlot()
     def clicked_sensors(self):
@@ -103,6 +122,14 @@ class FrontendWindow(QMainWindow, Ui_MainWindow_main):
             self._sensorsWindow = sensors_window.SensorsWindow(
                 self.ctx)
         self._sensorsWindow.show()
+
+
+    @pyqtSlot()
+    def clicked_disconnect(self):
+        self._disconnect_confirmation = disconnect_confirmation.DisconnectConfirmation(
+            self.ctx)
+        self._disconnect_confirmation.exec_()
+
 
     def update_request(self):
         if self.timer is None:
@@ -167,10 +194,18 @@ class FrontendWindow(QMainWindow, Ui_MainWindow_main):
             item.setTextAlignment(QtCore.Qt.AlignCenter)
             self.tableWidget.setItem(rowPos, 8, item)
 
-            item = self.flight_params[key]['connection']
-            item = QTableWidgetItem(str(item))
-            item.setTextAlignment(QtCore.Qt.AlignCenter)
-            self.tableWidget.setItem(rowPos, 9, item)
+            # self.con_status will be 1 or 0.
+            self.con_status = self.flight_params[key]['connection']
+            self.disconnect_button = QPushButton("Disconnect")
+            # self.disconnect_button = QTableWidgetItem(str(self.disconnect_button))
+            # self.disconnect_button.setTextAlignment(QtCore.Qt.AlignCenter)
+            self.disconnect_button.clicked.connect(self.clicked_disconnect)
+            self.tableWidget.setCellWidget(rowPos, 9, self.disconnect_button)
+
+            # item = self.flight_params[key]['connection']
+            # item = QTableWidgetItem(str(item))
+            # item.setTextAlignment(QtCore.Qt.AlignCenter)
+            # self.tableWidget.setItem(rowPos, 9, item)
 
             self.widget_map.add_drone(
                 self.flight_params[key]['name'],
@@ -196,7 +231,7 @@ class FrontendWindow(QMainWindow, Ui_MainWindow_main):
         key_val += 1
         key_pos = str(key_val)
 
-        # updating the lcd display
+        # Updating the lcd display
         self.label_seluav.setText(str(self.flight_params[key_pos]['name']))
         self.lcdNumber_altitude.display(self.flight_params[key_pos]['altitude'])
         self.lcdNumber_vspeed.display(self.flight_params[key_pos]['vspeed'])
@@ -205,6 +240,7 @@ class FrontendWindow(QMainWindow, Ui_MainWindow_main):
         self.lcdNumber_voltage.display(self.flight_params[key_pos]['voltage'])
         self.lcdNumber_current.display(self.flight_params[key_pos]['current'])
 
+        # Updating the Attitude Indicator
         self.widget_hud.roll_angle = self.flight_params[key_pos]['roll_angle']
         self.widget_hud.pitch_angle = self.flight_params[key_pos]['pitch_angle']
         self.widget_hud.gndspeed = self.flight_params[key_pos]['gndspeed']

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
  <class>MainWindow</class>
- <widget class="QMainWindow" name="MainWindow">
+ <widget class="QDialog" name="MainWindow">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -35,8 +35,7 @@
    <string notr="true">background-color: rgb(211, 215, 207);
 color: rgb(0, 0, 0);</string>
   </property>
-  <widget class="QWidget" name="centralwidget">
-   <layout class="QVBoxLayout" name="verticalLayout" stretch="0,0">
+   <layout class="QVBoxLayout" name="verticalLayout" stretch="0,0,0">
     <item>
      <widget class="QLabel" name="label_confirmation">
       <property name="sizePolicy">
@@ -47,10 +46,26 @@ color: rgb(0, 0, 0);</string>
       </property>
       <property name="styleSheet">
        <string notr="true">
-font: 18pt &quot;Ubuntu&quot;;</string>
+font: 16pt &quot;Ubuntu&quot;;</string>
       </property>
       <property name="text">
        <string>CONFIRMATION ::</string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QLabel" name="label_custom">
+      <property name="styleSheet">
+       <string notr="true">font: 14pt &quot;Ubuntu&quot;;</string>
+      </property>
+      <property name="frameShape">
+       <enum>QFrame::NoFrame</enum>
+      </property>
+      <property name="text">
+       <string>CustomText</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
       </property>
      </widget>
     </item>
@@ -89,7 +104,6 @@ font: 18pt &quot;Ubuntu&quot;;</string>
      </layout>
     </item>
    </layout>
-  </widget>
  </widget>
  <resources/>
  <connections/>

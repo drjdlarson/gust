@@ -10,12 +10,11 @@ import logging
 import gust.database as database
 from PyQt5 import QtCore
 from PyQt5.QtCore import pyqtSignal, QThread, pyqtSlot, QObject
-from gust.radio_manager import RadioManager
+from gust.radio_manager import radioManager
 
 
 BASE = '/api'
 logger = logging.getLogger('[URL-Manager]')
-
 
 
 
@@ -27,20 +26,28 @@ class ConnInfo(Resource):
         name = request.args.get('name', default='', type=str)
 
         if len(port) > 0 and len(name) > 0:
-
-            # take name and port, add all required tables into the database, and call connect_to_radio in RadioManager.
-            radioManager = RadioManager()
-            success = radioManager.connect_to_radio(name, port)
+            res = self.add_vehicle_to_database(name, port)
+            if res:
+                print("now calling the radiomanager")
+                success = radioManager.connect_to_radio(name, port)
+            else:
+                success = False
 
             if success:
                 return {'success': success, 'msg': ''}
             elif not success:
+                return {'success': success, 'msg': 'error connecting'}
                 return {'success': False, 'msg': "Error Connecting"}
 
         elif len(port) == 0:
             return {'success': False, 'msg': 'Invalid port'}
         elif len(name) == 0:
             return {'success': False, 'msg': 'Invalid name'}
+
+    def add_vehicle_to_database(self, name, port):
+        database.open_db()
+        res = database.add_vehicle(name, port)
+        return res
 
 
 @api.route('{:s}/get_available_ports'.format(BASE))

@@ -1,7 +1,6 @@
 """Definition of the server window GUI."""
 import sys
 import os
-import random
 import logging
 from functools import partial
 from PyQt5.QtWidgets import QMainWindow

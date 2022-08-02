@@ -55,8 +55,10 @@ def open_db():
     """
     global _DB
 
+    # dont do anything if the database is already open
     if _DB is not None:
         return
+
     # create database
     _DB = QSqlDatabase.addDatabase(DB_DRIVER)
     fpath = db_name()
@@ -419,6 +421,7 @@ def get_drone_ids(distinct):
     query = _start_query()
 
     if _main_table not in _DB.tables():
+        print("_main_table is not in the database")
         logger.critical("Unable to find {} in database".format(_main_table))
 
     cmd = 'SELECT {} name FROM {}'.format(extra, _main_table)
@@ -431,13 +434,13 @@ def get_drone_ids(distinct):
     return names
 
 
-def add_vehicle(name):
+def add_vehicle(name, port):
 
     query = _start_query()
-    count = len(get_drone_ids(False))
+    count = len(get_drone_ids(True))
 
     # adding to the main table
-    cmd = 'INSERT into drone_collection (uid, name) VALUES ({}, "{}");'.format(count, name)
+    cmd = 'INSERT into drone_collection (uid, name, port) VALUES ({}, "{}", "{}");'.format(count, name, port)
     logger.info("Adding vehicle {} into drone collection".format(name))
     res1 = query.exec_(cmd)
 
@@ -557,30 +560,37 @@ def get_drone_name(uid):
     return query.value(0)
 
 
-def write_values(flt_data):
+def write_values(flt_data, name):
     """
-    Gets all data from the backend, sorts out vehicle's name and rates.
-    Then, sends it to add_values() to write on the database'
+    Gets all parameters for a single vehicle.
+    Then, sends it to add_values() to write on the database
 
     Parameters
     ----------
     flt_data : list
-        List of dictionaries rate1 and rate2.
+        List of dictionaries rate1 and rate2 for a single vehicle.
+    name : str
+        Name of the vehicle.
 
     Returns
     -------
     None.
 
     """
-
     for item in flt_data:
         rate = item['rate']
-        for key, values in item.items():
-            if type(key) is int:
-                name = get_drone_name(key - 1)      # indexing in "drone_collection" starts from uid = 0.
-                table_name = create_drone_rate_table_name(name, rate)
-                add_values(values, table_name)
+        table_name = create_drone_rate_table_name(name, rate)
+        add_values(item['vals'], table_name)
+
+        # for key, values in item.items():
+        #     if type(key) is int:
+        #         table_name = create_drone_rate_table_name(name, rate)
+        #         add_values(values, table_name)
 
 
 if __name__ == "__main__":
-    pass
+    open_db()
+    print(add_vehicle("Testing", "/dev/test/"))
+    add_vehicle("Testing", "/dev/test/")
+    print(get_drone_ids(True))
+    # pass

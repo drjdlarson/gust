@@ -9,7 +9,7 @@ Created on Fri Jun 10 12:36:33 2022
 import sys
 import os
 from functools import partial
-from PyQt5.QtWidgets import QMainWindow, QMessageBox
+from PyQt5.QtWidgets import QMainWindow, QMessageBox, QDialog
 from PyQt5.QtCore import pyqtSlot, QModelIndex, pyqtSignal, QThreadPool
 from PyQt5.QtGui import QIntValidator, QTextCursor
 import requests
@@ -19,7 +19,7 @@ from gust.gui.ui.conn import Ui_MainWindow
 URL_BASE = "http://localhost:8000/api/"
 
 
-class ConWindow(QMainWindow, Ui_MainWindow):
+class ConWindow(QDialog, Ui_MainWindow):
     """Main interface for the connection window"""
 
     def __init__(self, ctx, ports):
@@ -33,7 +33,7 @@ class ConWindow(QMainWindow, Ui_MainWindow):
         self.pushButton_cancel.clicked.connect(self.clicked_cancel)
 
     def clicked_cancel(self):
-        self.close()
+        self.reject()
 
     def clicked_connect(self):
 
@@ -61,7 +61,8 @@ class ConWindow(QMainWindow, Ui_MainWindow):
             msgBox.setWindowTitle("Information")
             msgBox.setText("Connected to vehicle: {}".format(name))
             msgBox.exec()
-            self.close()
+            self.accept()
+
 
         else:
             msgBox.setIcon(QMessageBox.Warning)

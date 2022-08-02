@@ -1,0 +1,2 @@
+#!/usr/bin/env bash 
+fuser -k 8000/tcp 
