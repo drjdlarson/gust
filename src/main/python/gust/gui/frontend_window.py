@@ -18,7 +18,7 @@ from PyQt5.QtGui import QIntValidator, QTextCursor
 import requests
 from gust.gui.ui.gustClient import Ui_MainWindow_main
 from gust.gui import con_window, log_window, sensors_window
-from gust.gui import engine0ff_confirmation, disconnect_confirmation, rtl_confirmation, disarm_confirmation
+from gust.gui import engineoff_confirmation, disconnect_confirmation, rtl_confirmation, disarm_confirmation
 from gust.gui.ui.map_widget import MapWidget
 from gust.gui.ui.attitude_ind_widget import pyG5AIWidget
 
@@ -90,7 +90,7 @@ class FrontendWindow(QMainWindow, Ui_MainWindow_main):
 
     @pyqtSlot()
     def clicked_engineOff(self):
-        win = engine0ff_confirmation.EngineOffConfirmation(
+        win = engineoff_confirmation.EngineOffConfirmation(
             self.ctx)
         win.exec_()
 
