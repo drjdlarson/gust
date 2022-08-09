@@ -33,12 +33,6 @@ class FrontendWindow(QMainWindow, Ui_MainWindow_main):
         self.timer = None
 
         self._conWindow = None
-
-        self._confirm_engineoff_window = None
-        self._confirm_disconnect_window = None
-        self._confirm_rtl_window = None
-        self._confirm_disarm_window = None
-
         self._sensorsWindow = None
 
         self.manager = DataManager()
@@ -102,18 +96,16 @@ class FrontendWindow(QMainWindow, Ui_MainWindow_main):
 
     @pyqtSlot()
     def clicked_RTL(self):
-        if self._confirm_disconnect_window is None:
-            self._confirm_disconnect_window = rtl_confirmation.RTLConfirmation(
-                self.ctx)
-        self._confirm_disconnect_window.exec_()
+        win = rtl_confirmation.RTLConfirmation(
+            self.ctx)
+        win.exec_()
 
 
     @pyqtSlot()
     def clicked_disarm(self):
-        if self._confirm_disarm_window is None:
-            self._confirm_disarm_window = disarm_confirmation.DisarmConfirmation(
-                self.ctx)
-        self._confirm_disarm_window.exec_()
+        win = disarm_confirmation.DisarmConfirmation(
+            self.ctx)
+        win.exec_()
 
 
     @pyqtSlot()
@@ -126,9 +118,9 @@ class FrontendWindow(QMainWindow, Ui_MainWindow_main):
 
     @pyqtSlot()
     def clicked_disconnect(self):
-        self._disconnect_confirmation = disconnect_confirmation.DisconnectConfirmation(
+        win = disconnect_confirmation.DisconnectConfirmation(
             self.ctx)
-        self._disconnect_confirmation.exec_()
+        win.exec_()
 
 
     def update_request(self):
@@ -305,3 +297,27 @@ class DataManager(QtCore.QObject):
 
         self.signal.emit(self.vehicles_list)
         self.timer.start(self.rate)
+
+
+import threading
+import queue
+
+q = queue.Queue()
+
+def worker():
+    while True:
+        item = q.get()
+        print(f'Working on {item}')
+        print(f'Finished {item}')
+        q.task_done()
+
+# Turn-on the worker thread.
+threading.Thread(target=worker, daemon=True).start()
+
+# Send thirty task requests to the worker.
+for item in range(30):
+    q.put(item)
+
+# Block until all tasks are done.
+q.join()
+print('All work completed')
