@@ -2,6 +2,8 @@
 import sys
 import os
 import logging
+import time
+import random
 from functools import partial
 from PyQt5.QtWidgets import QMainWindow
 from PyQt5.QtCore import pyqtSlot, QModelIndex, pyqtSignal, QThreadPool, QTimer
@@ -14,8 +16,10 @@ import gust.server.settings as settings
 from gust.plugin_monitor import pluginMonitor
 import gust.database as database
 from gust.worker import Worker
-import gust.wsgi_apps.api.default as gdefault
+# import gust.conn_manager.conn_server as conn_server
+# import gust.conn_manager.conn_settings as conn_settings
 
+from multiprocessing import Process
 
 logger = logging.getLogger('[backend]')
 
@@ -30,6 +34,7 @@ class BackendWindow(QMainWindow, Ui_BackendWindow):
         self.setupUi(self)
 
         self.timer = None
+        self.conn_server = None
 
         # setup redirect for stdout/stderr
         self.text_update.connect(self.update_console_text)
@@ -222,6 +227,10 @@ class BackendWindow(QMainWindow, Ui_BackendWindow):
         for ii, proc in enumerate(pluginMonitor.running_procs):
             proc.readyReadStandardOutput.connect(partial(self._print_plug_msg, ii))
 
+        # self.conn_server_process = Process(target=conn_server.test_func)
+        # self.conn_server_process.start()
+        # conn_server.test_func()
+        # conn_server.start_conn_server()
 
     @pyqtSlot()
     def clicked_stop(self):
@@ -234,8 +243,13 @@ class BackendWindow(QMainWindow, Ui_BackendWindow):
                    + '----------------------------------------------------------\n\n')
             self.update_console_text(msg)
 
+        if self.conn_server is not None:
+            self.conn_server.terminate()
+            self.conn_server.join()
+
         if self.timer is not None:
             self.timer.stop()
+
 
     @pyqtSlot(str)
     def changed_ip(self, text):

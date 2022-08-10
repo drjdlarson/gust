@@ -56,7 +56,6 @@ class RadioManager(QObject):
             #     thread.join()
 
 
-
     def error_msg(self):
         print("SOME ERROR")
 
