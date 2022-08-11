@@ -85,6 +85,7 @@ class PluginMonitor(QObject):
         return True
         # return self.udp_sock.state() == QtNetwork.QAbstractSocket.SocketState.ConnectedState
 
+
     def _start_plugins(self):
         import gust.database as database
 

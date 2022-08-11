@@ -31,10 +31,6 @@ def handle_connection(conn, addr):
 
         if msg_length:
             msg_length = int(msg_length)
-
-            msg = conn.recv(msg_length).decode(conn_settings.FORMAT)
-            msg = json.loads(msg)
-
             if msg == conn_settings.DISC_MSG:
                 connected = False
                 print("the client has disconnected")
@@ -45,10 +41,9 @@ def handle_connection(conn, addr):
 
             if isinstance(msg, dict):
                 print("the above message is a dictionary")
-                res = manage_radio_conn(msg)
-
-            # sending message back to the client
-            conn.send("Message received at conn_server".encode(conn_settings.FORMAT))
+            #     res = manage_radio_conn(msg)
+                succ_msg = conn_settings.SUCC_MSG
+                conn.send(succ_msg.encode(conn_settings.FORMAT))
     conn.close()
 
 
@@ -63,9 +58,8 @@ def start_conn_server():
         logger.warning(msg)
 
     else:
-        conn_server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        conn_server.bind(conn_settings.ADDR)
-        conn_server.listen(conn_settings.MAX_CONNECTIONS)
+        conn_server = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        conn_server.bind(conn_settings.ADDR())
 
         msg = "Listening on {}:{}".format(conn_settings.IP, conn_settings.PORT)
         logger.info(msg)
@@ -73,18 +67,19 @@ def start_conn_server():
         conn_server_running = True
 
         while True:
-            conn, addr = conn_server.accept()
-            thread = threading.Thread(target=handle_connection, args=(conn, addr))
-            thread.start()
+            data, addr = conn_server.recvfrom(conn_settings.MAX_MSG_SIZE)
+            msg = json.loads(data.decode(conn_settings.FORMAT))
 
-            msg = "New Connection: Active Connection count: {}".format(
-                threading.activeCount() - 1
-            )
+            # we can call the radio manager here
+
+            msg = "Message from {} -> {}".format(addr, msg)
             logger.info(msg)
             print(msg)
+            response = {'success': True}
 
+            conn_server.sendto(json.dumps(response).encode(conn_settings.FORMAT), addr)
 
-
+# %%
 
 def manage_radio_conn(vehicle_info):
     name = vehicle_info['name']
@@ -160,3 +155,5 @@ def test_func():
 if __name__ == "__main__":
     start_conn_server()
     print("Starting the conn_server ...")
+
+# %%

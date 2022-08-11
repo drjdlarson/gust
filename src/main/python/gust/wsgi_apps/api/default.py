@@ -20,30 +20,43 @@ BASE = "/api"
 logger = logging.getLogger("[URL-Manager]")
 
 
+def send_info_to_conn_server(info_dict, msg_type):
+    client = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    client.settimeout(conn_settings.TIMEOUT)
+
+    msg = {'type': msg_type}
+    msg.update(info_dict)
+
+    # msg = conn_client_helper.send(vehicle_info, client)
+    client.sendto(json.dumps(msg).encode(conn_settings.FORMAT), conn_settings.ADDR())
+
+    try:
+        data, addr = client.recvfrom(conn_settings.MAX_MSG_SIZE)
+        msg = json.loads(data.decode(conn_settings.FORMAT))
+        return msg['success'], msg
+
+    except socket.timeout:
+        return False, {}
+
+
 @api.route("{:s}/connect_drone".format(BASE))
 class ConnInfo(Resource):
     def get(self):
         port = request.args.get("port", default="", type=str)
         name = request.args.get("name", default="", type=str)
+        vehicle_info = {'name': name, 'port': port}
 
         if len(port) > 0 and len(name) > 0:
-            success, msg = self.send_info_to_conn_server(name, port)
-
+            success, info = send_info_to_conn_server(vehicle_info, 'drone_connection')
             if success:
-                return {"success": success, "msg": msg}
+                return {"success": True, "msg": ""}
             elif not success:
-                return {"success": success, "msg": "error connecting"}
-                return {"success": False, "msg": "Error Connecting"}
+                return {"success": False, "msg": "error connecting"}
 
         elif len(port) == 0:
             return {"success": False, "msg": "Invalid port"}
         elif len(name) == 0:
             return {"success": False, "msg": "Invalid name"}
-
-    def send_info_to_conn_server(self, name, port):
-        vehicle_info = {'name': name, 'port': port}
-        msg = conn_client_helper.send(vehicle_info)
-        return True, msg
 
 
 @api.route("{:s}/get_available_ports".format(BASE))
