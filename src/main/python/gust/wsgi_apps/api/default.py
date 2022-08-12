@@ -19,6 +19,25 @@ logger = logging.getLogger("[URL-Manager]")
 
 
 def send_info_to_conn_server(info_dict, msg_type):
+    """
+    Packages and sends information to conn_server as a UDP socket client
+
+    Parameters
+    ----------
+    info_dict : dict
+        Information to be sent to conn_server
+    msg_type : str
+        Type of information in the dictionary.
+        msg_type can be specified based on conn_settings
+
+    Returns
+    -------
+    bool
+        Success result.
+    str
+        Any extra message.
+
+    """
 
 
     client = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)

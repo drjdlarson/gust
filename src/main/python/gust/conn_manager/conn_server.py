@@ -19,9 +19,22 @@ conn_server_running = False
 
 
 def start_conn_server():
-    """Allow the connection server to start listening to socket connection and
-        send each connection to RadioManager for further process
-        """
+    """
+    UDP Socket Server
+
+        Allow the connection server to start listening to socket connection and
+        send each connection to other modules based on received message type
+
+        Receives dictionary from the client sockets and sends back dictionary.
+        One of the keys in the dictionary is 'type'
+
+        Message will be routed to specific point depending on the message type
+
+    Returns
+    -------
+    None.
+
+    """
     global conn_server_running
     if conn_server_running:
         msg = "Conn-server is already running"
