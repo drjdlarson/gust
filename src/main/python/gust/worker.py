@@ -51,16 +51,14 @@ class Worker(QRunnable):
         """
         try:
             result = self.fn(*self.args, **self.kwargs)
-            print("trying in worker")
 
         except Exception:
             traceback.print_exc()
             exctype, value = sys.exc_info()[:2]
             self.signals.error.emit((exctype, value, traceback.format_exc()))
-            print("handling exception")
+
         else:
             self.signals.result.emit(result)  # Return the result of the processing
-            print("else part")
+
         finally:
             self.signals.finished.emit()  # Done
-            print("reached final part", flush=True)

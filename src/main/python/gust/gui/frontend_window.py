@@ -146,7 +146,7 @@ class FrontendWindow(QMainWindow, Ui_MainWindow_main):
             item.setTextAlignment(QtCore.Qt.AlignCenter)
             self.tableWidget.setItem(rowPos, 0, item)
 
-            item = self.flight_params[key]['flt_mode']
+            item = self.mode_selector(self.flight_params[key]['flt_mode'])
             item = QTableWidgetItem(str(item))
             item.setTextAlignment(QtCore.Qt.AlignCenter)
             self.tableWidget.setItem(rowPos, 1, item)
@@ -156,7 +156,7 @@ class FrontendWindow(QMainWindow, Ui_MainWindow_main):
             item.setTextAlignment(QtCore.Qt.AlignCenter)
             self.tableWidget.setItem(rowPos, 2, item)
 
-            item = self.flight_params[key]['tof']
+            item = int(self.flight_params[key]['tof'])
             item = QTableWidgetItem(str(timedelta(seconds=item)))
             item.setTextAlignment(QtCore.Qt.AlignCenter)
             self.tableWidget.setItem(rowPos, 3, item)
@@ -244,6 +244,16 @@ class FrontendWindow(QMainWindow, Ui_MainWindow_main):
         self.widget_hud.gnss_fix = self.flight_params[key_pos]['gnss_fix']
         self.widget_hud.mode = self.flight_params[key_pos]['flt_mode']
         self.widget_hud.repaint()
+
+    def mode_selector(self, mode):
+        if mode == 0:
+            return "Stabilize"
+        elif mode == 1:
+            return "Pos_hold"
+        elif mode == 2:
+            return "Auto"
+        elif mode == 3:
+            return "RTL"
 
     def clicked_default(self):
         self.label_seluav.setText("Current Vehicle Name")

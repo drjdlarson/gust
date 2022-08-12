@@ -14,6 +14,7 @@ import gust.conn_manager.conn_settings as conn_settings
 import socket
 import json
 
+
 BASE = "/api"
 logger = logging.getLogger("[URL-Manager]")
 
@@ -39,11 +40,10 @@ def send_info_to_conn_server(info_dict, msg_type):
 
     """
 
-
     client = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     client.settimeout(conn_settings.TIMEOUT)
 
-    msg = {'type': msg_type}
+    msg = {"type": msg_type}
     msg.update(info_dict)
 
     f_msg = json.dumps(msg).encode(conn_settings.FORMAT)
@@ -53,11 +53,10 @@ def send_info_to_conn_server(info_dict, msg_type):
     try:
         response, addr = client.recvfrom(conn_settings.MAX_MSG_SIZE)
         msg = json.loads(response.decode(conn_settings.FORMAT))
-        return msg['success'], msg['info']
+        return msg["success"], msg["info"]
 
     except socket.timeout:
-        return False, msg['info']
-
+        return False, msg["info"]
 
 
 @api.route("{:s}/connect_drone".format(BASE))
@@ -65,15 +64,22 @@ class ConnInfo(Resource):
     def get(self):
         port = request.args.get("port", default="", type=str)
         name = request.args.get("name", default="", type=str)
-        vehicle_info = {'name': name, 'port': port}
+        vehicle_info = {"name": name, "port": port}
 
         if len(port) > 0 and len(name) > 0:
-            success, info = send_info_to_conn_server(vehicle_info, conn_settings.DRONE_CONN)
+            database.connect_db()
+            res = database.add_vehicle(name, port)
+            if res:
+                conn_succ, info = send_info_to_conn_server(
+                    vehicle_info, conn_settings.DRONE_CONN
+                    )
+                if conn_succ:
+                    return {"success": True, "msg": ""}
+                elif not conn_succ:
+                    return {"success": False, "msg": "error connecting"}
 
-            if success:
-                return {"success": True, "msg": ""}
-            elif not success:
-                return {"success": False, "msg": "error connecting"}
+            else:
+                return {'success': False, 'msg': "Failed to add vehicle to database"}
 
         elif len(port) == 0:
             return {"success": False, "msg": "Invalid port"}
@@ -81,12 +87,11 @@ class ConnInfo(Resource):
             return {"success": False, "msg": "Invalid name"}
 
 
-
 @api.route("{:s}/get_available_ports".format(BASE))
 class PortsData(Resource):
     def get(self):
         ports = list(serial.tools.list_ports.comports())
-        available_ports = ["/dev/test"]
+        available_ports = ["/dev/test/"]
         for port in sorted(ports):
             available_ports.append(port.device)
         return {"ports": available_ports}
@@ -98,7 +103,7 @@ class AttitudeData(Resource):
 
     def get(self):
         attitude_data = {}
-        database.open_db()
+        database.connect_db()
         names = database.get_drone_ids(True)
         for index, drone in enumerate(names):
             table_name = database.create_drone_rate_table_name(
@@ -115,7 +120,7 @@ class SysStatus(Resource):
 
     def get(self):
         sys_status = {}
-        database.open_db()
+        database.connect_db()
         names = database.get_drone_ids(True)
         for index, drone in enumerate(names):
             table_name = database.create_drone_rate_table_name(
@@ -134,7 +139,7 @@ class SysData(Resource):
 
     def get(self):
         sys_data = {}
-        database.open_db()
+        database.connect_db()
         names = database.get_drone_ids(True)
         for index, drone in enumerate(names):
             table_name = database.create_drone_rate_table_name(
@@ -151,7 +156,7 @@ class SysInfo(Resource):
 
     def get(self):
         sys_info = {}
-        database.open_db()
+        database.connect_db()
         names = database.get_drone_ids(True)
         for index, drone in enumerate(names):
             table_name = database.create_drone_rate_table_name(
@@ -168,7 +173,7 @@ class MapData(Resource):
 
     def get(self):
         map_data = {}
-        database.open_db()
+        database.connect_db()
         names = database.get_drone_ids(True)
         for index, drone in enumerate(names):
             table_name = database.create_drone_rate_table_name(

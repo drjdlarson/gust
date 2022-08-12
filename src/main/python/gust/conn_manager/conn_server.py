@@ -9,6 +9,7 @@ import json
 import socket
 import logging
 import gust.conn_manager.conn_settings as conn_settings
+from gust.conn_manager.radio_manager import radioManager
 
 
 logger = logging.getLogger("[conn-server]")
@@ -28,7 +29,6 @@ def start_conn_server():
         Receives dictionary from the client sockets and sends back dictionary.
         One of the keys in the dictionary is 'type'
 
-        Message will be routed to specific point depending on the message type
 
     Returns
     -------
@@ -51,11 +51,15 @@ def start_conn_server():
 
             # Receiving message from client socket
             data, addr = conn_server.recvfrom(conn_settings.MAX_MSG_SIZE)
-            msg = json.loads(data.decode(conn_settings.FORMAT))
+            received_info = json.loads(data.decode(conn_settings.FORMAT))
+
+            msg = "Message from {} -> {}".format(addr, received_info)
+            logger.info(msg)
 
             # we can call the radio manager here
-            msg = "Message from {} -> {}".format(addr, msg)
-            logger.info(msg)
+            if received_info['type'] == conn_settings.DRONE_CONN:
+                radioManager.connect_to_radio(received_info)
+
 
             # Sending message back to client socket
             response = {"success": True, 'info': ''}
@@ -66,3 +70,7 @@ def start_conn_server():
 if __name__ == "__main__":
     start_conn_server()
     print("Starting the conn_server ...")
+
+    empty = {}
+    empty.update({'type': conn_settings.DRONE_CONN})
+    print(empty['type'])
