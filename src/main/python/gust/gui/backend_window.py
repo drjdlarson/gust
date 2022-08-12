@@ -19,8 +19,6 @@ from gust.worker import Worker
 import gust.conn_manager.conn_server as conn_server
 import gust.conn_manager.conn_settings as conn_settings
 
-from multiprocessing import Process
-
 logger = logging.getLogger("[backend]")
 
 
@@ -237,13 +235,9 @@ class BackendWindow(QMainWindow, Ui_BackendWindow):
         for ii, proc in enumerate(pluginMonitor.running_procs):
             proc.readyReadStandardOutput.connect(partial(self._print_plug_msg, ii))
 
-
+        # starting a thread to run the conn_server
         worker = Worker(conn_server.start_conn_server)
         self.threadpool.start(worker)
-
-        # self.conn_server_process = Process(target=conn_server.test_func)
-        # self.conn_server_process.daemon = True
-        # self.conn_server_process.start()
 
     @pyqtSlot()
     def clicked_stop(self):
@@ -258,8 +252,6 @@ class BackendWindow(QMainWindow, Ui_BackendWindow):
             )
             self.update_console_text(msg)
 
-        # if self.conn_server_process is not None:
-        #     self.conn_server_process.terminate()
 
         if self.timer is not None:
             self.timer.stop()

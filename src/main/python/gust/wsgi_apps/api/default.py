@@ -10,9 +10,7 @@ import logging
 import gust.database as database
 from PyQt5 import QtCore
 from PyQt5.QtCore import pyqtSignal, QThread, pyqtSlot, QObject
-
 import gust.conn_manager.conn_settings as conn_settings
-import gust.conn_manager.conn_client_helper as conn_client_helper
 import socket
 import json
 
@@ -21,22 +19,26 @@ logger = logging.getLogger("[URL-Manager]")
 
 
 def send_info_to_conn_server(info_dict, msg_type):
+
+
     client = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     client.settimeout(conn_settings.TIMEOUT)
 
     msg = {'type': msg_type}
     msg.update(info_dict)
 
-    # msg = conn_client_helper.send(vehicle_info, client)
-    client.sendto(json.dumps(msg).encode(conn_settings.FORMAT), conn_settings.ADDR())
+    f_msg = json.dumps(msg).encode(conn_settings.FORMAT)
+    client.sendto(f_msg, conn_settings.ADDR())
 
+    # Try to receive data being sent back from conn_server
     try:
-        data, addr = client.recvfrom(conn_settings.MAX_MSG_SIZE)
-        msg = json.loads(data.decode(conn_settings.FORMAT))
-        return msg['success'], msg
+        response, addr = client.recvfrom(conn_settings.MAX_MSG_SIZE)
+        msg = json.loads(response.decode(conn_settings.FORMAT))
+        return msg['success'], msg['info']
 
     except socket.timeout:
-        return False, {}
+        return False, msg['info']
+
 
 
 @api.route("{:s}/connect_drone".format(BASE))
@@ -47,7 +49,8 @@ class ConnInfo(Resource):
         vehicle_info = {'name': name, 'port': port}
 
         if len(port) > 0 and len(name) > 0:
-            success, info = send_info_to_conn_server(vehicle_info, 'drone_connection')
+            success, info = send_info_to_conn_server(vehicle_info, conn_settings.DRONE_CONN)
+
             if success:
                 return {"success": True, "msg": ""}
             elif not success:
@@ -57,6 +60,7 @@ class ConnInfo(Resource):
             return {"success": False, "msg": "Invalid port"}
         elif len(name) == 0:
             return {"success": False, "msg": "Invalid name"}
+
 
 
 @api.route("{:s}/get_available_ports".format(BASE))
