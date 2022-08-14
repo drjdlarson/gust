@@ -29,7 +29,7 @@ URL_BASE = "http://localhost:8000/api/"
 class DisconnectConfirmation(QDialog, Ui_MainWindow):
     """Main interface for the confirmation window before disconnecting"""
 
-    def __init__(self, ctx):
+    def __init__(self, name, ctx):
         super().__init__()
         self.ctx = ctx
         self.setupUi(self)
@@ -37,7 +37,7 @@ class DisconnectConfirmation(QDialog, Ui_MainWindow):
 
         self.pushButton_cancel.clicked.connect(self.clicked_cancel)
         self.pushButton_ok.clicked.connect(self.clicked_ok)
-        self.label_custom.setText("Disconnect?")
+        self.label_custom.setText("Disconnect {}?".format(name))
 
     def clicked_ok(self):
         self.reject()

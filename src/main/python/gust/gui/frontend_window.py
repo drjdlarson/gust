@@ -45,6 +45,8 @@ class FrontendWindow(QMainWindow, Ui_MainWindow_main):
         self.pushButton_RTL.clicked.connect(self.clicked_RTL)
         self.pushButton_disarm.clicked.connect(self.clicked_disarm)
         self.pushButton_sensors.clicked.connect(self.clicked_sensors)
+        self.disconnect_button.clicked.connect(self.clicked_disconnect)
+
 
         self.pushButton_update.clicked.connect(self.update_request)
         self.pushButton_default.clicked.connect(self.clicked_default)
@@ -55,8 +57,6 @@ class FrontendWindow(QMainWindow, Ui_MainWindow_main):
         header.setMinimumSectionSize(120)
         header.setSectionResizeMode(QHeaderView.ResizeToContents)
         header.setStretchLastSection(True)
-
-
 
         self.once_clicked = False
         self.tableWidget.cellClicked.connect(self.item_clicked)
@@ -88,11 +88,6 @@ class FrontendWindow(QMainWindow, Ui_MainWindow_main):
             self.ctx)
         win.exec_()
 
-        # if self._confirm_engineoff_window is None:
-        #     self._confirm_engineoff_window = engine0ff_confirmation.EngineOffConfirmation(
-        #         self.ctx)
-        #     self._confirm_engineoff_window.exec_()
-
 
     @pyqtSlot()
     def clicked_RTL(self):
@@ -118,9 +113,13 @@ class FrontendWindow(QMainWindow, Ui_MainWindow_main):
 
     @pyqtSlot()
     def clicked_disconnect(self):
-        win = disconnect_confirmation.DisconnectConfirmation(
-            self.ctx)
-        win.exec_()
+        button = self.sender()
+        if button:
+            row = self.tableWidget.indexAt(button.pos()).row()
+            name = self.tableWidget.item(row, 0)
+            win = disconnect_confirmation.DisconnectConfirmation(
+                name, self.ctx)
+            win.exec_()
 
 
     def update_request(self):
@@ -189,15 +188,8 @@ class FrontendWindow(QMainWindow, Ui_MainWindow_main):
             # self.con_status will be 1 or 0.
             self.con_status = self.flight_params[key]['connection']
             self.disconnect_button = QPushButton("Disconnect")
-            # self.disconnect_button = QTableWidgetItem(str(self.disconnect_button))
-            # self.disconnect_button.setTextAlignment(QtCore.Qt.AlignCenter)
-            self.disconnect_button.clicked.connect(self.clicked_disconnect)
             self.tableWidget.setCellWidget(rowPos, 9, self.disconnect_button)
 
-            # item = self.flight_params[key]['connection']
-            # item = QTableWidgetItem(str(item))
-            # item.setTextAlignment(QtCore.Qt.AlignCenter)
-            # self.tableWidget.setItem(rowPos, 9, item)
 
             self.widget_map.add_drone(
                 self.flight_params[key]['name'],
