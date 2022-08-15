@@ -31,6 +31,7 @@ class DisconnectConfirmation(QDialog, Ui_MainWindow):
 
     def __init__(self, name, ctx):
         super().__init__()
+        self.name = name
         self.ctx = ctx
         self.setupUi(self)
 
@@ -40,7 +41,26 @@ class DisconnectConfirmation(QDialog, Ui_MainWindow):
         self.label_custom.setText("Disconnect {}?".format(name))
 
     def clicked_ok(self):
-        self.reject()
+        url = "{}disconnect_drone".format(URL_BASE)
+        url += '?' + "name=" + self.name.replace(' ', '_')
+        disconn = requests.get(url).json()
+
+        msgBox = QMessageBox()
+
+        if disconn['success']:
+            msgBox.setIcon(QMessageBox.Information)
+            msgBox.setWindowTitle("Information")
+            msgBox.setText("Disconnected from vehicle: {}".format(self.name))
+            msgBox.exec()
+            self.accept()
+
+        else:
+            msgBox.setIcon(QMessageBox.Warning)
+            msgBox.setWindowTitle("Warning")
+            msgBox.setText("Unable to disconnect: <<{:s}>>".format(disconn['msg']))
+            msgBox.exec()
+
+
 
     def clicked_cancel(self):
         self.reject()

@@ -58,11 +58,15 @@ def start_conn_server():
 
             # we can call the radio manager here
             if received_info['type'] == conn_settings.DRONE_CONN:
-                radioManager.connect_to_radio(received_info)
+                response = radioManager.connect_to_radio(received_info)
+                response = {"success": True, "info": ""}
+
+            elif received_info['type'] == conn_settings.DRONE_DISC:
+                response = radioManager.disconnect_radio(received_info)
 
 
             # Sending message back to client socket
-            response = {"success": True, 'info': ''}
+            # response = {"success": True, 'info': ''}
             f_response = json.dumps(response).encode(conn_settings.FORMAT)
             conn_server.sendto(f_response, addr)
 

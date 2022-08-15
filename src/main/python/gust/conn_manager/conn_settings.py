@@ -8,11 +8,12 @@ MAX_MSG_SIZE = 1500
 TIMEOUT = 1
 
 # messages
-DISC_MSG = 'disconnect'
+DISC_MSG = 'disconnected'
 SUCC_MSG ='connected'
 
 # message_type
-DRONE_CONN = 'drone_connection'
+DRONE_CONN = 'drone_connect'
+DRONE_DISC = 'drone_disconnect'
 
 
 

@@ -16,6 +16,7 @@ DB_DRIVER = "QSQLITE"
 
 _DB = None
 _main_table = "drone_collection"
+_connected_counter = 0
 
 logger = logging.getLogger("[database]")
 
@@ -477,13 +478,12 @@ def get_drone_ids(distinct):
 
 
 def add_vehicle(name, port):
-
+    global _connected_counter
     query = _start_query()
-    count = len(get_drone_ids(True))
 
     # adding to the main table
     cmd = 'INSERT into drone_collection (uid, name, port) VALUES ({}, "{}", "{}");'.format(
-        count, name, port
+        _connected_counter, name, port
     )
     logger.info("Adding vehicle {} into drone collection".format(name))
     res1 = query.exec_(cmd)
@@ -526,6 +526,7 @@ def add_vehicle(name, port):
     res3 = query.exec_(cmd)
 
     if res1 and res2 and res3:
+        _connected_counter += 1
         return True
 
 
@@ -548,8 +549,10 @@ def remove_vehicle(name):
     )
     res_rate1 = query.exec_(drop_rate1)
     res_rate2 = query.exec_(drop_rate2)
+
     if res_rate1 and res_rate2:
         logger.info("Erased all parameters for {}".format(name))
+        return True
 
 
 def get_params(table_name, params):

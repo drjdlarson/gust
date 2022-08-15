@@ -45,12 +45,9 @@ class FrontendWindow(QMainWindow, Ui_MainWindow_main):
         self.pushButton_RTL.clicked.connect(self.clicked_RTL)
         self.pushButton_disarm.clicked.connect(self.clicked_disarm)
         self.pushButton_sensors.clicked.connect(self.clicked_sensors)
-        self.disconnect_button.clicked.connect(self.clicked_disconnect)
-
 
         self.pushButton_update.clicked.connect(self.update_request)
         self.pushButton_default.clicked.connect(self.clicked_default)
-
 
         # Setting few features of the table
         header = self.tableWidget.horizontalHeader()
@@ -115,12 +112,13 @@ class FrontendWindow(QMainWindow, Ui_MainWindow_main):
     def clicked_disconnect(self):
         button = self.sender()
         if button:
-            row = self.tableWidget.indexAt(button.pos()).row()
-            name = self.tableWidget.item(row, 0)
+            sel_row = self.tableWidget.indexAt(button.pos()).row()
+            name = self.tableWidget.item(sel_row, 0).text()
             win = disconnect_confirmation.DisconnectConfirmation(
                 name, self.ctx)
-            win.exec_()
-
+            res = win.exec_()
+            if res:
+                self.tableWidget.removeRow(sel_row)
 
     def update_request(self):
         if self.timer is None:
@@ -188,6 +186,7 @@ class FrontendWindow(QMainWindow, Ui_MainWindow_main):
             # self.con_status will be 1 or 0.
             self.con_status = self.flight_params[key]['connection']
             self.disconnect_button = QPushButton("Disconnect")
+            self.disconnect_button.clicked.connect(self.clicked_disconnect)
             self.tableWidget.setCellWidget(rowPos, 9, self.disconnect_button)
 
 

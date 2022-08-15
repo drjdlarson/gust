@@ -77,14 +77,29 @@ class ConnInfo(Resource):
                     return {"success": True, "msg": ""}
                 elif not conn_succ:
                     return {"success": False, "msg": "error connecting"}
-
             else:
-                return {'success': False, 'msg': "Failed to add vehicle to database"}
-
+                return {'success': False, 'msg': "Unable to add vehicle to database"}
         elif len(port) == 0:
             return {"success": False, "msg": "Invalid port"}
         elif len(name) == 0:
             return {"success": False, "msg": "Invalid name"}
+
+
+@api.route("{:s}/disconnect_drone".format(BASE))
+class Disconnect(Resource):
+    def get(self):
+        name = request.args.get("name", default="", type=str)
+        disconn_succ, info = send_info_to_conn_server({'name': name}, conn_settings.DRONE_DISC)
+        if disconn_succ:
+            database.connect_db()
+            res = database.remove_vehicle(name)
+            if res:
+                return {"success": True, 'msg': ""}
+            else:
+                return {"success": False, "msg": "Unable to remove from database"}
+        else:
+            return {"success": False, "msg": "Unable to disconnect"}
+
 
 
 @api.route("{:s}/get_available_ports".format(BASE))
