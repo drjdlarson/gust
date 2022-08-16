@@ -91,15 +91,9 @@ class Disconnect(Resource):
         name = request.args.get("name", default="", type=str)
         disconn_succ, info = send_info_to_conn_server({'name': name}, conn_settings.DRONE_DISC)
         if disconn_succ:
-            database.connect_db()
-            res = database.remove_vehicle(name)
-            if res:
-                return {"success": True, 'msg': ""}
-            else:
-                return {"success": False, "msg": "Unable to remove from database"}
+            return {"success": True, 'msg': ""}
         else:
             return {"success": False, "msg": "Unable to disconnect"}
-
 
 
 @api.route("{:s}/get_available_ports".format(BASE))
@@ -136,7 +130,7 @@ class SysStatus(Resource):
     def get(self):
         sys_status = {}
         database.connect_db()
-        names = database.get_drone_ids(True)
+        names = database.get_drone_ids()
         for index, drone in enumerate(names):
             table_name = database.create_drone_rate_table_name(
                 drone, database.DroneRates.RATE1
@@ -155,7 +149,7 @@ class SysData(Resource):
     def get(self):
         sys_data = {}
         database.connect_db()
-        names = database.get_drone_ids(True)
+        names = database.get_drone_ids()
         for index, drone in enumerate(names):
             table_name = database.create_drone_rate_table_name(
                 drone, database.DroneRates.RATE1
@@ -172,7 +166,7 @@ class SysInfo(Resource):
     def get(self):
         sys_info = {}
         database.connect_db()
-        names = database.get_drone_ids(True)
+        names = database.get_drone_ids()
         for index, drone in enumerate(names):
             table_name = database.create_drone_rate_table_name(
                 drone, database.DroneRates.RATE1
@@ -189,7 +183,7 @@ class MapData(Resource):
     def get(self):
         map_data = {}
         database.connect_db()
-        names = database.get_drone_ids(True)
+        names = database.get_drone_ids()
         for index, drone in enumerate(names):
             table_name = database.create_drone_rate_table_name(
                 drone, database.DroneRates.RATE2

@@ -39,8 +39,9 @@ class RadioManager(QObject):
         logger.debug("msg received for disconnection -->> {}".format(info))
         name = info['name']
         self.conn_status.update({name: False})
-
-        return {"success": True, "info": ""}
+        res = database.change_connection_status_value(name, 0)
+        if res:
+            return {"success": True, "info": ""}
 
 
     def poll_radio(self, name, port):
@@ -48,6 +49,7 @@ class RadioManager(QObject):
         if port == "/dev/test/":
             msg = "Populating database with dummy data..."
             logger.info(msg)
+
             while self.conn_status[name]:
                 self.write_dummy_into_database(name)
                 time.sleep(0.5)
@@ -103,11 +105,3 @@ class RadioManager(QObject):
 
 
 radioManager = RadioManager()
-
-# name = 'One'
-# res = {}
-# print("res -->> {}".format(res))
-# res.update({name: True})
-# print("res -->> {}".format(res))
-# res.update({name: False})
-# print("res -->> {}".format(res))

@@ -455,7 +455,23 @@ def get_plugin_ids(p_name):
     return p_ids
 
 
-def get_drone_ids(distinct):
+def get_drone_ids(distinct=True, active=True):
+    """
+    Shows all the drones currently in the database
+
+    Parameters
+    ----------
+    distinct : bool, optional
+        If True, it only returns unique drones.
+    active : bool, optional
+        If True, it only returns vehicles that are still connected.
+
+    Returns
+    -------
+    list
+        Names of vehicle in the database.
+
+    """
     if distinct:
         extra = " DISTINCT"
     else:
@@ -474,7 +490,12 @@ def get_drone_ids(distinct):
     names = []
     while result and query.next():
         names.append(query.value(0))
-    return names
+
+    if not active:
+        return names
+    else:
+        active_names = list(filter(check_connection_status, names))
+        return active_names
 
 
 def add_vehicle(name, port):
@@ -554,7 +575,6 @@ def remove_vehicle(name):
         logger.info("Erased all parameters for {}".format(name))
         return True
 
-
 def get_params(table_name, params):
     """Get parameters from the database.
 
@@ -563,7 +583,6 @@ def get_params(table_name, params):
     dict
         dictionary of parameter keys and values
     """
-
     query = _start_query()
     req_params = ", ".join(params)
     cmd = "SELECT {} FROM {}".format(req_params, table_name)
@@ -577,6 +596,37 @@ def get_params(table_name, params):
 
 def create_drone_rate_table_name(name, rate):
     return "{:s}_{:s}".format(name, rate)
+
+def check_connection_status(name):
+    table_name = create_drone_rate_table_name(name, DroneRates.RATE1)
+    query = _start_query()
+    cmd = "SELECT connection FROM {}".format(table_name)
+    query.exec_(cmd)
+    query.last()
+    res = query.value("connection")
+    return res == 1
+
+def change_connection_status_value(name, val):
+    """
+    Parameters
+    ----------
+    name : str
+        Name of the vehicle
+    val : int
+        Either 0 or 1
+
+    Returns
+    -------
+    res : bool
+        Result of query performed
+
+    """
+    table_name = create_drone_rate_table_name(name, DroneRates.RATE1)
+    query = _start_query()
+    cmd = "INSERT INTO {} (connection) VALUES ({});".format(table_name, val)
+    res = query.exec_(cmd)
+    logger.debug("Changing connection status of {} to {}".format(name, val))
+    return res
 
 
 def add_values(vals, table_name):
@@ -645,11 +695,6 @@ def write_values(flt_data, name):
         # logger.debug(msg)
 
     return all(res)
-
-    # for key, values in item.items():
-    #     if type(key) is int:
-    #         table_name = create_drone_rate_table_name(name, rate)
-    #         add_values(values, table_name)
 
 
 if __name__ == "__main__":
