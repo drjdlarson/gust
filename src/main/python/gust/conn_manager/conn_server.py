@@ -13,13 +13,14 @@ from gust.conn_manager.radio_manager import radioManager
 
 
 logger = logging.getLogger("[conn-server]")
-conn_server_running = False
 
 # TODO: 1. figure out closing of conn_server appropriately
+#           (parent.stop_conn_server gets bool from backend to stop,
+#            I can't figure out how to use that to stop the while loop)
 #       2. add other if then statements for proper connection routing
 
 
-def start_conn_server():
+def start_conn_server(parent):
     """
     UDP Socket Server
 
@@ -35,40 +36,43 @@ def start_conn_server():
     None.
 
     """
-    global conn_server_running
-    if conn_server_running:
-        msg = "Conn-server is already running"
-        logger.warning(msg)
 
-    else:
-        conn_server = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        conn_server.bind(conn_settings.ADDR())
+    conn = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    conn.bind(conn_settings.ADDR())
 
-        msg = "Listening at {}:{}".format(conn_settings.IP, conn_settings.PORT)
+    msg = "Listening at {}:{}".format(conn_settings.IP, conn_settings.PORT)
+    logger.info(msg)
+
+
+    while True:
+
+        # Receiving message from client socket
+        data, addr = conn.recvfrom(conn_settings.MAX_MSG_SIZE)
+        received_info = json.loads(data.decode(conn_settings.FORMAT))
+        msg = "Message from {} -> {}".format(addr, received_info)
         logger.info(msg)
 
-        while True:
+        # we can call the radio manager here
+        if received_info['type'] == conn_settings.DRONE_CONN:
+            response = radioManager.connect_to_radio(received_info)
+            response = {"success": True, "info": ""}
 
-            # Receiving message from client socket
-            data, addr = conn_server.recvfrom(conn_settings.MAX_MSG_SIZE)
-            received_info = json.loads(data.decode(conn_settings.FORMAT))
+        elif received_info['type'] == conn_settings.DRONE_DISC:
+            response = radioManager.disconnect_radio(received_info)
 
-            msg = "Message from {} -> {}".format(addr, received_info)
-            logger.info(msg)
+        # Sending message back to client socket
+        # response = {"success": True, 'info': ''}
+        f_response = json.dumps(response).encode(conn_settings.FORMAT)
+        conn.sendto(f_response, addr)
 
-            # we can call the radio manager here
-            if received_info['type'] == conn_settings.DRONE_CONN:
-                response = radioManager.connect_to_radio(received_info)
-                response = {"success": True, "info": ""}
+        # if parent.stop_conn_server:
+        #     logger.info("parent.stop_conn_server:: {}".format(parent.stop_conn_server))
+        #     break
 
-            elif received_info['type'] == conn_settings.DRONE_DISC:
-                response = radioManager.disconnect_radio(received_info)
+    logger.info("closing the conn-server socket")
+    # conn.shutdown()
+    conn.close()
 
-
-            # Sending message back to client socket
-            # response = {"success": True, 'info': ''}
-            f_response = json.dumps(response).encode(conn_settings.FORMAT)
-            conn_server.sendto(f_response, addr)
 
 
 if __name__ == "__main__":

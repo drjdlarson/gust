@@ -1,0 +1,149 @@
+*** Messages packets received from BFS (MAVLink) ***
+
+Available messages:
+	MAV
+	HOME
+	GLOBAL_POSITION_INT
+	VFR_HUD
+	ATTITUDE
+	LOCAL_POSITION_NED
+	SCALED_IMU
+	GPS_RAW_INT
+	SCALED_PRESSURE
+	SERVO_OUTPUT_RAW
+	RC_CHANNELS
+	HEARTBEAT
+Available fields in HOME msg:
+	time_usec
+	fix_type
+	lat
+	lon
+	alt
+	eph
+	epv
+	vel
+	cog
+	satellites_visible
+	alt_ellipsoid
+	h_acc
+	v_acc
+	vel_acc
+	hdg_acc
+	yaw
+Available fields in GLOBAL_POSITION_INT msg:
+	time_boot_ms
+	lat
+	lon
+	alt
+	relative_alt
+	vx
+	vy
+	vz
+	hdg
+Available fields in VFR_HUD msg:
+	airspeed
+	groundspeed
+	heading
+	throttle
+	alt
+	climb
+Available fields in ATTITUDE msg:
+	time_boot_ms
+	roll
+	pitch
+	yaw
+	rollspeed
+	pitchspeed
+	yawspeed
+Available fields in LOCAL_POSITION_NED msg:
+	time_boot_ms
+	x
+	y
+	z
+	vx
+	vy
+	vz
+Available fields in SCALED_IMU msg:
+	time_boot_ms
+	xacc
+	yacc
+	zacc
+	xgyro
+	ygyro
+	zgyro
+	xmag
+	ymag
+	zmag
+	temperature
+Available fields in GPS_RAW_INT msg:
+	time_usec
+	fix_type
+	lat
+	lon
+	alt
+	eph
+	epv
+	vel
+	cog
+	satellites_visible
+	alt_ellipsoid
+	h_acc
+	v_acc
+	vel_acc
+	hdg_acc
+	yaw
+Available fields in SCALED_PRESSURE msg:
+	time_boot_ms
+	press_abs
+	press_diff
+	temperature
+	temperature_press_diff
+Available fields in SERVO_OUTPUT_RAW msg:
+	time_usec
+	port
+	servo1_raw
+	servo2_raw
+	servo3_raw
+	servo4_raw
+	servo5_raw
+	servo6_raw
+	servo7_raw
+	servo8_raw
+	servo9_raw
+	servo10_raw
+	servo11_raw
+	servo12_raw
+	servo13_raw
+	servo14_raw
+	servo15_raw
+	servo16_raw
+Available fields in RC_CHANNELS msg:
+	time_boot_ms
+	chancount
+	chan1_raw
+	chan2_raw
+	chan3_raw
+	chan4_raw
+	chan5_raw
+	chan6_raw
+	chan7_raw
+	chan8_raw
+	chan9_raw
+	chan10_raw
+	chan11_raw
+	chan12_raw
+	chan13_raw
+	chan14_raw
+	chan15_raw
+	chan16_raw
+	chan17_raw
+	chan18_raw
+	rssi
+Available fields in HEARTBEAT msg:
+	type
+	autopilot
+	base_mode
+	custom_mode
+	system_status
+	mavlink_version
+

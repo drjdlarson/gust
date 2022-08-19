@@ -11,6 +11,8 @@ import logging
 from gust.worker import Worker
 import gust.database as database
 from time import sleep
+import math
+from radio_receiver import RadioReceiver
 from PyQt5.QtCore import QThreadPool, QTimer, pyqtSlot, pyqtSignal, QObject
 
 logger = logging.getLogger("[radio-manager]")
@@ -43,21 +45,59 @@ class RadioManager(QObject):
         if res:
             return {"success": True, "info": ""}
 
-
     def poll_radio(self, name, port):
         # for testing purposes only
         if port == "/dev/test/":
             msg = "Populating database with dummy data..."
             logger.info(msg)
-
             while self.conn_status[name]:
                 self.write_dummy_into_database(name)
                 time.sleep(0.5)
-
         else:
-            msg = "Hardware needs to be configured"
-            logger.warning(msg)
+#            radio = RadioReceiver('/dev/ttyACM0')
+            rate1, rate2 = self.set_initial_values()
+            all_data = [rate1, rate2]
+            res = database.write_values(all_data, name)
 
+            new_rate1, new_rate2 = rate1, rate2
+            while self.conn_status[name]:
+                new_rate1, new_rate2 = self.write_mavlink_into_database(name, new_rate1, new_rate2)
+                time.sleep(0.5)
+
+    def set_initial_values(self):
+        rate2 = {
+            "rate": database.DroneRates.RATE2,
+            "vals": {
+                "m_time": 0,
+                "roll_angle": 0,
+                "pitch_angle": 0,
+                "heading": 0,
+                "track": 0,
+                "vspeed": 0,
+                "gndspeed": 0,
+                "airspeed": 0,
+                "latitude": 0,
+                "longitude": 0,
+                "altitude": 0,
+            },
+        }
+        rate1 = {
+            "rate": database.DroneRates.RATE1,
+            "vals": {
+                "m_time": 0,
+                "flt_mode": 0,
+                "arm": 0,
+                "gnss_fix": 0,
+                "voltage": 0,
+                "current": 0,
+                "next_wp": 0,
+                "tof": 0,
+                " relay_sw": 0,
+                "engine_sw": 0,
+                "connection": 1,
+            },
+        }
+        return rate1, rate2
 
     def write_dummy_into_database(self, name):
         randf1 = round(random.uniform(50, 100), 2)
@@ -99,9 +139,30 @@ class RadioManager(QObject):
                 "connection": 1,
             },
         }
-
         all_data = [rate1, rate2]
         res = database.write_values(all_data, name)
+
+    def write_mavlink_into_database(self, name, new_rate1, new_rate2):
+        rate1 = new_rate1
+        rate2 = new_rate2
+        print(rate1, rate2)
+        try:
+            radio = RadioReceiver('/dev/ttyACM0')
+            succ, msg, time_since = radio.get_attitude_data()
+            if succ:
+                roll_angle = round(math.degrees(msg.roll))
+                pitch_angle = round(math.degrees(msg.pitch))
+                yaw = round(math.degrees(msg.yaw))
+                print(roll_angle, pitch_angle, yaw)
+                rate2['vals']['roll_angle'] = roll_angle
+                rate2['vals']['pitch_angle'] = pitch_angle
+                all_data = [rate1, rate2]
+                res = database.write_values(all_data, name)
+                return rate1, rate2
+        except:
+            print("Attitude packet not received")
+
+
 
 
 radioManager = RadioManager()

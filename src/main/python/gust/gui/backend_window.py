@@ -32,7 +32,7 @@ class BackendWindow(QMainWindow, Ui_BackendWindow):
         self.setupUi(self)
 
         self.timer = None
-        self.conn_server_process = None
+        self.stop_conn_server = False
 
         # setup redirect for stdout/stderr
         self.text_update.connect(self.update_console_text)
@@ -113,6 +113,7 @@ class BackendWindow(QMainWindow, Ui_BackendWindow):
         return succ
 
     def _stop_subtasks(self):
+        self.stop_conn_server = True
         succ = self._stop_server()
         succ = self._stop_plug_mon() and succ
 
@@ -236,8 +237,9 @@ class BackendWindow(QMainWindow, Ui_BackendWindow):
             proc.readyReadStandardOutput.connect(partial(self._print_plug_msg, ii))
 
         # starting a thread to run the conn_server
-        worker = Worker(conn_server.start_conn_server)
+        worker = Worker(conn_server.start_conn_server, parent=self)
         self.threadpool.start(worker)
+        worker.signals.finished.connect(self.conn_server_stopped)
 
     @pyqtSlot()
     def clicked_stop(self):
@@ -252,9 +254,14 @@ class BackendWindow(QMainWindow, Ui_BackendWindow):
             )
             self.update_console_text(msg)
 
-
         if self.timer is not None:
             self.timer.stop()
+
+    @pyqtSlot()
+    def conn_server_stopped(self):
+        msg = "Stopping conn-server"
+        logger.critical(msg)
+        self.update_console_text(msg)
 
     @pyqtSlot(str)
     def changed_ip(self, text):
