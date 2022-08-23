@@ -124,10 +124,10 @@ class FrontendWindow(QMainWindow, Ui_MainWindow_main):
         if self.timer is None:
             self.timer = QTimer()
             self.manager.timer = self.timer
-            self.manager.rate = 2000
+            self.manager.rate = 750
             self.timer.timeout.connect(self.manager.run)
             self.manager.signal.connect(self.update_frame)
-            self.timer.start(2000)
+            self.timer.start(750)
 
     def update_frame(self, passed_signal):
 

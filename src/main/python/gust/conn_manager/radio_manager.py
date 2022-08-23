@@ -10,7 +10,6 @@ import time
 import logging
 from gust.worker import Worker
 import gust.database as database
-from time import sleep
 import math
 from radio_receiver import RadioReceiver
 from PyQt5.QtCore import QThreadPool, QTimer, pyqtSlot, pyqtSignal, QObject
@@ -54,21 +53,22 @@ class RadioManager(QObject):
                 self.write_dummy_into_database(name)
                 time.sleep(0.5)
         else:
-#            radio = RadioReceiver('/dev/ttyACM0')
             rate1, rate2 = self.set_initial_values()
             all_data = [rate1, rate2]
             res = database.write_values(all_data, name)
-
-            new_rate1, new_rate2 = rate1, rate2
             while self.conn_status[name]:
-                new_rate1, new_rate2 = self.write_mavlink_into_database(name, new_rate1, new_rate2)
-                time.sleep(0.5)
+                rate1, rate2 = self.prepare_data_from_mavlink(name, rate1, rate2)
+                print(rate1, rate2)
+                all_data = [rate1, rate2]
+                res = database.write_values(all_data, name)
+                time.sleep(0.1)
 
     def set_initial_values(self):
+        current_time = self.get_current_time()
         rate2 = {
             "rate": database.DroneRates.RATE2,
             "vals": {
-                "m_time": 0,
+                "m_time": current_time,
                 "roll_angle": 0,
                 "pitch_angle": 0,
                 "heading": 0,
@@ -84,7 +84,7 @@ class RadioManager(QObject):
         rate1 = {
             "rate": database.DroneRates.RATE1,
             "vals": {
-                "m_time": 0,
+                "m_time": current_time,
                 "flt_mode": 0,
                 "arm": 0,
                 "gnss_fix": 0,
@@ -92,7 +92,7 @@ class RadioManager(QObject):
                 "current": 0,
                 "next_wp": 0,
                 "tof": 0,
-                " relay_sw": 0,
+                "relay_sw": 0,
                 "engine_sw": 0,
                 "connection": 1,
             },
@@ -100,6 +100,7 @@ class RadioManager(QObject):
         return rate1, rate2
 
     def write_dummy_into_database(self, name):
+        current_time = self.get_current_time()
         randf1 = round(random.uniform(50, 100), 2)
         randf11 = round(random.uniform(0, 20), 2)
         randf111 = round(random.uniform(-60, 60), 2)
@@ -110,7 +111,7 @@ class RadioManager(QObject):
         rate2 = {
             "rate": database.DroneRates.RATE2,
             "vals": {
-                "m_time": randf1,
+                "m_time": current_time,
                 "roll_angle": randf11,
                 "pitch_angle": randf11,
                 "heading": randf1,
@@ -126,7 +127,7 @@ class RadioManager(QObject):
         rate1 = {
             "rate": database.DroneRates.RATE1,
             "vals": {
-                "m_time": randf1,
+                "m_time": current_time,
                 "flt_mode": mode1,
                 "arm": randint1,
                 "gnss_fix": gnss_fix1,
@@ -134,7 +135,7 @@ class RadioManager(QObject):
                 "current": randf1,
                 "next_wp": randint1 + 12,
                 "tof": randf1,
-                " relay_sw": randint1,
+                "relay_sw": randint1,
                 "engine_sw": randint1,
                 "connection": 1,
             },
@@ -142,10 +143,8 @@ class RadioManager(QObject):
         all_data = [rate1, rate2]
         res = database.write_values(all_data, name)
 
-    def write_mavlink_into_database(self, name, new_rate1, new_rate2):
-        rate1 = new_rate1
-        rate2 = new_rate2
-        print(rate1, rate2)
+    def prepare_data_from_mavlink(self, name, rate1, rate2):
+        current_time = self.get_current_time()
         try:
             radio = RadioReceiver('/dev/ttyACM0')
             succ, msg, time_since = radio.get_attitude_data()
@@ -156,13 +155,14 @@ class RadioManager(QObject):
                 print(roll_angle, pitch_angle, yaw)
                 rate2['vals']['roll_angle'] = roll_angle
                 rate2['vals']['pitch_angle'] = pitch_angle
+                rate1['vals']['m_time'] = rate2['vals']['m_time'] = self.get_current_time()
                 all_data = [rate1, rate2]
                 res = database.write_values(all_data, name)
                 return rate1, rate2
         except:
             print("Attitude packet not received")
 
-
-
+    def get_current_time(self):
+        return time.time()
 
 radioManager = RadioManager()
