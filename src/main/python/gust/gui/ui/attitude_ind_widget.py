@@ -621,7 +621,7 @@ class pyG5AIWidget(QWidget):
         self.qp.setBrush(QBrush(QColor(0, 0, 0, 180)))
         self.qp.drawRect(rect)
 
-        if self.gnss_fix == 1:
+        if self.gnss_fix == 3:
             self.setPen(3, Qt.white)
             self.qp.drawText(
                 rect,
@@ -633,9 +633,9 @@ class pyG5AIWidget(QWidget):
             self.setPen(3, Qt.white)
             self.qp.drawText(
                 rect, Qt.AlignCenter | Qt.AlignVCenter,
-                "RTK FIX",
+                "2D FIX",
             )
-        else:
+        elif self.gnss_fix == 0:
             self.setPen(3, Qt.red)
             self.qp.drawText(
                 rect, Qt.AlignCenter | Qt.AlignVCenter,
