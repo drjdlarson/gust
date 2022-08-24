@@ -2,5 +2,6 @@
     "app_name": "gust",
     "author": "LAGER",
     "main_module": "src/main/python/gust/__main__.py",
-    "version": "0.0.0"
+    "version": "0.0.0",
+    "hidden_imports": ["radio_receiver"]
 }

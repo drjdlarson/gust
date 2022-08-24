@@ -4,9 +4,10 @@ import os
 import logging
 import time
 import random
+from time import sleep
 from functools import partial
 from PyQt5.QtWidgets import QMainWindow
-from PyQt5.QtCore import pyqtSlot, QModelIndex, pyqtSignal, QThreadPool, QTimer
+from PyQt5.QtCore import pyqtSlot, QModelIndex, pyqtSignal, QThreadPool
 from PyQt5.QtGui import QIntValidator, QTextCursor
 from PyQt5.QtSql import QSqlTableModel
 
@@ -17,7 +18,6 @@ from gust.plugin_monitor import pluginMonitor
 import gust.database as database
 from gust.worker import Worker
 import gust.conn_manager.conn_server as conn_server
-import gust.conn_manager.conn_settings as conn_settings
 
 logger = logging.getLogger("[backend]")
 
@@ -26,13 +26,11 @@ class BackendWindow(QMainWindow, Ui_BackendWindow):
     """Main interface for the backend window."""
 
     text_update = pyqtSignal(str)
+    kill_conn_server_signal = pyqtSignal()
 
     def __init__(self, ctx):
         super().__init__()
         self.setupUi(self)
-
-        self.timer = None
-        self.stop_conn_server = False
 
         # setup redirect for stdout/stderr
         self.text_update.connect(self.update_console_text)
@@ -41,6 +39,8 @@ class BackendWindow(QMainWindow, Ui_BackendWindow):
         self.ctx = ctx
         self.lineEdit_port.setValidator(QIntValidator())
         self.threadpool = QThreadPool()
+
+        self.kill_conn_server_signal.connect(conn_server.ConnServer.kill)
 
         settings.PORT = int(self.lineEdit_port.text())
         settings.IP = self.lineEdit_IP.text()
@@ -113,7 +113,8 @@ class BackendWindow(QMainWindow, Ui_BackendWindow):
         return succ
 
     def _stop_subtasks(self):
-        self.stop_conn_server = True
+        self.kill_conn_server_signal.emit()
+
         succ = self._stop_server()
         succ = self._stop_plug_mon() and succ
 
@@ -237,9 +238,8 @@ class BackendWindow(QMainWindow, Ui_BackendWindow):
             proc.readyReadStandardOutput.connect(partial(self._print_plug_msg, ii))
 
         # starting a thread to run the conn_server
-        worker = Worker(conn_server.start_conn_server, parent=self)
+        worker = Worker(conn_server.ConnServer.start_conn_server)
         self.threadpool.start(worker)
-        worker.signals.finished.connect(self.conn_server_stopped)
 
     @pyqtSlot()
     def clicked_stop(self):
@@ -253,15 +253,6 @@ class BackendWindow(QMainWindow, Ui_BackendWindow):
                 + "----------------------------------------------------------\n\n"
             )
             self.update_console_text(msg)
-
-        if self.timer is not None:
-            self.timer.stop()
-
-    @pyqtSlot()
-    def conn_server_stopped(self):
-        msg = "Stopping conn-server"
-        logger.critical(msg)
-        self.update_console_text(msg)
 
     @pyqtSlot(str)
     def changed_ip(self, text):
