@@ -2,6 +2,9 @@
 import sys
 import os
 import logging
+import time
+import random
+from time import sleep
 from functools import partial
 from PyQt5.QtWidgets import QMainWindow
 from PyQt5.QtCore import pyqtSlot, QModelIndex, pyqtSignal, QThreadPool
@@ -14,15 +17,16 @@ import gust.server.settings as settings
 from gust.plugin_monitor import pluginMonitor
 import gust.database as database
 from gust.worker import Worker
+import gust.conn_manager.conn_server as conn_server
 
-
-logger = logging.getLogger('[backend]')
+logger = logging.getLogger("[backend]")
 
 
 class BackendWindow(QMainWindow, Ui_BackendWindow):
     """Main interface for the backend window."""
 
     text_update = pyqtSignal(str)
+    kill_conn_server_signal = pyqtSignal()
 
     def __init__(self, ctx):
         super().__init__()
@@ -35,6 +39,8 @@ class BackendWindow(QMainWindow, Ui_BackendWindow):
         self.ctx = ctx
         self.lineEdit_port.setValidator(QIntValidator())
         self.threadpool = QThreadPool()
+
+        self.kill_conn_server_signal.connect(conn_server.ConnServer.kill)
 
         settings.PORT = int(self.lineEdit_port.text())
         settings.IP = self.lineEdit_IP.text()
@@ -61,7 +67,9 @@ class BackendWindow(QMainWindow, Ui_BackendWindow):
         self._scan_plugins()
 
         # connect to database
-        database.DB_PATH = os.path.dirname(self.ctx.get_resource('resources_base_placeholder'))
+        database.DB_PATH = os.path.dirname(
+            self.ctx.get_resource("resources_base_placeholder")
+        )
         database.open_db()
 
         self.sel_plug_model = QSqlTableModel(self)
@@ -93,18 +101,20 @@ class BackendWindow(QMainWindow, Ui_BackendWindow):
     def _stop_server(self):
         succ = server.stop_server()
         if not succ:
-            logger.critical('Failed to stop server.')
+            logger.critical("Failed to stop server.")
 
         return succ
 
     def _stop_plug_mon(self):
         succ = pluginMonitor.stop_monitor()
         if not succ:
-            logger.critical('Failed to stop plugin-monitor')
+            logger.critical("Failed to stop plugin-monitor")
 
         return succ
 
     def _stop_subtasks(self):
+        self.kill_conn_server_signal.emit()
+
         succ = self._stop_server()
         succ = self._stop_plug_mon() and succ
 
@@ -118,6 +128,7 @@ class BackendWindow(QMainWindow, Ui_BackendWindow):
     def flush(self):
         """To allow for stdout/err to function."""
         pass
+
     # end hacks
 
     def update_console_text(self, text):
@@ -157,7 +168,7 @@ class BackendWindow(QMainWindow, Ui_BackendWindow):
         n_to_rm = len(rows_to_rm)
         if n_to_rm > 0:
             col_ids_to_rm = [None] * n_to_rm
-            c_ind = self.sel_plug_model.fieldIndex('collection_id')
+            c_ind = self.sel_plug_model.fieldIndex("collection_id")
             for ii, row in enumerate(rows_to_rm):
                 ind = QModelIndex(self.sel_plug_model.index(row, c_ind))
                 col_ids_to_rm[ii] = self.selPluginsView.model().data(ind)
@@ -167,8 +178,9 @@ class BackendWindow(QMainWindow, Ui_BackendWindow):
     @pyqtSlot()
     def clicked_removePlugin(self):
         """Actions to perform when the remove button is clicked."""
-        rows_to_rm = set([index.row()
-                          for index in self.selPluginsView.selectedIndexes()])
+        rows_to_rm = set(
+            [index.row() for index in self.selPluginsView.selectedIndexes()]
+        )
 
         worker = Worker(self._remove_plugin, rows_to_rm)
         worker.signals.finished.connect(self._update_sel_plug_model)
@@ -176,49 +188,58 @@ class BackendWindow(QMainWindow, Ui_BackendWindow):
 
     # hacks to redirect from subprocess to stdout of main process
     def _sub_proc_print(self, line, prefix):
-        line = line.strip('\n').strip()
+        line = line.strip("\n").strip()
         if len(line) == 0:
             return
-        print('{:s} {:s}'.format(prefix, line.strip('\n')))
+        print("{:s} {:s}".format(prefix, line.strip("\n")))
 
     def _print_server_proc_msg(self):
         outputBytes = server.SERVER_PROC.readAll().data()
-        outputUnicode = outputBytes.decode('utf-8')
-        for line in outputUnicode.split('\n'):
-            self._sub_proc_print(line, '[server]')
+        outputUnicode = outputBytes.decode("utf-8")
+        for line in outputUnicode.split("\n"):
+            self._sub_proc_print(line, "[server]")
 
     def _print_plug_msg(self, ind):
         outputBytes = pluginMonitor.running_procs[ind].readAll().data()
-        outputUnicode = outputBytes.decode('utf-8')
-        prefix = '[plugin-{:s}-{:d}]'.format(pluginMonitor.running_names[ind],
-                                             pluginMonitor.running_ids[ind])
-        for line in outputUnicode.split('\n'):
+        outputUnicode = outputBytes.decode("utf-8")
+        prefix = "[plugin-{:s}-{:d}]".format(
+            pluginMonitor.running_names[ind], pluginMonitor.running_ids[ind]
+        )
+        for line in outputUnicode.split("\n"):
             self._sub_proc_print(line, prefix)
+
     # end hacks
 
     @pyqtSlot()
     def clicked_start(self):
         """Actions to perform when the start button is clicked."""
-        msg = ('----------------------------------------------------------\n'
-               + '------------------- Starting Backend ---------------------\n'
-               + '----------------------------------------------------------\n')
+        msg = (
+            "----------------------------------------------------------\n"
+            + "------------------- Starting Backend ---------------------\n"
+            + "----------------------------------------------------------\n"
+        )
         self.update_console_text(msg)
 
         res, err = server.start_server()
 
-        self.update_console_text('[server] {:s}\n'.format(server.START_CMD))
+        self.update_console_text("[server] {:s}\n".format(server.START_CMD))
 
         if res:
-            # pass
-            server.SERVER_PROC.readyReadStandardOutput.connect(self._print_server_proc_msg)
+            server.SERVER_PROC.readyReadStandardOutput.connect(
+                self._print_server_proc_msg
+            )
 
         else:
-            msg = '[server] FAILED TO START SERVER:\n{:s}\n'.format(err)
+            msg = "[server] FAILED TO START SERVER:\n{:s}\n".format(err)
             self.update_console_text(msg)
 
         pluginMonitor.start_monitor()
         for ii, proc in enumerate(pluginMonitor.running_procs):
             proc.readyReadStandardOutput.connect(partial(self._print_plug_msg, ii))
+
+        # starting a thread to run the conn_server
+        worker = Worker(conn_server.ConnServer.start_conn_server)
+        self.threadpool.start(worker)
 
     @pyqtSlot()
     def clicked_stop(self):
@@ -226,9 +247,11 @@ class BackendWindow(QMainWindow, Ui_BackendWindow):
         succ = self._stop_subtasks()
 
         if succ:
-            msg = ('----------------------------------------------------------\n'
-                   + '------------------- Stopping Backend ---------------------\n'
-                   + '----------------------------------------------------------\n\n')
+            msg = (
+                "----------------------------------------------------------\n"
+                + "------------------- Stopping Backend ---------------------\n"
+                + "----------------------------------------------------------\n\n"
+            )
             self.update_console_text(msg)
 
     @pyqtSlot(str)
