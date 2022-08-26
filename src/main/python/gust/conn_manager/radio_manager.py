@@ -34,7 +34,7 @@ class RadioManager(QObject):
         self.conn_status.update({name: True})
         worker = Worker(self.poll_radio, name, port)
         self.threadpool.start(worker)
-        # return {"success": True, 'info': ''}
+        return {"success": True, "info": ''}
 
     def disconnect_radio(self, info):
         logger.debug("msg received for disconnection -->> {}".format(info))
@@ -60,8 +60,7 @@ class RadioManager(QObject):
             all_data = [rate1, rate2]
             res = database.write_values(all_data, name)
             while self.conn_status[name]:
-                rate1, rate2, data = self.prepare_data_from_mavlink(name, rate1, rate2, data)
-                print(rate1, rate2)
+                rate1, rate2, data = self.prepare_data_from_mavlink(port, rate1, rate2, data)
                 all_data = [rate1, rate2]
                 res = database.write_values(all_data, name)
                 # time.sleep(0.1)
@@ -145,10 +144,10 @@ class RadioManager(QObject):
         }
         return rate1, rate2
 
-    def prepare_data_from_mavlink(self, name, rate1, rate2, data):
+    def prepare_data_from_mavlink(self, port, rate1, rate2, data):
         current_time = self.get_current_time()
         try:
-            radio = RadioReceiver('/dev/ttyACM0')
+            radio = RadioReceiver(port)
             available_packets = radio.get_available_messages()
 
             # getting the MAV packet separately
@@ -165,23 +164,6 @@ class RadioManager(QObject):
                 except:
                     pass
 
-
-            # # Attitude Packet
-            # try:
-            #     succ, msg, time_since = radio.get_attitude_data()
-            #     if succ:
-            #         roll_angle = round(math.degrees(msg.roll))
-            #         pitch_angle = round(math.degrees(msg.pitch))
-            #         yaw = round(math.degrees(msg.yaw))
-            #         print(roll_angle, pitch_angle, yaw)
-            #         rate2['vals']['roll_angle'] = roll_angle
-            #         rate2['vals']['pitch_angle'] = pitch_angle
-            #         rate1['vals']['m_time'] = rate2['vals']['m_time'] = self.get_current_time()
-            #         all_data = [rate1, rate2]
-            #         res = database.write_values(all_data, name)
-            #         return rate1, rate2
-            # except:
-            #     pass
         except:
             logger.warning("Heartbeat not received")
 
@@ -189,22 +171,34 @@ class RadioManager(QObject):
         rate1['vals']['m_time'] = current_time
         rate2['vals']['m_time'] = current_time
 
-        rate2['vals']['roll_angle'] = round(math.degrees(data['ATTITUDE']['roll']))
-        rate2['vals']['pitch_angle'] = round(math.degrees(data['ATTITUDE']['pitch']))
-        rate2['vals']['latitude'] = data['GLOBAL_POSITION_INT']['lat'] * 10 ** -7
-        rate2['vals']['longitude'] = data['GLOBAL_POSITION_INT']['lon'] * 10 ** -7
-        rate2['vals']['altitude'] = data['GLOBAL_POSITION_INT']['relative_alt']
+        rate1['vals']['arm'] = data['MAV']['armed']
 
-        try:
+        if "ATTITUDE" in data:
+            rate2['vals']['roll_angle'] = round(math.degrees(data['ATTITUDE']['roll']))
+            rate2['vals']['pitch_angle'] = round(math.degrees(data['ATTITUDE']['pitch']))
+
+        if 'VFR_HUD' in data:
+            rate2['vals']['airspeed'] = round(data['VFR_HUD']['airspeed'])
+            rate2['vals']['gndspeed'] = round(data['VFR_HUD']['groundspeed'], 1)
+            rate2['vals']['heading'] = round(data['VFR_HUD']['heading'])
+            rate2['vals']['vspeed'] = round(data['VFR_HUD']['climb'], 1)
+
+        if 'LOCAL_POSITION_NED' in data:
+            vx = data['LOCAL_POSITION_NED']['vx']
+            vy = data['LOCAL_POSITION_NED']['vy']
+            rate2['vals']['track'] = round(math.degrees(math.atan2(vy, vx)))
+
+        if 'GLOBAL_POSITION_INT' in data:
+            rate2['vals']['latitude'] = data['GLOBAL_POSITION_INT']['lat'] * 10 ** -7
+            rate2['vals']['longitude'] = data['GLOBAL_POSITION_INT']['lon'] * 10 ** -7
+            rate2['vals']['altitude'] = data['GLOBAL_POSITION_INT']['relative_alt']
+
+        if 'BATTERY_STATUS' in data:
             rate1['vals']['voltage'] = data['BATTERY_STATUS']['voltages'][0] * 10 ** -3
             rate1['vals']['current'] = data['BATTERY_STATUS']['current_battery']
-        except:
-            pass
 
-        try:
+        if 'GPS_RAW_INT' in data:
             rate1['vals']['gnss_fix'] = data['GPS_RAW_INT']['fix_type']
-        except:
-            pass
 
         return rate1, rate2, data
 

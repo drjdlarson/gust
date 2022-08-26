@@ -58,27 +58,24 @@ class ConnServer:
             # received_info = json.loads(data.decode(conn_settings.FORMAT))
             data = conn.receiveDatagram(conn.pendingDatagramSize())
             received_info = json.loads(data.data().data().decode(conn_settings.FORMAT))
-            addr = conn.receiveDatagram(conn.pendingDatagramSize()).senderAddress()
+            addr = data.senderAddress()
+            port = data.senderPort()
             msg = "Message from {} -> {}".format(addr, received_info)
-            logger.debug(msg)
+            logger.info(msg)
 
             # we can call the radio manager heres
             if received_info['type'] == conn_settings.DRONE_CONN:
                 response = radioManager.connect_to_radio(received_info)
-                response = {"success": True, "info": ""}
+                # logger.debug(response)
 
             elif received_info['type'] == conn_settings.DRONE_DISC:
                 response = radioManager.disconnect_radio(received_info)
 
             # Sending message back to client socket
-            # response = {"success": True, 'info': ''}
             f_response = json.dumps(response).encode(conn_settings.FORMAT)
             # conn.sendto(f_response, addr)
-            conn.writeData(f_response)
+            conn.writeDatagram(f_response, addr, port)
 
-            # if parent.stop_conn_server:
-            #     logger.info("parent.stop_conn_server:: {}".format(parent.stop_conn_server))
-            #     break
 
         logger.info("closing the conn-server socket")
         # conn.shutdown()

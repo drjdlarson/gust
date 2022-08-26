@@ -56,6 +56,7 @@ def send_info_to_conn_server(info_dict, msg_type):
         return msg["success"], msg["info"]
 
     except socket.timeout:
+        msg = "Timeout on connection with backend"
         return False, msg["info"]
 
 
@@ -76,7 +77,7 @@ class ConnInfo(Resource):
                 if conn_succ:
                     return {"success": True, "msg": ""}
                 elif not conn_succ:
-                    return {"success": False, "msg": "error connecting"}
+                    return {"success": False, "msg": "Error connecting"}
             else:
                 return {'success': False, 'msg': "Unable to add vehicle to database"}
         elif len(port) == 0:
