@@ -106,89 +106,94 @@ class PortsData(Resource):
             available_ports.append(port.device)
         return {"ports": available_ports}
 
-
-@api.route("{:s}/attitude_data".format(BASE))
-class AttitudeData(Resource):
-    params = ["roll_angle", "pitch_angle", "altitude", "vspeed", "airspeed", "gndspeed"]
-
-    def get(self):
-        attitude_data = {}
-        database.connect_db()
-        names = database.get_drone_ids(True)
-        for index, drone in enumerate(names):
-            table_name = database.create_drone_rate_table_name(
-                drone, database.DroneRates.RATE2
-            )
-            key = index + 1
-            attitude_data[key] = database.get_params(table_name, AttitudeData.params)
-        return attitude_data
-
-
-@api.route("{:s}/sys_status".format(BASE))
-class SysStatus(Resource):
-    params = ["flt_mode", "arm", "gnss_fix"]
-
-    def get(self):
-        sys_status = {}
-        database.connect_db()
-        names = database.get_drone_ids()
-        for index, drone in enumerate(names):
-            table_name = database.create_drone_rate_table_name(
-                drone, database.DroneRates.RATE1
-            )
-            key = index + 1
-            sys_status[key] = database.get_params(table_name, SysStatus.params)
-            name_dict = {"name": drone}
-            sys_status[key].update(name_dict)
-        return sys_status
-
-
 @api.route("{:s}/sys_data".format(BASE))
 class SysData(Resource):
-    params = ["voltage", "current"]
+    params = ["home_lat", "home_lon", "home_alt", "voltage", "current"]
 
     def get(self):
         sys_data = {}
         database.connect_db()
         names = database.get_drone_ids()
-        for index, drone in enumerate(names):
+        for index, name in enumerate(names):
             table_name = database.create_drone_rate_table_name(
-                drone, database.DroneRates.RATE1
+                name, database.DroneRates.RATE1
             )
             key = index + 1
             sys_data[key] = database.get_params(table_name, SysData.params)
         return sys_data
 
 
+@api.route("{:s}/attitude_data".format(BASE))
+class AttitudeData(Resource):
+    params = ["roll_angle", "pitch_angle", "airspeed", "gndspeed", "vspeed", "throttle"]
+
+    def get(self):
+        attitude_data = {}
+        database.connect_db()
+        names = database.get_drone_ids()
+        for index, name in enumerate(names):
+            table_name = database.create_drone_rate_table_name(
+                name, database.DroneRates.RATE2
+            )
+            key = index + 1
+            attitude_data[key] = database.get_params(table_name, AttitudeData.params)
+        return attitude_data
+
+
+@api.route("{:s}/pos_data".format(BASE))
+class PosData(Resource):
+    params = ["latitude", "longitude", "relative_alt", "heading", "track", "gnss_fix", "satellites_visible"]
+
+    def get(self):
+        pos_data = {}
+        database.connect_db()
+        names = database.get_drone_ids()
+        for index, name in enumerate(names):
+            table_name = database.create_drone_rate_table_name(
+                name, database.DroneRates.RATE2
+            )
+            key = index + 1
+            pos_data[key] = database.get_params(table_name, PosData.params)
+            pos_data[key].update({'name': name})
+        return pos_data
+
+
 @api.route("{:s}/sys_info".format(BASE))
 class SysInfo(Resource):
-    params = ["next_wp", "tof", "relay_sw", "engine_sw", "connection"]
+    params = ["armed", "flight_mode", "mav_type", "autopilot", "custom_mode", "tof", "next_wp", "relay_sw", "engine_sw", "connection"]
 
     def get(self):
         sys_info = {}
         database.connect_db()
         names = database.get_drone_ids()
-        for index, drone in enumerate(names):
+        for index, name in enumerate(names):
             table_name = database.create_drone_rate_table_name(
-                drone, database.DroneRates.RATE1
+                name, database.DroneRates.RATE4
             )
             key = index + 1
             sys_info[key] = database.get_params(table_name, SysInfo.params)
         return sys_info
 
 
-@api.route("{:s}/map_data".format(BASE))
-class MapData(Resource):
-    params = ["latitude", "longitude", "heading", "track"]
+@api.route("{:s}/channels_info".format(BASE))
+class ChannelsData(Resource):
+    params = ["chancount", "chan1_raw", "chan2_raw", "chan3_raw", "chan4_raw",
+              "chan5_raw", "chan6_raw", "chan7_raw", "chan8_raw", "chan9_raw",
+              "chan10_raw", "chan11_raw", "chan12_raw", "chan13_raw",
+              "chan14_raw", "chan15_raw", "chan16_raw", "chan17_raw", "chan18_raw",
+              "rssi", "servo_port", "servo1_raw", "servo2_raw", "servo3_raw",
+              "servo4_raw", "servo5_raw", "servo6_raw", "servo7_raw", "servo8_raw",
+              "servo9_raw", "servo10_raw", "servo11_raw", "servo12_raw",
+              "servo13_raw", "servo14_raw", "servo15_raw", "servo16_raw"]
 
     def get(self):
-        map_data = {}
+        channels_info = {}
         database.connect_db()
         names = database.get_drone_ids()
-        for index, drone in enumerate(names):
+        for index, name in enumerate(names):
             table_name = database.create_drone_rate_table_name(
-                drone, database.DroneRates.RATE2
+                name, database.DroneRates.RATE3
             )
             key = index + 1
-            map_data[key] = database.get_params(table_name, MapData.params)
-        return map_data
+            channels_info[key] = database.get_params(table_name, ChannelsData.params)
+        return channels_info

@@ -28,6 +28,8 @@ class DroneRates(enum.Enum):
 
     RATE1 = enum.auto()
     RATE2 = enum.auto()
+    RATE3 = enum.auto()
+    RATE4 = enum.auto()
 
     def __str__(self):
         return self.name.lower()
@@ -464,7 +466,8 @@ def get_drone_ids(distinct=True, active=True):
     distinct : bool, optional
         If True, it only returns unique drones.
     active : bool, optional
-        If True, it only returns vehicles that are still connected.
+        If True, it only returns vehicles that are still connected
+        connection value in rate4 = 1.
 
     Returns
     -------
@@ -512,17 +515,12 @@ def add_vehicle(name, port):
     # adding the rate tables
     table_name = create_drone_rate_table_name(name, DroneRates.RATE1)
     cmd = """CREATE TABLE IF NOT EXISTS {:s} (
-     m_time float PRIMARY KEY,
-     flt_mode integer,
-     arm bool,
-     gnss_fix integer,
-     voltage float,
-     current float,
-     next_wp integer,
-     tof float,
-     relay_sw bool,
-     engine_sw bool,
-     connection bool
+       	m_time float PRIMARY key,
+    	home_lat float,
+       	home_lon float,
+       	home_alt float,
+       	voltage float,
+       	current float
      );""".format(
         table_name
     )
@@ -530,23 +528,89 @@ def add_vehicle(name, port):
 
     table_name = create_drone_rate_table_name(name, DroneRates.RATE2)
     cmd = """CREATE TABLE IF NOT EXISTS {:s} (
-     m_time float PRIMARY KEY,
-     roll_angle float,
-     pitch_angle float,
-     heading float,
-     track float,
-     vspeed float,
-     gndspeed float,
-     airspeed float,
-     latitude float,
-     longitude float,
-     altitude float
+       m_time float PRIMARY key,
+       latitude float,
+       longitude float,
+       relative_alt float,
+       heading int,
+       track int,
+       gnss_fix int,
+       satellites_visible int,
+       roll_angle float,
+       pitch_angle float,
+       airspeed float,
+       gndspeed float,
+       vspeed float,
+       throttle float
      );""".format(
         table_name
     )
     res3 = query.exec_(cmd)
 
-    if res1 and res2 and res3:
+    table_name = create_drone_rate_table_name(name, DroneRates.RATE3)
+    cmd = """CREATE TABLE IF NOT EXISTS {:s} (
+       m_time float PRIMARY key,
+       chancount int,
+       chan1_raw float,
+       chan2_raw float,
+       chan3_raw float,
+       chan4_raw float,
+       chan5_raw float,
+       chan6_raw float,
+       chan7_raw float,
+       chan8_raw float,
+       chan9_raw float,
+       chan10_raw float,
+       chan11_raw float,
+       chan12_raw float,
+       chan13_raw float,
+       chan14_raw float,
+       chan15_raw float,
+       chan16_raw float,
+       chan17_raw float,
+       chan18_raw float,
+       rssi float,
+       servo_port text,
+       servo1_raw float,
+       servo2_raw float,
+       servo3_raw float,
+       servo4_raw float,
+       servo5_raw float,
+       servo6_raw float,
+       servo7_raw float,
+       servo8_raw float,
+       servo9_raw float,
+       servo10_raw float,
+       servo11_raw float,
+       servo12_raw float,
+       servo13_raw float,
+       servo14_raw float,
+       servo15_raw float,
+       servo16_raw float
+     );""".format(
+        table_name
+    )
+    res4 = query.exec_(cmd)
+
+    table_name = create_drone_rate_table_name(name, DroneRates.RATE4)
+    cmd = """CREATE TABLE IF NOT EXISTS {:s} (
+       m_time float PRIMARY key,
+       armed int,
+       flight_mode Text,
+       mav_type int,
+       autopilot int,
+       custom_mode int,
+       tof int,
+       next_wp int,
+       relay_sw int,
+       engine_sw int,
+       connection int
+     );""".format(
+        table_name
+    )
+    res5 = query.exec_(cmd)
+
+    if res1 and res2 and res3 and res4 and res5:
         _connected_counter += 1
         return True
 
@@ -562,18 +626,22 @@ def remove_vehicle(name):
     if res:
         logger.info("Deleted {} from done_collection".format(name))
 
-    drop_rate1 = "DROP TABLE IF EXISTS {}".format(
-        create_drone_rate_table_name(name, DroneRates.RATE1)
-    )
-    drop_rate2 = "DROP TABLE IF EXISTS {}".format(
-        create_drone_rate_table_name(name, DroneRates.RATE2)
-    )
-    res_rate1 = query.exec_(drop_rate1)
-    res_rate2 = query.exec_(drop_rate2)
+    rates = [member.name for member in DroneRates]
+    rates = [x.lower() for x in rates]
+    res = []
+    for i, rate in enumerate(rates):
+        drop_rate = "DROP TABLE IF EXISTS {}".format(
+            create_drone_rate_table_name(name, rate)
+        )
+        res.append(query.exec_(drop_rate))
 
-    if res_rate1 and res_rate2:
-        logger.info("Erased all parameters for {}".format(name))
+    if all(res):
+        logger.info("Removed {} from the database".format(name))
         return True
+    else:
+        logger.warning("Unable to remove {} from the database".format(name))
+        return False
+
 
 def get_params(table_name, params):
     """Get parameters from the database.
@@ -593,12 +661,11 @@ def get_params(table_name, params):
         val[param] = query.value(param)
     return val
 
-
 def create_drone_rate_table_name(name, rate):
     return "{:s}_{:s}".format(name, rate)
 
 def check_connection_status(name):
-    table_name = create_drone_rate_table_name(name, DroneRates.RATE1)
+    table_name = create_drone_rate_table_name(name, DroneRates.RATE4)
     query = _start_query()
     cmd = "SELECT connection FROM {}".format(table_name)
     query.exec_(cmd)
@@ -621,7 +688,7 @@ def change_connection_status_value(name, val):
         Result of query performed
 
     """
-    table_name = create_drone_rate_table_name(name, DroneRates.RATE1)
+    table_name = create_drone_rate_table_name(name, DroneRates.RATE4)
     query = _start_query()
     cmd = "INSERT INTO {} (connection) VALUES ({});".format(table_name, val)
     res = query.exec_(cmd)
@@ -703,54 +770,19 @@ if __name__ == "__main__":
 
     open_db()
     print(add_vehicle("Testing", "/dev/test/"))
-    res = add_vehicle("Testingagain", "/dev/test/")
+    res = add_vehicle("Testing2", "/dev/test/")
+    add_vehicle("Tasting3", '/dev/test/')
+    print(get_drone_ids(True, False))
+    print(remove_vehicle("Tasting3"))
+    print(get_drone_ids(True, False))
 
-    while True:
-        randf1 = round(random.uniform(50, 100), 2)
-        randf11 = round(random.uniform(0, 20), 2)
-        randf111 = round(random.uniform(-60, 60), 2)
-        randint1 = random.randint(0, 1)
-        gnss_fix1 = random.randint(0, 2)
-        mode1 = random.randint(0, 3)
+    # rates = [member.name for member in DroneRates]
+    # rates = [x.lower() for x in rates]
+    # print(rates)
 
-        rate2 = {
-            "rate": DroneRates.RATE2,
-            "vals": {
-                "m_time": randf1,
-                "roll_angle": randf11,
-                "pitch_angle": randf11,
-                "heading": randf1,
-                "track": randf1,
-                "vspeed": randf1,
-                "gndspeed": randf1,
-                "airspeed": randf1,
-                "latitude": randf111,
-                "longitude": randf111,
-                "altitude": randf1,
-            },
-        }
-        rate1 = {
-            "rate": DroneRates.RATE1,
-            "vals": {
-                "m_time": randf1,
-                "flt_mode": mode1,
-                "arm": randint1,
-                "gnss_fix": gnss_fix1,
-                "voltage": randf1,
-                "current": randf1,
-                "next_wp": randint1 + 12,
-                "tof": randf1,
-                " relay_sw": randint1,
-                "engine_sw": randint1,
-                "connection": 1,
-            },
-        }
-        all_data = [rate1, rate2]
-
-        print("before writing")
-
-        print(write_values(all_data, "Testing"))
-        print("after writing")
-        time.sleep(0.5)
-
-    # pass
+    # rates = [member.name for member in DroneRates]
+    # rates = [x.lower() for x in rates]
+    # res = []
+    # for i, rate in enumerate(rates):
+    #     print(i)
+    #     print(rate)

@@ -45,15 +45,16 @@ class RadioManager(QObject):
             return {"success": True, "info": ""}
 
     def poll_radio(self, name, port):
+
         # for testing purposes only
         if port == "/dev/test/":
             msg = "Populating database with dummy data..."
             logger.info(msg)
             while self.conn_status[name]:
-                rate1, rate2 = self.prepare_dummy_data(name)
-                all_data = [rate1, rate2]
+                rate1, rate2, rate3, rate4 = self.prepare_dummy_data(name)
+                all_data = [rate1, rate2, rate3, rate4]
                 res = database.write_values(all_data, name)
-                time.sleep(0.25)
+                time.sleep(0.2)
         else:
             data = {}
             rate1, rate2 = self.set_initial_values()
@@ -106,43 +107,103 @@ class RadioManager(QObject):
         randf1 = round(random.uniform(50, 100), 2)
         randf11 = round(random.uniform(0, 20), 2)
         randf111 = round(random.uniform(-60, 60), 2)
+        randf2 = random.uniform(-0.02, 0.02)
+        randf22 = round(random.uniform(0, 1000))
+        randf222 = round(random.uniform(0, 10))
         randint1 = random.randint(0, 1)
         gnss_fix1 = random.randint(0, 2)
         mode1 = random.randint(0, 3)
 
-        rate2 = {
-            "rate": database.DroneRates.RATE2,
-            "vals": {
-                "m_time": current_time,
-                "roll_angle": randf11,
-                "pitch_angle": randf11,
-                "heading": randf1,
-                "track": randf1,
-                "vspeed": randf1,
-                "gndspeed": randf1,
-                "airspeed": randf1,
-                "latitude": randf111,
-                "longitude": randf111,
-                "altitude": randf1,
-            },
-        }
         rate1 = {
             "rate": database.DroneRates.RATE1,
             "vals": {
                 "m_time": current_time,
-                "flt_mode": mode1,
-                "arm": randint1,
-                "gnss_fix": gnss_fix1,
+                "home_lat": 33.21534,
+                "home_lon": -87.54355,
+                "home_alt": 170,
                 "voltage": randf1,
                 "current": randf1,
-                "next_wp": randint1 + 12,
-                "tof": randf1,
+            },
+        }
+        rate2 = {
+            "rate": database.DroneRates.RATE2,
+            "vals": {
+                "m_time": current_time,
+                "latitude": 33.21534 + randf2,
+                "longitude": -87.54355 + randf2,
+                "relative_alt": randf1,
+                "heading": randf22,
+                "track": randf22 + 45,
+                "gnss_fix": mode1,
+                "satellites_visible": randf11,
+                "roll_angle": randf11,
+                "pitch_angle": randf11,
+                "airspeed": randf1,
+                "gndspeed": randf1,
+                "vspeed": randf111,
+                "throttle": randf1,
+            },
+        }
+        rate3 = {
+            "rate": database.DroneRates.RATE3,
+            "vals": {
+                "m_time": current_time,
+                "chancount": randf11,
+                "chan1_raw": randf22,
+                "chan2_raw": randf22,
+                "chan3_raw": randf22,
+                "chan4_raw": randf22,
+                "chan5_raw": randf22,
+                "chan6_raw": randf22,
+                "chan7_raw": randf22,
+                "chan8_raw": randf22,
+                "chan9_raw": randf22,
+                "chan10_raw": randf22,
+                "chan11_raw": randf22,
+                "chan12_raw": randf22,
+                "chan13_raw": randf22,
+                "chan14_raw": randf22,
+                "chan16_raw": randf22,
+                "chan17_raw": randf22,
+                "chan18_raw": randf22,
+                "rssi": randf1,
+                "servo_port": randf222,
+                "servo1_raw": randf22,
+                "servo2_raw": randf22,
+                "servo3_raw": randf22,
+                "servo4_raw": randf22,
+                "servo5_raw": randf22,
+                "servo6_raw": randf22,
+                "servo7_raw": randf22,
+                "servo8_raw": randf22,
+                "servo9_raw": randf22,
+                "servo10_raw": randf22,
+                "servo11_raw": randf22,
+                "servo12_raw": randf22,
+                "servo13_raw": randf22,
+                "servo14_raw": randf22,
+                "servo15_raw": randf22,
+                "servo16_raw": randf22,
+            },
+        }
+        rate4 = {
+            "rate": database.DroneRates.RATE4,
+            "vals": {
+                "m_time": current_time,
+                "armed": random.choice([3, 4, 9]),
+                "flight_mode": random.choice([128, 0]) + random.choice([16, 8, 24]),
+                "mav_type": 2,
+                "autopilot": 1,
+                "custom_mode": 0,
+                "tof": randf222,
+                "next_wp": randf222,
                 "relay_sw": randint1,
                 "engine_sw": randint1,
                 "connection": 1,
             },
         }
-        return rate1, rate2
+        return rate1, rate2, rate3, rate4
+
 
     def prepare_data_from_mavlink(self, port, rate1, rate2, data):
         current_time = self.get_current_time()

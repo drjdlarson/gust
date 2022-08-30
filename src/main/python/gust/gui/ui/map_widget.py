@@ -6,6 +6,7 @@ from scipy import ndimage
 import folium # pip install folium
 from PyQt5.QtWidgets import QLineEdit, QLCDNumber, QApplication, QWidget, QHBoxLayout, QVBoxLayout
 from PyQt5.QtWebEngineWidgets import QWebEngineView # pip install PyQtWebEngine
+from gust.gui.msg_decoder import MessageDecoder as msg_decoder
 
 """
 Folium in PyQt5
@@ -25,7 +26,7 @@ class MapWidget(QWidget):
         m = folium.Map(
             tiles='https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
             attr='Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community',
-            zoom_start=1,
+            zoom_start=12,
             #location=[self.latitude, self.longitude]
         )
 
@@ -48,7 +49,7 @@ class MapWidget(QWidget):
     def update_map(self):
         map_kwargs = dict(tiles='https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
         attr='Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community',
-        zoom_start=1,
+        zoom_start=12,
         )
         if len(self.drone_icon_list) > 0:
             latitude = 0
@@ -126,10 +127,11 @@ class DroneHelper():
         return lat_2, lon_2
 
     def icon_selector(self):
-        if self.mode == 0:
+        mode = msg_decoder.findMode(int(self.mode))
+        if mode in ("Test", "Stabilize", "Manual", "None"):
             icon_type = mpimg.imread(self.ctx.get_resource('map_widget/greenarrow.png'))
-        elif self.mode == 1:
+        elif mode == "Guided":
             icon_type = mpimg.imread(self.ctx.get_resource('map_widget/bluearrow.png'))
-        elif self.mode == 2 or self.mode == 3:
+        elif mode in ("Auto", "Simulation"):
             icon_type = mpimg.imread(self.ctx.get_resource('map_widget/redarrow.png'))
         return icon_type

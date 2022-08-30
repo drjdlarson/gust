@@ -21,6 +21,7 @@ from gust.gui import con_window, log_window, sensors_window
 from gust.gui import engineoff_confirmation, disconnect_confirmation, rtl_confirmation, disarm_confirmation
 from gust.gui.ui.map_widget import MapWidget
 from gust.gui.ui.attitude_ind_widget import pyG5AIWidget
+from gust.gui.msg_decoder import MessageDecoder as msg_decoder
 
 URL_BASE = "http://localhost:8000/api/"
 
@@ -143,7 +144,8 @@ class FrontendWindow(QMainWindow, Ui_MainWindow_main):
             item.setTextAlignment(QtCore.Qt.AlignCenter)
             self.tableWidget.setItem(rowPos, 0, item)
 
-            item = self.mode_selector(self.flight_params[key]['flt_mode'])
+            item = self.flight_params[key]['flight_mode']
+            item = msg_decoder.findMode(int(item))
             item = QTableWidgetItem(str(item))
             item.setTextAlignment(QtCore.Qt.AlignCenter)
             self.tableWidget.setItem(rowPos, 1, item)
@@ -158,7 +160,7 @@ class FrontendWindow(QMainWindow, Ui_MainWindow_main):
             item.setTextAlignment(QtCore.Qt.AlignCenter)
             self.tableWidget.setItem(rowPos, 3, item)
 
-            item = self.flight_params[key]['altitude']
+            item = self.flight_params[key]['relative_alt']
             item = QTableWidgetItem(str(item) + " m")
             item.setTextAlignment(QtCore.Qt.AlignCenter)
             self.tableWidget.setItem(rowPos, 4, item)
@@ -196,7 +198,7 @@ class FrontendWindow(QMainWindow, Ui_MainWindow_main):
                 self.flight_params[key]['longitude'],
                 self.flight_params[key]['heading'],
                 self.flight_params[key]['track'],
-                self.flight_params[key]['flt_mode'],
+                self.flight_params[key]['flight_mode'],
                 self.ctx)
 
         self.widget_map.update_map()
@@ -216,7 +218,7 @@ class FrontendWindow(QMainWindow, Ui_MainWindow_main):
 
         # Updating the lcd display
         self.label_seluav.setText(str(self.flight_params[key_pos]['name']))
-        self.lcdNumber_altitude.display(self.flight_params[key_pos]['altitude'])
+        self.lcdNumber_altitude.display(self.flight_params[key_pos]['relative_alt'])
         self.lcdNumber_vspeed.display(self.flight_params[key_pos]['vspeed'])
         self.lcdNumber_airspeed.display(self.flight_params[key_pos]['airspeed'])
         self.lcdNumber_gndspeed.display(self.flight_params[key_pos]['gndspeed'])
@@ -228,23 +230,13 @@ class FrontendWindow(QMainWindow, Ui_MainWindow_main):
         self.widget_hud.pitch_angle = self.flight_params[key_pos]['pitch_angle']
         self.widget_hud.gndspeed = self.flight_params[key_pos]['gndspeed']
         self.widget_hud.airspeed = self.flight_params[key_pos]['airspeed']
-        self.widget_hud.altitude = self.flight_params[key_pos]['altitude']
+        self.widget_hud.altitude = self.flight_params[key_pos]['relative_alt']
         self.widget_hud.vspeed = self.flight_params[key_pos]['vspeed']
         self.widget_hud.heading = self.flight_params[key_pos]['heading']
-        self.widget_hud.arm = self.flight_params[key_pos]['arm']
+        self.widget_hud.arm = self.flight_params[key_pos]['armed']
         self.widget_hud.gnss_fix = self.flight_params[key_pos]['gnss_fix']
-        self.widget_hud.mode = self.flight_params[key_pos]['flt_mode']
+        self.widget_hud.mode = self.flight_params[key_pos]['flight_mode']
         self.widget_hud.repaint()
-
-    def mode_selector(self, mode):
-        if mode == 0:
-            return "Stabilize"
-        elif mode == 1:
-            return "Pos_hold"
-        elif mode == 2:
-            return "Auto"
-        elif mode == 3:
-            return "RTL"
 
     def clicked_default(self):
         self.label_seluav.setText("Current Vehicle Name")
@@ -273,22 +265,19 @@ class DataManager(QtCore.QObject):
     def run(self):
         self.vehicles_list = {}
 
+        url = "{}sys_data".format(URL_BASE)
+        sys_data = requests.get(url).json()
+
         url = "{}attitude_data".format(URL_BASE)
         attitude_data = requests.get(url).json()
 
-        url = "{}sys_status".format(URL_BASE)
-        sys_status = requests.get(url).json()
-
-        url = "{}sys_data".format(URL_BASE)
-        sys_data = requests.get(url).json()
+        url = "{}pos_data".format(URL_BASE)
+        pos_data = requests.get(url).json()
 
         url = "{}sys_info".format(URL_BASE)
         sys_info = requests.get(url).json()
 
-        url = "{}map_data".format(URL_BASE)
-        map_data = requests.get(url).json()
-
-        all_signals = [attitude_data, sys_status, sys_data, sys_info, map_data]
+        all_signals = [sys_data, attitude_data, pos_data, sys_info]
 
         for item in all_signals:
             for key, values in item.items():
