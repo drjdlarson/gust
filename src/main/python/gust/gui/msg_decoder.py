@@ -5,53 +5,58 @@ class MessageDecoder:
     @staticmethod
     def findType(x):
         if x == 1:
-            return "Fixed Wing"
+            ans = "Fixed Wing"
         elif x == 2:
-            return "Quadrotor"
+            ans = "Quadrotor"
         elif x == 4:
-            return "Helicopter"
+            ans = "Helicopter"
         elif x == 10:
-            return "Ground Rover"
+            ans = "Ground Rover"
         elif x == 13:
-            return "Hexacopter"
+            ans = "Hexacopter"
         elif x == 14:
-            return "Octacopter"
+            ans = "Octacopter"
         elif x == 15:
-            return "Tricopter"
+            ans = "Tricopter"
         elif x in set(19, 20, 21, 22, 23, 24, 25):
-            return "VTOL"
+            ans = "VTOL"
         else:
-            return "General"
+            ans = "General"
+        return ans.upper()
 
     @staticmethod
     def findAutopilot(x):
         if x == 3:
-            return "ArduPilot"
+            ans = "ArduPilot"
         elif x == 4:
-            return "OpenPilot"
+            ans = "OpenPilot"
         else:
-            return "Generic AutoPilot"
+            ans = "Generic AutoPilot"
+        return ans.upper()
 
     @staticmethod
     def findState(x):
         if x == 1:
-            return "Booting"
+            ans = "Booting"
         elif x == 2:
-            return "Calibrating"
+            ans = "Calibrating"
         elif x == 3:
-            return "Armed"
+            ans = "Armed"
         elif x == 4:
-            return "Active"
+            ans = "Active"
         elif x == 5:
-            return "Critical"
+            ans = "Critical"
         elif x == 6:
-            return "Emergency"
+            ans = "Emergency"
         elif x == 7:
-            return "PowerOff"
+            ans = "PowerOff"
         elif x == 8:
-            return "Terminating"
+            ans = "Terminating"
+        elif x == 9:
+            ans = "Unknown"
         else:
-            return "Unknown"
+            ans = "Disarmed"
+        return ans.upper()
 
     @staticmethod
     def findMode(x):
@@ -60,25 +65,27 @@ class MessageDecoder:
         pos_of_one = int(math.log2(x&-x) + 1)
 
         if pos_of_one == 2:
-            return "Test"
+            ans = "Test"
         elif pos_of_one == 3:
-            return "Auto"
+            ans = "Auto"
         elif pos_of_one == 4:
-            return "Guided"
+            ans = "Guided"
         elif pos_of_one == 5:
-            return "Stabilize"
+            ans = "Stabilize"
         elif pos_of_one == 6:
-            return "Simulation"
+            ans = "Simulation"
         elif pos_of_one == 7:
-            return "Manual"
+            ans = "Manual"
         else:
-            return "None"
+            ans = "None"
+        return ans.upper()
 
     @staticmethod
     def findFix(x):
         if x == 2:
-            return "2D Fix"
+            ans = "2D Fix"
         elif x == 3:
-            return "3D Fix"
+            ans = "3D Fix"
         else:
-            return "No Fix"
+            ans = "No Fix"
+        return ans.upper()

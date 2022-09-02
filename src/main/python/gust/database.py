@@ -538,6 +538,8 @@ def add_vehicle(name, port):
        satellites_visible int,
        roll_angle float,
        pitch_angle float,
+       alpha float,
+       beta float,
        airspeed float,
        gndspeed float,
        vspeed float,

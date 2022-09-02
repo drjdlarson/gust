@@ -127,11 +127,12 @@ class DroneHelper():
         return lat_2, lon_2
 
     def icon_selector(self):
-        mode = msg_decoder.findMode(int(self.mode))
+        mode = msg_decoder.findMode(self.mode)
         if mode in ("Test", "Stabilize", "Manual", "None"):
-            icon_type = mpimg.imread(self.ctx.get_resource('map_widget/greenarrow.png'))
+            return mpimg.imread(self.ctx.get_resource('map_widget/greenarrow.png'))
         elif mode == "Guided":
-            icon_type = mpimg.imread(self.ctx.get_resource('map_widget/bluearrow.png'))
+            return mpimg.imread(self.ctx.get_resource('map_widget/bluearrow.png'))
         elif mode in ("Auto", "Simulation"):
-            icon_type = mpimg.imread(self.ctx.get_resource('map_widget/redarrow.png'))
-        return icon_type
+            return mpimg.imread(self.ctx.get_resource('map_widget/redarrow.png'))
+        else:
+            return mpimg.imread(self.ctx.get_resource('map_widget/greenarrow.png'))

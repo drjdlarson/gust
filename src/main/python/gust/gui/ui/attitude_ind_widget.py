@@ -37,6 +37,30 @@ class pyG5AIWidget(QWidget):
     """Generate G5 wdiget view."""
 
     def __init__(self, parent):
+    # def __init__(self):
+        self.roll_angle = 30
+        self.pitch_angle = -20
+        self.gndspeed = 36
+        self.airspeed = 45
+        self.altitude = 70
+        self.vspeed = 20
+        self.heading = 290
+        self.arm = 6
+        self.gnss_fix = 2
+        self.mode = 16
+
+        super().__init__(parent=parent)
+        # super().__init__()
+
+        self.setWindowTitle("Attitude Indicator")
+        self.setFixedSize(g5Width, g5Height)
+        self.setContentsMargins(0, 0, 0, 0)
+
+        # parameters
+        self.rollArcRadius = g5CenterY * 0.8
+        self._pitchScale = 25
+
+    def clean_hud(self):
         self.roll_angle = 0
         self.pitch_angle = 0
         self.gndspeed = 0
@@ -48,16 +72,7 @@ class pyG5AIWidget(QWidget):
         self.gnss_fix = 0
         self.mode = 16
 
-        super().__init__(parent=parent)
-
-        self.setWindowTitle("Attitude Indicator")
-        self.setFixedSize(g5Width, g5Height)
-        self.setContentsMargins(0, 0, 0, 0)
-
-        # parameters
-        self.rollArcRadius = g5CenterY * 0.8
-        self._pitchScale = 25
-
+        self.repaint()
 
     def setPen(self, width, color, style=Qt.SolidLine):
         """Set the pen color and width."""
@@ -457,7 +472,7 @@ class pyG5AIWidget(QWidget):
         self.qp.drawText(
             rect,
             Qt.AlignHCenter | Qt.AlignVCenter,
-            "GS {:03d} kt".format(int(self.gndspeed)),
+            "GS {:03d}".format(int(self.gndspeed)),
         )
         #################################################
         # ALTITUDE TAPE
@@ -474,7 +489,7 @@ class pyG5AIWidget(QWidget):
         alt_tape_height=g5Height-tasHeight
 
 
-        vsScale = 20
+        vsScale = 10
         vsIndicatorWidth = 7
 
         alttapteLeftBound = altTapeLeftAlign - 1.5 * altBoxSpikedimension
@@ -622,22 +637,21 @@ class pyG5AIWidget(QWidget):
         self.qp.setBrush(QBrush(QColor(0, 0, 0, 180)))
         self.qp.drawRect(rect)
 
-        gnss_fix = msg_decoder.findFix(self.gnss_fix)
-        if gnss_fix == "3D Fix":
+        f_gnss_fix = msg_decoder.findFix(self.gnss_fix)
+        if f_gnss_fix == "3D Fix".upper():
             self.setPen(3, Qt.white)
             self.qp.drawText(
                 rect,
                 Qt.AlignCenter | Qt.AlignVCenter,
-                gnss_fix,
+                f_gnss_fix.upper(),
             )
-
-        elif gnss_fix == "2D Fix":
+        elif f_gnss_fix == "2D Fix".upper():
             self.setPen(3, Qt.white)
             self.qp.drawText(
                 rect, Qt.AlignCenter | Qt.AlignVCenter,
-                gnss_fix,
+                f_gnss_fix.upper(),
             )
-        elif gnss_fix == "No Fix":
+        else:
             self.setPen(3, Qt.red)
             self.qp.drawText(
                 rect, Qt.AlignCenter | Qt.AlignVCenter,
@@ -654,12 +668,13 @@ class pyG5AIWidget(QWidget):
         self.setPen(2, Qt.transparent)
         self.qp.drawRect(rect)
 
-        if self.arm == 3:
+        if self.arm in (1, 2, 3, 4, 5, 6, 7, 8, 9):
+            f_arm = msg_decoder.findState(self.arm)
             self.setPen(3, Qt.white)
             self.qp.drawText(
                 rect,
                 Qt.AlignCenter | Qt.AlignVCenter,
-                "ARMED",
+                f_arm.upper(),
             )
         else:
             self.setPen(3, Qt.red)
@@ -678,28 +693,21 @@ class pyG5AIWidget(QWidget):
         self.setPen(2, Qt.transparent)
         self.qp.drawRect(rect)
 
-        self.mode = msg_decoder.findMode(self.mode)
-        if self.mode == "Stabilize":
+        f_mode = msg_decoder.findMode(self.mode)
+        try:
             self.setPen(3, Qt.white)
             self.qp.drawText(
                 rect,
                 Qt.AlignCenter | Qt.AlignVCenter,
-                "STABILIZE",
+                f_mode.upper(),
             )
-        elif self.mode == "Guided":
+        except:
             self.setPen(3, Qt.white)
             self.qp.drawText(
-                rect, Qt.AlignCenter | Qt.AlignVCenter,
-                "POS_HOLD",
+                rect,
+                Qt.AlignCenter | Qt.AlignVCenter,
+                "NONE",
             )
-        elif self.mode == "Auto":
-            self.setPen(3, Qt.white)
-            self.qp.drawText(
-                rect, Qt.AlignCenter | Qt.AlignVCenter,
-                "AUTO",
-            )
-
-
 
         self.qp.end()
 

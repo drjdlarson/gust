@@ -125,7 +125,7 @@ class SysData(Resource):
 
 @api.route("{:s}/attitude_data".format(BASE))
 class AttitudeData(Resource):
-    params = ["roll_angle", "pitch_angle", "airspeed", "gndspeed", "vspeed", "throttle"]
+    params = ["roll_angle", "pitch_angle", "alpha", "beta", "airspeed", "gndspeed", "vspeed", "throttle"]
 
     def get(self):
         attitude_data = {}

@@ -47,9 +47,6 @@ class FrontendWindow(QMainWindow, Ui_MainWindow_main):
         self.pushButton_disarm.clicked.connect(self.clicked_disarm)
         self.pushButton_sensors.clicked.connect(self.clicked_sensors)
 
-        self.pushButton_update.clicked.connect(self.update_request)
-        self.pushButton_default.clicked.connect(self.clicked_default)
-
         # Setting few features of the table
         header = self.tableWidget.horizontalHeader()
         header.setMinimumSectionSize(120)
@@ -120,6 +117,8 @@ class FrontendWindow(QMainWindow, Ui_MainWindow_main):
             res = win.exec_()
             if res:
                 self.tableWidget.removeRow(sel_row)
+                self.clean_hud_and_lcd()
+
 
     def update_request(self):
         if self.timer is None:
@@ -238,15 +237,18 @@ class FrontendWindow(QMainWindow, Ui_MainWindow_main):
         self.widget_hud.mode = self.flight_params[key_pos]['flight_mode']
         self.widget_hud.repaint()
 
-    def clicked_default(self):
-        self.label_seluav.setText("Current Vehicle Name")
-        self.lcdNumber_altitude.display(100)
-        self.lcdNumber_vspeed.display(100)
-        self.lcdNumber_airspeed.display(100)
-        self.lcdNumber_gndspeed.display(100)
-        self.lcdNumber_voltage.display(100)
-        self.lcdNumber_current.display(100)
+    def clean_hud_and_lcd(self):
 
+        # Cleaning the LCD display
+        self.label_seluav.setText("Current Vehicle Name")
+        self.lcdNumber_altitude.display(0)
+        self.lcdNumber_vspeed.display(0)
+        self.lcdNumber_airspeed.display(0)
+        self.lcdNumber_gndspeed.display(0)
+        self.lcdNumber_voltage.display(0)
+        self.lcdNumber_current.display(0)
+
+        self.widget_hud.clean_hud()
         self.tableWidget.clearContents()
         self.widget_map.clear_drone_list()
 

@@ -37,7 +37,7 @@ class ConnServer:
         """
 
         if cls.running:
-            logger.critical("Already running!!")
+            logger.warning("Already running!!")
             return
 
         cls.running = True
