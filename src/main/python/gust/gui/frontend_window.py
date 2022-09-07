@@ -235,6 +235,9 @@ class FrontendWindow(QMainWindow, Ui_MainWindow_main):
         self.widget_hud.arm = self.flight_params[key_pos]['armed']
         self.widget_hud.gnss_fix = self.flight_params[key_pos]['gnss_fix']
         self.widget_hud.mode = self.flight_params[key_pos]['flight_mode']
+        self.widget_hud.alpha = self.flight_params[key_pos]['alpha']
+        self.widget_hud.beta = self.flight_params[key_pos]['beta']
+        self.widget_hud.sat_count = self.flight_params[key_pos]['satellites_visible']
         self.widget_hud.repaint()
 
     def clean_hud_and_lcd(self):
