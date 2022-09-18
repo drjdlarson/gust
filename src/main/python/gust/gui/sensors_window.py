@@ -20,12 +20,11 @@ URL_BASE="http://localhost:8000/api/"
 class SensorsWindow(QMainWindow,Ui_MainWindow):
     """Main interface for the sensors selection window"""
 
-    def __init__(self,ctx):
+    def __init__(self, ctx):
         super().__init__()
         self.setupUi(self)
 
         # self.pushButton_connect.clicked.connect(self.clicked_connect)
-
 
     def setupUi(self, mainWindow):
         """Sets up the user interface."""

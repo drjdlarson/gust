@@ -19,9 +19,11 @@ import requests
 from gust.gui.ui.gustClient import Ui_MainWindow_main
 from gust.gui import con_window, log_window, sensors_window
 from gust.gui import engineoff_confirmation, disconnect_confirmation, rtl_confirmation, disarm_confirmation
+from gust.gui import rc_window, servo_window
 from gust.gui.ui.map_widget import MapWidget
 from gust.gui.ui.attitude_ind_widget import pyG5AIWidget
 from gust.gui.msg_decoder import MessageDecoder as msg_decoder
+
 
 URL_BASE = "http://localhost:8000/api/"
 
@@ -35,6 +37,8 @@ class FrontendWindow(QMainWindow, Ui_MainWindow_main):
 
         self._conWindow = None
         self._sensorsWindow = None
+        self._rcWindow = None
+        self._servoWindow = None
 
         self.manager = DataManager()
         self.ctx = ctx
@@ -45,7 +49,11 @@ class FrontendWindow(QMainWindow, Ui_MainWindow_main):
         self.pushButton_engineOff.clicked.connect(self.clicked_engineOff)
         self.pushButton_RTL.clicked.connect(self.clicked_RTL)
         self.pushButton_disarm.clicked.connect(self.clicked_disarm)
+
         self.pushButton_sensors.clicked.connect(self.clicked_sensors)
+        self.pushButton_rc.clicked.connect(self.clicked_rc)
+        self.pushButton_servo.clicked.connect(self.clicked_servo)
+        self.pushButton_tune.clicked.connect(self.clicked_tune)
 
         # Setting few features of the table
         header = self.tableWidget.horizontalHeader()
@@ -97,6 +105,23 @@ class FrontendWindow(QMainWindow, Ui_MainWindow_main):
             self.ctx)
         win.exec_()
 
+    @pyqtSlot()
+    def clicked_rc(self):
+        if self._rcWindow is None:
+            self._rcWindow = rc_window.RCWindow(
+                self.ctx)
+        self._rcWindow.show()
+
+    @pyqtSlot()
+    def clicked_servo(self):
+        if self._servoWindow is None:
+            self._servoWindow = servo_window.ServoWindow(
+                self.ctx)
+        self._servoWindow.show()
+
+    @pyqtSlot()
+    def clicked_tune(self):
+        pass
 
     @pyqtSlot()
     def clicked_sensors(self):

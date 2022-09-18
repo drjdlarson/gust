@@ -1,3 +1,4 @@
+
 import sys
 import math
 import io
@@ -6,7 +7,6 @@ from scipy import ndimage
 import folium # pip install folium
 from PyQt5.QtWidgets import QLineEdit, QLCDNumber, QApplication, QWidget, QHBoxLayout, QVBoxLayout
 from PyQt5.QtWebEngineWidgets import QWebEngineView # pip install PyQtWebEngine
-from gust.gui.msg_decoder import MessageDecoder as msg_decoder
 
 """
 Folium in PyQt5
@@ -24,9 +24,9 @@ class MapWidget(QWidget):
         self.setLayout(layout)
 
         m = folium.Map(
-            tiles='https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-            attr='Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community',
-            zoom_start=12,
+            # tiles='https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+            # attr='Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community',
+            zoom_start=1,
             #location=[self.latitude, self.longitude]
         )
 
@@ -47,9 +47,10 @@ class MapWidget(QWidget):
         self.drone_icon_list.append(DroneHelper(name, latitude, longitude, heading, track, mode, ctx))
 
     def update_map(self):
-        map_kwargs = dict(tiles='https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-        attr='Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community',
-        zoom_start=12,
+        map_kwargs = dict(
+            # tiles='https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+            # attr='Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community',
+            zoom_start=12,
         )
         if len(self.drone_icon_list) > 0:
             latitude = 0
@@ -127,12 +128,12 @@ class DroneHelper():
         return lat_2, lon_2
 
     def icon_selector(self):
-        mode = msg_decoder.findMode(self.mode)
-        if mode in ("Test", "Stabilize", "Manual", "None"):
-            return mpimg.imread(self.ctx.get_resource('map_widget/greenarrow.png'))
-        elif mode == "Guided":
-            return mpimg.imread(self.ctx.get_resource('map_widget/bluearrow.png'))
-        elif mode in ("Auto", "Simulation"):
-            return mpimg.imread(self.ctx.get_resource('map_widget/redarrow.png'))
+        if self.mode == 0:
+            icon_type = mpimg.imread(self.ctx.get_resource('map_widget/greenarrow.png'))
+        elif self.mode == 1:
+            icon_type = mpimg.imread(self.ctx.get_resource('map_widget/bluearrow.png'))
+        elif self.mode == 2 or self.mode == 3:
+            icon_type = mpimg.imread(self.ctx.get_resource('map_widget/redarrow.png'))
         else:
-            return mpimg.imread(self.ctx.get_resource('map_widget/greenarrow.png'))
+            icon_type = mpimg.imread(self.ctx.get_resource('map_widget/greenarrow.png'))
+        return icon_type
