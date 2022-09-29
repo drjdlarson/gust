@@ -41,6 +41,7 @@ class pyG5AIWidget(QWidget):
     """Generate G5 wdiget view."""
 
     def __init__(self, parent):
+    # def __init__(self):
         self.roll_angle = -20
         self.pitch_angle = 15
         self.gndspeed = 36
@@ -488,7 +489,7 @@ class pyG5AIWidget(QWidget):
         # draw the satellites count
         # pixmap = QPixmap(self.ctx.get_resource('attitude_ind_widget/satellite.png'))
         # pixmap = QPixmap("~/Projects/gust/src/main/resources/base/attitude_ind_widget/satellite.png")
-        pixmap = QPixmap("test_1.png")
+        pixmap = QPixmap("satelite.png")
         x = speedBoxWidth + 28
         self.qp.drawPixmap(x, g5Height - tasHeight - 25, 22, 22, pixmap)
 

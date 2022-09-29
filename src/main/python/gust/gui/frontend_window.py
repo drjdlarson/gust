@@ -218,6 +218,8 @@ class FrontendWindow(QMainWindow, Ui_MainWindow_main):
 
             self.widget_map.add_drone(
                 self.flight_params[key]['name'],
+                self.flight_params[key]['home_lat'],
+                self.flight_params[key]['home_lon'],
                 self.flight_params[key]['latitude'],
                 self.flight_params[key]['longitude'],
                 self.flight_params[key]['heading'],

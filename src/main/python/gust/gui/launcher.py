@@ -11,6 +11,9 @@ from gust.gui import frontend_window
 from gust.gui import log_window
 import gust.server
 
+import logging
+
+logging.disable(logging.DEBUG)
 
 class Launcher(QMainWindow, Ui_Launcher):
     def __init__(self, ctx):
