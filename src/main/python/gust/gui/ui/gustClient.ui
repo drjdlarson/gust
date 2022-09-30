@@ -1057,6 +1057,11 @@ font: 14pt &quot;Umpush&quot;;</string>
         </property>
         <column>
          <property name="text">
+          <string/>
+         </property>
+        </column>
+        <column>
+         <property name="text">
           <string>VEHICLE</string>
          </property>
         </column>

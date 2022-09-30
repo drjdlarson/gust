@@ -65,11 +65,12 @@ class ConnInfo(Resource):
     def get(self):
         port = request.args.get("port", default="", type=str)
         name = request.args.get("name", default="", type=str)
-        vehicle_info = {"name": name, "port": port}
+        color = request.args.get("color", default="", type=str)
+        vehicle_info = {"name": name, "port": port, "color": color}
 
         if len(port) > 0 and len(name) > 0:
             database.connect_db()
-            res = database.add_vehicle(name, port)
+            res = database.add_vehicle(name, port, color)
             if res:
                 conn_succ, info = send_info_to_conn_server(
                     vehicle_info, conn_settings.DRONE_CONN
@@ -108,7 +109,7 @@ class PortsData(Resource):
 
 @api.route("{:s}/sys_data".format(BASE))
 class SysData(Resource):
-    params = ["home_lat", "home_lon", "home_alt", "voltage", "current"]
+    params = ["color", "home_lat", "home_lon", "home_alt", "voltage", "current"]
 
     def get(self):
         sys_data = {}

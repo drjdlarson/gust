@@ -27,12 +27,13 @@ class RadioManager(QObject):
     def connect_to_radio(self, info):
         name = info["name"]
         port = info["port"]
+        color = info["color"]
         msg = "Connecting to {} on {}".format(name, port)
         logger.info(msg)
 
         # creating separate threads for each connection
         self.conn_status.update({name: True})
-        worker = Worker(self.poll_radio, name, port)
+        worker = Worker(self.poll_radio, name, port, color)
         self.threadpool.start(worker)
         return {"success": True, "info": ''}
 
@@ -44,14 +45,14 @@ class RadioManager(QObject):
         if res:
             return {"success": True, "info": ""}
 
-    def poll_radio(self, name, port):
+    def poll_radio(self, name, port, color):
 
         # for testing purposes only
         if port == "/dev/test/":
             msg = "Populating database with dummy data..."
             logger.info(msg)
             while self.conn_status[name]:
-                all_data = self.prepare_dummy_data()
+                all_data = self.prepare_dummy_data(color)
                 res = database.write_values(all_data, name)
                 time.sleep(0.2)
 
@@ -59,7 +60,7 @@ class RadioManager(QObject):
             mav_data = {}
 
             # Setting the first set of data to be all zero
-            all_data = self.prepare_dummy_data()
+            all_data = self.prepare_dummy_data(color)
             zeroed_data = []
             for rate in all_data:
                 rate["vals"] = dict.fromkeys(rate["vals"], 0)
@@ -75,7 +76,7 @@ class RadioManager(QObject):
                 # time.sleep(0.1)
 
 
-    def prepare_dummy_data(self):
+    def prepare_dummy_data(self, color):
         current_time = self.get_current_time()
         randf1 = round(random.uniform(50, 100), 2)
         randf11 = round(random.uniform(0, 20), 2)
@@ -92,6 +93,7 @@ class RadioManager(QObject):
             "rate": database.DroneRates.RATE1,
             "vals": {
                 "m_time": current_time,
+                "color": color,
                 "home_lat": 33.21534,
                 "home_lon": -87.54355,
                 "home_alt": 170,

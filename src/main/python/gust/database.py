@@ -90,7 +90,8 @@ def open_db():
     uid INTEGER PRIMARY KEY,
     name TEXT,
     port TEXT,
-    UNIQUE(uid, name, port)
+    color TEXT,
+    UNIQUE(uid, name, port, color)
     );
     """
     # logger.debug(cmd)
@@ -501,13 +502,13 @@ def get_drone_ids(distinct=True, active=True):
         return active_names
 
 
-def add_vehicle(name, port):
+def add_vehicle(name, port, color):
     global _connected_counter
     query = _start_query()
 
     # adding to the main table
-    cmd = 'INSERT into drone_collection (uid, name, port) VALUES ({}, "{}", "{}");'.format(
-        _connected_counter, name, port
+    cmd = 'INSERT into drone_collection (uid, name, port, color) VALUES ({}, "{}", "{}", "{}");'.format(
+        _connected_counter, name, port, color
     )
     logger.info("Adding vehicle {} into drone collection".format(name))
     res1 = query.exec_(cmd)
@@ -516,6 +517,7 @@ def add_vehicle(name, port):
     table_name = create_drone_rate_table_name(name, DroneRates.RATE1)
     cmd = """CREATE TABLE IF NOT EXISTS {:s} (
        	m_time float PRIMARY key,
+        color Text,
     	home_lat float,
        	home_lon float,
        	home_alt float,

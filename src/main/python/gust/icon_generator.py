@@ -27,16 +27,16 @@ def prepare_icon(file, req_rgb, save_name):
     None.
 
     """
-    
+
     img = Image.open(file)
     pixel_map = img.load()
     width, height = img.size
 
-    pix = []
+    # pix = []
     for i in range(width):
         for j in range(height):
             r, g, b, p = img.getpixel((i, j))
-            pix.append((r,g,b, p))
+            # pix.append((r,g,b, p))
 
             if p != 0:
                 pixel_map[i, j] = req_rgb
@@ -44,9 +44,9 @@ def prepare_icon(file, req_rgb, save_name):
                 pixel_map[i, j] = req_rgb
             else:
                 pass
-    # img.save(save_name)
-    img.show()
-    return pix
+    img.save(save_name)
+    # img.show()
+    # return pix
 
 # Example to test a new icon.
-all_pix = prepare_icon("circle2.png", (0, 240, 0), "dummy_one.png")
+# all_pix = prepare_icon("circle2.png", (0, 240, 0), "dummy_one.png")

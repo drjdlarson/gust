@@ -26,7 +26,7 @@ from gust.gui.msg_decoder import MessageDecoder as msg_decoder
 
 
 URL_BASE = "http://localhost:8000/api/"
-
+FILES = ["home", "pos", "spos", "rtl_pos"]
 
 class FrontendWindow(QMainWindow, Ui_MainWindow_main):
     """Main interface for the frontend window."""
@@ -43,6 +43,9 @@ class FrontendWindow(QMainWindow, Ui_MainWindow_main):
         self.manager = DataManager()
         self.ctx = ctx
         self.setupUi(self)
+
+        self.widget_hud.ctx = ctx
+
 
         # Pushbuttons
         self.pushButton_addvehicle.clicked.connect(self.clicked_addvehicle)
@@ -136,14 +139,20 @@ class FrontendWindow(QMainWindow, Ui_MainWindow_main):
         button = self.sender()
         if button:
             sel_row = self.tableWidget.indexAt(button.pos()).row()
-            name = self.tableWidget.item(sel_row, 0).text()
+            name = self.tableWidget.item(sel_row, 1).text()
             win = disconnect_confirmation.DisconnectConfirmation(
                 name, self.ctx)
             res = win.exec_()
             if res:
                 self.tableWidget.removeRow(sel_row)
                 self.clean_hud_and_lcd()
+                self.delete_map_icons(name)
 
+    def delete_map_icons(self, name):
+        for file in FILES:
+            filename = name + '_' + file + '.png'
+            icon_file = self.ctx.get_resource('map_widget/' + filename)
+            os.remove(icon_file)
 
     def update_request(self):
         if self.timer is None:
@@ -163,57 +172,63 @@ class FrontendWindow(QMainWindow, Ui_MainWindow_main):
         for key in self.flight_params:
             rowPos = int(key) - 1
 
+            item = QTableWidgetItem()
+            color = self.flight_params[key]['color']
+            item.setBackground(QtGui.QColor(color))
+            self.tableWidget.setItem(rowPos, 0, item)
+
+
             item = self.flight_params[key]['name']
             item = QTableWidgetItem(item)
             item.setTextAlignment(QtCore.Qt.AlignCenter)
-            self.tableWidget.setItem(rowPos, 0, item)
+            self.tableWidget.setItem(rowPos, 1, item)
 
             item = self.flight_params[key]['flight_mode']
             item = msg_decoder.findMode(int(item))
             item = QTableWidgetItem(str(item))
             item.setTextAlignment(QtCore.Qt.AlignCenter)
-            self.tableWidget.setItem(rowPos, 1, item)
+            self.tableWidget.setItem(rowPos, 2, item)
 
             item = self.flight_params[key]['next_wp']
             item = QTableWidgetItem("Waypoint " + str(item))
             item.setTextAlignment(QtCore.Qt.AlignCenter)
-            self.tableWidget.setItem(rowPos, 2, item)
+            self.tableWidget.setItem(rowPos, 3, item)
 
             item = int(self.flight_params[key]['tof'])
             item = QTableWidgetItem(str(timedelta(seconds=item)))
             item.setTextAlignment(QtCore.Qt.AlignCenter)
-            self.tableWidget.setItem(rowPos, 3, item)
+            self.tableWidget.setItem(rowPos, 4, item)
 
             item = self.flight_params[key]['relative_alt']
             item = QTableWidgetItem(str(item) + " m")
             item.setTextAlignment(QtCore.Qt.AlignCenter)
-            self.tableWidget.setItem(rowPos, 4, item)
+            self.tableWidget.setItem(rowPos, 5, item)
 
             item = self.flight_params[key]['voltage']
             item = QTableWidgetItem(str(item) + " V")
             item.setTextAlignment(QtCore.Qt.AlignCenter)
-            self.tableWidget.setItem(rowPos, 5, item)
+            self.tableWidget.setItem(rowPos, 6, item)
 
             item = self.flight_params[key]['current']
             item = QTableWidgetItem(str(item) + " A")
             item.setTextAlignment(QtCore.Qt.AlignCenter)
-            self.tableWidget.setItem(rowPos, 6, item)
+            self.tableWidget.setItem(rowPos, 7, item)
 
             item = self.flight_params[key]['relay_sw']
             item = QTableWidgetItem(str(item))
             item.setTextAlignment(QtCore.Qt.AlignCenter)
-            self.tableWidget.setItem(rowPos, 7, item)
+            self.tableWidget.setItem(rowPos, 8, item)
 
             item = self.flight_params[key]['engine_sw']
             item = QTableWidgetItem(str(item))
             item.setTextAlignment(QtCore.Qt.AlignCenter)
-            self.tableWidget.setItem(rowPos, 8, item)
+            self.tableWidget.setItem(rowPos, 9, item)
 
             # self.con_status will be 1 or 0.
             self.con_status = self.flight_params[key]['connection']
             self.disconnect_button = QPushButton("Disconnect")
             self.disconnect_button.clicked.connect(self.clicked_disconnect)
-            self.tableWidget.setCellWidget(rowPos, 9, self.disconnect_button)
+            self.tableWidget.setCellWidget(rowPos, 10, self.disconnect_button)
 
 
             self.widget_map.add_drone(

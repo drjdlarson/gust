@@ -42,6 +42,7 @@ class pyG5AIWidget(QWidget):
 
     def __init__(self, parent):
     # def __init__(self):
+        self.ctx = None
         self.roll_angle = -20
         self.pitch_angle = 15
         self.gndspeed = 36

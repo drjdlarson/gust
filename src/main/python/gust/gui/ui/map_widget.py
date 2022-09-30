@@ -210,7 +210,6 @@ class MapHelper():
 
     def update_map(self):
         self.icon = self.icon_selector()
-
         pos = (self.latitude, self.longitude)
         pos_coord = QtPositioning.QGeoCoordinate(*pos)
         self.marker.appendMarker(
@@ -228,11 +227,13 @@ class MapHelper():
         track_path = [pos_coord, track_coord]
         self.track_line.appendLine({"track_path": track_path})
 
+        file = 'map_widget/' + self.name + '_home.png'
+        home_icon = self.ctx.get_resource(file)
         home = (self.home_lat, self.home_lon)
         home_coord = QtPositioning.QGeoCoordinate(*home)
         self.home.appendMarker(
             {"home": home_coord,
-             "source": "home_icon.jpeg",
+             "source": home_icon,
              "name": self.name,
                 }
             )
@@ -251,10 +252,15 @@ class MapHelper():
         return (lat_2, lon_2)
 
     def icon_selector(self):
-        if self.mode == 0:
-            icon_type = self.ctx.get_resource('map_widget/generic_spos.png')
+        if self.mode == 3:
+            file = 'map_widget/' + self.name + '_spos.png'
+            icon_type = self.ctx.get_resource(file)
+        elif self.mode == 4:
+            file = 'map_widget/' + self.name + '_rtl_pos.png'
+            icon_type = self.ctx.get_resource(file)
         else:
-            icon_type = self.ctx.get_resource('map_widget/generic_pos.png')
+            file = 'map_widget/' + self.name + '_pos.png'
+            icon_type = self.ctx.get_resource(file)
         return icon_type
 
 
