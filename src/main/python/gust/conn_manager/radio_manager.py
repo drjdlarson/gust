@@ -72,6 +72,7 @@ class RadioManager(QObject):
                 rate1, rate2, rate3, rate4, mav_data = self.prepare_data_from_mavlink(
                     port, rate1, rate2, rate3, rate4, mav_data
                     )
+                rate1["vals"]["color"] = color
                 res = database.write_values(all_data, name)
                 # time.sleep(0.1)
 

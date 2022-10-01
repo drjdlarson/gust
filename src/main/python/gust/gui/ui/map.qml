@@ -8,26 +8,32 @@ Item {
     width: 640
     height: 480
 
-    Plugin {
-        id: osmPlugin
-        name: "osm" //"googlemaps"
-            PluginParameter {
-            name: "osm.mapping.custom.host"
-            value: "https://server.arcgisonline.com/arcgis/rest/services/World_Imagery/MapServer/tile/4/7/4"
-        }
-    }
 
     property variant locationTC: QtPositioning.coordinate(33.2098, -87.5692)
 
     Map {
         id: mapBase
         anchors.fill: parent
-        plugin: osmPlugin
         center: locationTC
-        zoomLevel: 13
+        zoomLevel: 10
         copyrightsVisible: false
-        // activeMapType: MapType.CustomMap
+        plugin: Plugin {
+            name: 'osm'
+            PluginParameter {
+                // name: 'osm.mapping.offline.directory'
+                name: 'osm.mapping.custom.host'
+                value: 'file:/offline_folders/'
+            }
+
+            PluginParameter {
+                name: "osm.mapping.providersrepository.disabled"
+                value: true
+            }
+
+        }
+        activeMapType: mapBase.supportedMapTypes[supportedMapTypes.length - 1]
     }
+
 
     Transition {
         id: myTrans
