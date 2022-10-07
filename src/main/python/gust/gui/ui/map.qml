@@ -7,14 +7,59 @@ Item {
     id:item
     width: 640
     height: 480
-
+    focus: true
 
     property variant locationTC: QtPositioning.coordinate(33.2098, -87.5692)
+
+    Location {
+        id: mapCenter
+        coordinate {
+            latitude: 33.2098
+            longitude: -87.5612
+        }
+    }
+
+/*
+
+// FOR TESTING WITH OPENSTREETMAP
+    Plugin {
+        id: osmPlugin
+        name: "osm" //"googlemaps"
+            PluginParameter {
+            name: "osm.mapping.custom.host"
+            value: "https://server.arcgisonline.com/arcgis/rest/services/World_Imagery/MapServer/tile/4/7/4"
+        }
+    }
 
     Map {
         id: mapBase
         anchors.fill: parent
-        center: locationTC
+        plugin: osmPlugin
+        // anchors.centerIn: parent
+        center: mapCenter.coordinate
+        zoomLevel: 13
+        copyrightsVisible: false
+        // activeMapType: MapType.CustomMap
+    }
+*/
+
+
+    Keys.onSpacePressed: {
+        console.log(mapBase.center)
+        mapBase.center = mapCenter.coordinate
+        mapBase.zoomLevel = 10
+        // mapBase.fitViewportToVisibleMapItems()
+
+        // var point = mapBase.fromCoordinate(locationTC, false)
+        // mapBase.toCoordinate(point, false)
+    }
+
+
+     Map {
+        id: mapBase
+        anchors.fill: parent
+        anchors.centerIn: parent;
+        center: mapCenter.coordinate
         zoomLevel: 10
         copyrightsVisible: false
         plugin: Plugin {
@@ -22,17 +67,18 @@ Item {
             PluginParameter {
                 // name: 'osm.mapping.offline.directory'
                 name: 'osm.mapping.custom.host'
-                value: 'file:/offline_folders/'
+                value: 'file:/offline_test/'
             }
 
             PluginParameter {
                 name: "osm.mapping.providersrepository.disabled"
-                value: true
+                value: false
             }
-
         }
         activeMapType: mapBase.supportedMapTypes[supportedMapTypes.length - 1]
     }
+
+
 
 
     Transition {
@@ -112,8 +158,6 @@ Item {
                         }
             }
         }
-
-
 
         // The code below enables SSAA
         layer.enabled: true

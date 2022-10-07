@@ -4,6 +4,7 @@ import random
 import math
 import matplotlib.image as mpimg
 from PyQt5 import QtCore, QtWidgets, QtQuickWidgets, QtPositioning, QtQuickWidgets
+from PyQt5.QtCore import QTimer
 
 
 class MarkerModel(QtCore.QAbstractListModel):
@@ -159,6 +160,7 @@ class MapWidget(QtQuickWidgets.QQuickWidget):
 
         qml_path = os.path.join(os.path.dirname(__file__), "map.qml")
         self.setSource(QtCore.QUrl.fromLocalFile(qml_path))
+
 
     def clear_drone_list(self):
         self.vehicle_list = {}
