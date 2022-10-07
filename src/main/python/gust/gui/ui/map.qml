@@ -19,6 +19,7 @@ Item {
         }
     }
 
+
 /*
 
 // FOR TESTING WITH OPENSTREETMAP
@@ -47,7 +48,7 @@ Item {
     Keys.onSpacePressed: {
         console.log(mapBase.center)
         mapBase.center = mapCenter.coordinate
-        mapBase.zoomLevel = 10
+        mapBase.zoomLevel = 15
         // mapBase.fitViewportToVisibleMapItems()
 
         // var point = mapBase.fromCoordinate(locationTC, false)
@@ -60,25 +61,39 @@ Item {
         anchors.fill: parent
         anchors.centerIn: parent;
         center: mapCenter.coordinate
-        zoomLevel: 10
+        zoomLevel: 15
         copyrightsVisible: false
         plugin: Plugin {
             name: 'osm'
+
             PluginParameter {
                 // name: 'osm.mapping.offline.directory'
                 name: 'osm.mapping.custom.host'
-                value: 'file:/offline_test/'
+                value: 'file:/offline_folders'
             }
 
             PluginParameter {
                 name: "osm.mapping.providersrepository.disabled"
-                value: false
+                value: true
             }
+
+/*
+
+            PluginParameter {
+                name: "osm.mapping.cache.directory"
+                value: "cache_testing"
+            }
+
+
+            PluginParameter {
+                name: "osm.mapping.custom.host"
+                value: "http://a.tile.openstreetmap.fr/hot/"
+            }
+*/
         }
         activeMapType: mapBase.supportedMapTypes[supportedMapTypes.length - 1]
+        // activeMapType: mapBase.supportedMapTypes[1]
     }
-
-
 
 
     Transition {
