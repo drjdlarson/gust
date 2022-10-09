@@ -69,22 +69,24 @@ Item {
             PluginParameter {
                 // name: 'osm.mapping.offline.directory'
                 name: 'osm.mapping.custom.host'
-                value: 'file:/offline_folders'
+                value: 'file:offline_folders/'
             }
 
             PluginParameter {
                 name: "osm.mapping.providersrepository.disabled"
                 value: true
             }
-
-/*
+            PluginParameter {
+                name: 'osm.mapping.cache.memory_size'
+                value: 0
+            }
 
             PluginParameter {
                 name: "osm.mapping.cache.directory"
-                value: "cache_testing"
+                value: "file://home/lagerprocessor/Projects/gust/src/main/python/gust/gui/ui/cache_testing"
             }
 
-
+/*
             PluginParameter {
                 name: "osm.mapping.custom.host"
                 value: "http://a.tile.openstreetmap.fr/hot/"
