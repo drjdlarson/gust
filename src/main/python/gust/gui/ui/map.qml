@@ -69,7 +69,8 @@ Item {
             PluginParameter {
                 // name: 'osm.mapping.offline.directory'
                 name: 'osm.mapping.custom.host'
-                value: 'file:offline_folders/'
+                // value: 'file://home/lagerprocessor/Projects/gust/src/main/python/gust/gui/ui/offline_folders/'
+                value: 'file:/home/lagerprocessor/Projects/gust/src/main/python/gust/gui/ui/offline_folders/'
             }
 
             PluginParameter {
