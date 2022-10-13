@@ -9,13 +9,14 @@ Item {
     height: 480
     focus: true
 
-    property variant locationTC: QtPositioning.coordinate(33.2098, -87.5692)
+    property variant locationTC: QtPositioning.coordinate(33.21456, -87.54322)
+    property variant customHost: " "
 
     Location {
         id: mapCenter
         coordinate {
-            latitude: 33.2098
-            longitude: -87.5612
+            latitude: 33.21456
+            longitude: -87.54322
         }
     }
 
@@ -23,6 +24,7 @@ Item {
 /*
 
 // FOR TESTING WITH OPENSTREETMAP
+
     Plugin {
         id: osmPlugin
         name: "osm" //"googlemaps"
@@ -47,13 +49,14 @@ Item {
 
     Keys.onSpacePressed: {
         console.log(mapBase.center)
+        console.log(customHost)
         mapBase.center = mapCenter.coordinate
-        mapBase.zoomLevel = 15
+        mapBase.zoomLevel = 16
         // mapBase.fitViewportToVisibleMapItems()
-
         // var point = mapBase.fromCoordinate(locationTC, false)
         // mapBase.toCoordinate(point, false)
     }
+
 
 
      Map {
@@ -62,6 +65,8 @@ Item {
         anchors.centerIn: parent;
         center: mapCenter.coordinate
         zoomLevel: 15
+        activeMapType: mapBase.supportedMapTypes[supportedMapTypes.length - 1]
+        // activeMapType: mapBase.supportedMapTypes[1]
         copyrightsVisible: false
         plugin: Plugin {
             name: 'osm'
@@ -69,14 +74,18 @@ Item {
             PluginParameter {
                 // name: 'osm.mapping.offline.directory'
                 name: 'osm.mapping.custom.host'
-                // value: 'file://home/lagerprocessor/Projects/gust/src/main/python/gust/gui/ui/offline_folders/'
+                // value: 'file:/offline_test/'
+                // value: customHost
                 value: 'file:/home/lagerprocessor/Projects/gust/src/main/python/gust/gui/ui/offline_folders/'
             }
 
+
             PluginParameter {
                 name: "osm.mapping.providersrepository.disabled"
-                value: true
+                value: false
             }
+
+
             PluginParameter {
                 name: 'osm.mapping.cache.memory_size'
                 value: 0
@@ -84,7 +93,7 @@ Item {
 
             PluginParameter {
                 name: "osm.mapping.cache.directory"
-                value: "file://home/lagerprocessor/Projects/gust/src/main/python/gust/gui/ui/cache_testing"
+                value: "tiles_cache/"
             }
 
 /*
@@ -94,8 +103,7 @@ Item {
             }
 */
         }
-        activeMapType: mapBase.supportedMapTypes[supportedMapTypes.length - 1]
-        // activeMapType: mapBase.supportedMapTypes[1]
+
     }
 
 

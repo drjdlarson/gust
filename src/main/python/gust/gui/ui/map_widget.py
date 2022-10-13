@@ -159,7 +159,9 @@ class MapWidget(QtQuickWidgets.QQuickWidget):
                                             resizeMode=QtQuickWidgets.QQuickWidget.SizeRootObjectToView)
 
         qml_path = os.path.join(os.path.dirname(__file__), "map.qml")
+        self.engine().clearComponentCache()
         self.setSource(QtCore.QUrl.fromLocalFile(qml_path))
+        self.rootObject().setProperty("customHost", "file:offline_test/")
 
 
     def clear_drone_list(self):
@@ -192,6 +194,7 @@ class MapWidget(QtQuickWidgets.QQuickWidget):
     def update_map(self):
         for vehicle in self.vehicle_list.values():
             vehicle.update_map()
+
 
 
 class MapHelper():
@@ -271,5 +274,6 @@ if __name__ == '__main__':
     import sys
     app = QtWidgets.QApplication(sys.argv)
     w = MapWidget()
+
     w.show()
     sys.exit(app.exec_())
