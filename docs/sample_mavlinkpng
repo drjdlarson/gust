@@ -1,0 +1,25 @@
+{'MAV': {'armed': 128, 'base_mode': 192, 'flight_mode': 'Mode(0x000000c0)', 'mav_type': 2, 'vehicle_type': 'UNKNOWN'}, 
+
+'HOME': {'time_usec': 1451749097, 'fix_type': 3, 'lat': 332155397, 'lon': -875436426, 'alt': 150, 'eph': 156, 'epv': 156, 'vel': 6, 'cog': 0, 'satellites_visible': 8, 'alt_ellipsoid': 150, 'h_acc': 0, 'v_acc': 0, 'vel_acc': 9, 'hdg_acc': 65536, 'yaw': 0}, 
+
+'SERVO_OUTPUT_RAW': {'time_usec': 1451749097, 'port': 0, 'servo1_raw': 0, 'servo2_raw': 0, 'servo3_raw': 0, 'servo4_raw': 0, 'servo5_raw': 0, 'servo6_raw': 0, 'servo7_raw': 0, 'servo8_raw': 0, 'servo9_raw': 0, 'servo10_raw': 0, 'servo11_raw': 0, 'servo12_raw': 0, 'servo13_raw': 0, 'servo14_raw': 0, 'servo15_raw': 0, 'servo16_raw': 0}, 
+
+'RC_CHANNELS': {'time_boot_ms': 1451749, 'chancount': 16, 'chan1_raw': 0, 'chan2_raw': 0, 'chan3_raw': 0, 'chan4_raw': 0, 'chan5_raw': 0, 'chan6_raw': 0, 'chan7_raw': 0, 'chan8_raw': 0, 'chan9_raw': 0, 'chan10_raw': 0, 'chan11_raw': 0, 'chan12_raw': 0, 'chan13_raw': 0, 'chan14_raw': 0, 'chan15_raw': 0, 'chan16_raw': 0, 'chan17_raw': 0, 'chan18_raw': 0, 'rssi': 255}, 
+
+'ATTITUDE': {'time_boot_ms': 1451849, 'roll': 0.004305889829993248, 'pitch': 0.02545381337404251, 'yaw': -0.6553483605384827, 'rollspeed': -0.000488789810333401, 'pitchspeed': -0.0007623018464073539, 'yawspeed': 0.00683392072096467}, 
+
+'GLOBAL_POSITION_INT': {'time_boot_ms': 1451869, 'lat': 332155400, 'lon': -875436401, 'alt': 297, 'relative_alt': 177, 'vx': 4, 'vy': -2, 'vz': -3, 'hdg': 32245}, 
+
+'VFR_HUD': {'airspeed': 0.0, 'groundspeed': 0.05470208451151848, 'heading': 322, 'throttle': 0, 'alt': 0.296629935503006, 'climb': 0.03224809840321541}, 
+
+'SCALED_IMU': {'time_boot_ms': 1451749, 'xacc': 48, 'yacc': -6, 'zacc': -1050, 'xgyro': 20, 'ygyro': -3, 'zgyro': 0, 'xmag': 461, 'ymag': 387, 'zmag': -113, 'temperature': 2916}, 
+
+'GPS_RAW_INT': {'time_usec': 1451749097, 'fix_type': 3, 'lat': 332155397, 'lon': -875436426, 'alt': 150, 'eph': 156, 'epv': 156, 'vel': 6, 'cog': 0, 'satellites_visible': 8, 'alt_ellipsoid': 150, 'h_acc': 0, 'v_acc': 0, 'vel_acc': 9, 'hdg_acc': 65536, 'yaw': 0}, 
+
+'SCALED_PRESSURE': {'time_boot_ms': 1451749, 'press_abs': 1011.305908203125, 'press_diff': 0.0, 'temperature': 2752, 'temperature_press_diff': 0}, 
+
+'LOCAL_POSITION_NED': {'time_boot_ms': 1451869, 'x': 0.4240764081478119, 'y': -0.48516714572906494, 'z': -0.17727389931678772, 'vx': 0.046359334141016006, 'vy': -0.029934721067547798, 'vz': -0.03220073878765106}, 
+
+'HEARTBEAT': {'type': 2, 'autopilot': 5, 'base_mode': 192, 'custom_mode': 0, 'system_status': 4, 'mavlink_version': 3}}
+
+'BATTERY_STATUS': {'id': 0, 'battery_function': 0, 'type': 1, 'temperature': 32767, 'voltages': [11778, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535, 65535], 'current_battery': -1, 'current_consumed': -1, 'energy_consumed': -1, 'battery_remaining': -1, 'time_remaining': 0, 'charge_state': 0, 'voltages_ext': [65535, 65535, 65535, 65535], 'mode': 0, 'fault_bitmask': 0},

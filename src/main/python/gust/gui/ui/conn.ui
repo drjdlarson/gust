@@ -90,6 +90,21 @@ color: rgb(0, 0, 0);</string>
      <item row="2" column="1">
       <widget class="QComboBox" name="comboBox_baud"/>
      </item>
+     <item row="3" column="0">
+      <widget class="QLabel" name="label_color">
+       <property name="font">
+        <font>
+         <pointsize>13</pointsize>
+        </font>
+       </property>
+       <property name="text">
+        <string>COLOR ID</string>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="1">
+      <widget class="QComboBox" name="comboBox_color"/>
+     </item>
     </layout>
    </item>
    <item>
