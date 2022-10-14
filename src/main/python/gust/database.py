@@ -10,8 +10,7 @@ import serial.tools.list_ports
 
 # DB_FILE = 'test_database.sqlite'
 DB_FILE = "dummy.sqlite"
-DB_PATH = "/home/lagerprocessor/Projects/gust/src/main/resources/base/"
-# DB_PATH = './'
+DB_PATH = "./"  # autoset by backend window on startup
 DB_DRIVER = "QSQLITE"
 
 _DB = None
@@ -19,8 +18,6 @@ _main_table = "drone_collection"
 _connected_counter = 0
 
 logger = logging.getLogger("[database]")
-
-# TODO: make this thread safe, figure out open_db()
 
 
 @enum.unique
@@ -99,7 +96,18 @@ def open_db():
     if not res2:
         logger.critical(query.lastError().text())
 
-    if res1 and res2:
+    cmd = """CREATE TABLE IF NOT EXISTS zed_collection (
+    uid INTEGER NOT NULL,
+    name TEXT NOT NULL,
+    config TEXT NOT NULL,
+    PRIMARY KEY (uid),
+    UNIQUE(uid)
+    );
+    """
+    logger.debug(cmd)
+    res3 = query.exec_(cmd)
+
+    if res1 and res2 and res3:
         logger.info("Database is now open")
 
 
@@ -502,6 +510,39 @@ def get_drone_ids(distinct=True, active=True):
         return active_names
 
 
+def create_zed_table_name(name):
+    return name.replace(" ", "").lower()
+
+
+def add_zed(name, config):
+    query = _start_query()
+
+    cmd = 'INSERT into zed_collection (name, config) VALUES ("{}", "{}");'.format(
+        name, config
+    )
+    logger.info(cmd)
+    res = query.exec_(cmd)
+    if not res:
+        logger.critical(query.lastError().text())
+        return False
+
+    cmd = """CREATE TABLE IF NOT EXISTS {:s} (
+    uid INTEGER NOT NULL AUTO_INCREMENT,
+    posix INTEGER,
+    xpos FLOAT,
+    ypos FLOAT,
+    zpos FLOAT,
+    PRIMARY KEY (uid)
+    )
+    """.format(
+        create_zed_table_name(name)
+    )
+    if not res:
+        logger.critical(query.lastError().text())
+        return False
+    return True
+
+
 def add_vehicle(name, port, color):
     global _connected_counter
     query = _start_query()
@@ -616,7 +657,7 @@ def add_vehicle(name, port, color):
 
     if res1 and res2 and res3 and res4 and res5:
         _connected_counter += 1
-        return True
+    return res1 and res2 and res3 and res4 and res5
 
 
 def remove_vehicle(name):
@@ -665,8 +706,10 @@ def get_params(table_name, params):
         val[param] = query.value(param)
     return val
 
+
 def create_drone_rate_table_name(name, rate):
     return "{:s}_{:s}".format(name, rate)
+
 
 def check_connection_status(name):
     table_name = create_drone_rate_table_name(name, DroneRates.RATE4)
@@ -676,6 +719,7 @@ def check_connection_status(name):
     query.last()
     res = query.value("connection")
     return res == 1
+
 
 def change_connection_status_value(name, val):
     """
@@ -768,6 +812,19 @@ def write_values(flt_data, name):
     return all(res)
 
 
+def write_zed_obj(name, posix, obj):
+    tab_name = create_zed_table_name(name)
+    cmd = "INSERT INTO {:s} (posix, xpos, ypos, zpos) VALUES ({:f}, {:f}, {:f}, {:f});".format(
+        tab_name, posix, obj[0], obj[1], obj[2]
+    )
+    query = _start_query()
+    res = query.exec_(cmd)
+    if not res:
+        logger.critical(query.lastError().text())
+
+    return res
+
+
 if __name__ == "__main__":
     import random
     import time
@@ -775,7 +832,7 @@ if __name__ == "__main__":
     open_db()
     print(add_vehicle("Testing", "/dev/test/"))
     res = add_vehicle("Testing2", "/dev/test/")
-    add_vehicle("Tasting3", '/dev/test/')
+    add_vehicle("Tasting3", "/dev/test/")
     print(get_drone_ids(True, False))
     print(remove_vehicle("Tasting3"))
     print(get_drone_ids(True, False))

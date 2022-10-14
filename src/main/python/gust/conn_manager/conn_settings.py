@@ -1,5 +1,6 @@
 """Define constants for data manager server/clients functions"""
 
+# %% Settings
 IP = "127.0.0.1"
 PORT = 9810
 FORMAT = 'utf-8'
@@ -7,15 +8,18 @@ MAX_CONNECTIONS = 10
 MAX_MSG_SIZE = 1500
 TIMEOUT = 1
 
-# messages
-DISC_MSG = 'disconnected'
-SUCC_MSG ='connected'
+# messages, not used?
+# DISC_MSG = 'disconnected'
+# SUCC_MSG ='connected'
 
-# message_type
+# %% DRONE message_type
 DRONE_CONN = 'drone_connect'
 DRONE_DISC = 'drone_disconnect'
 
+# %% ZED message_type
+ZED_CONN = 'zed_connect'
 
 
+# %% Helper functions
 def ADDR():
     return (IP, PORT)
