@@ -1,4 +1,5 @@
 tiles_cache/
+offline_folders/
 plugins/
 *.sqlite
 
