@@ -1,9 +1,9 @@
 import setuptools
 
-extras = {'linux': ["gunicorn>=20.1.0"]
+extras = {'linux': ["gunicorn>=20.1.0"]}
 setuptools.setup(
     name="gust",
-    version="0.0.0",
+    version="1.0.0",
     description="GCS for UAS Swarming and Teaming (GUST).",
     long_description="",
     url="https://github.com/drjdlarson/gust/",
@@ -17,12 +17,11 @@ setuptools.setup(
         "requests",
         "pyqt5",
         "werkzeug==2.0.3",
-        "folium",
-        "PyQtWebEngine",
         "pyserial",
         "pyinstaller>=4.9",
         "matplotlib",
-        "scipy"
+        "scipy",
+        "pillow"
     ],
     include_package_data=True,
     zip_safe=False,

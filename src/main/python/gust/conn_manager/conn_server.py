@@ -12,30 +12,25 @@ from PyQt5 import QtNetwork
 
 import gust.conn_manager.conn_settings as conn_settings
 from gust.conn_manager.radio_manager import radioManager
+from gust.conn_manager.zed_handler import zedHandler
 
 
 logger = logging.getLogger("[conn-server]")
 
-# TODO: 1. figure out closing of conn_server appropriately
-#           (parent.stop_conn_server gets bool from backend to stop,
-#            I can't figure out how to use that to stop the while loop)
-#       2. add other if then statements for proper connection routing
 
 class ConnServer:
     running = False
 
     @classmethod
     def start_conn_server(cls):
+        """UDP Socket Server.
+
+        Allow the connection server to start listening to socket connection and
+        send each connection to other modules based on received message type
+
+        Receives dictionary from the client sockets and sends back dictionary.
+        One of the keys in the dictionary is 'type'
         """
-        UDP Socket Server
-
-            Allow the connection server to start listening to socket connection and
-            send each connection to other modules based on received message type
-
-            Receives dictionary from the client sockets and sends back dictionary.
-            One of the keys in the dictionary is 'type'
-        """
-
         if cls.running:
             logger.warning("Already running!!")
             return
@@ -60,7 +55,7 @@ class ConnServer:
             received_info = json.loads(data.data().data().decode(conn_settings.FORMAT))
             addr = data.senderAddress()
             port = data.senderPort()
-            msg = "Message from {} -> {}".format(addr, received_info)
+            msg = "Message from {} -> {}".format(addr.toString(), received_info)
             logger.info(msg)
 
             # we can call the radio manager heres
@@ -71,18 +66,25 @@ class ConnServer:
             elif received_info['type'] == conn_settings.DRONE_DISC:
                 response = radioManager.disconnect_radio(received_info)
 
+            elif received_info['type'] == conn_settings.ZED_CONN:
+                response = zedHandler.connect(received_info)
+
+            else:
+                continue
+
             # Sending message back to client socket
             f_response = json.dumps(response).encode(conn_settings.FORMAT)
             # conn.sendto(f_response, addr)
             conn.writeDatagram(f_response, addr, port)
 
 
-        logger.info("closing the conn-server socket")
+        logger.info("Closing the conn-server socket")
         # conn.shutdown()
         conn.close()
 
     @classmethod
     def kill(cls):
+        zedHandler.kill()
         cls.running = False
 
 
