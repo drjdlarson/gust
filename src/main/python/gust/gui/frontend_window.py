@@ -23,9 +23,11 @@ from gust.gui import rc_window, servo_window
 from gust.gui.ui.map_widget import MapWidget
 from gust.gui.ui.attitude_ind_widget import pyG5AIWidget
 from gust.gui.msg_decoder import MessageDecoder as msg_decoder
+from gust.wsgi_apps.api.url_bases import BASE, DRONE
 
 
-URL_BASE = "http://localhost:8000/api/"
+URL_BASE = "http://localhost:8000/{}/".format(BASE)
+DRONE_BASE = "{}{}/".format(URL_BASE, DRONE)
 FILES = ["home", "pos", "spos", "rtl_pos"]
 
 class FrontendWindow(QMainWindow, Ui_MainWindow_main):
@@ -74,7 +76,7 @@ class FrontendWindow(QMainWindow, Ui_MainWindow_main):
     @pyqtSlot()
     def clicked_addvehicle(self):
 
-        url = "{}get_available_ports".format(URL_BASE)
+        url = "{}get_available_ports".format(DRONE_BASE)
         ports = requests.get(url).json()
 
         if self._conWindow is None:
@@ -130,7 +132,7 @@ class FrontendWindow(QMainWindow, Ui_MainWindow_main):
     def clicked_sensors(self):
         if self._sensorsWindow is None:
             self._sensorsWindow = sensors_window.SensorsWindow(
-                self.ctx)
+                self.ctx, parent=self)
         self._sensorsWindow.show()
 
 
@@ -312,16 +314,16 @@ class DataManager(QtCore.QObject):
     def run(self):
         self.vehicles_list = {}
 
-        url = "{}sys_data".format(URL_BASE)
+        url = "{}sys_data".format(DRONE_BASE)
         sys_data = requests.get(url).json()
 
-        url = "{}attitude_data".format(URL_BASE)
+        url = "{}attitude_data".format(DRONE_BASE)
         attitude_data = requests.get(url).json()
 
-        url = "{}pos_data".format(URL_BASE)
+        url = "{}pos_data".format(DRONE_BASE)
         pos_data = requests.get(url).json()
 
-        url = "{}sys_info".format(URL_BASE)
+        url = "{}sys_info".format(DRONE_BASE)
         sys_info = requests.get(url).json()
 
         all_signals = [sys_data, attitude_data, pos_data, sys_info]

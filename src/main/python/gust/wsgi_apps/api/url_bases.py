@@ -1,5 +1,4 @@
-"""Common url bases."""
-
-BASE = "/api"
-
-ZED = "{}/zed".format(BASE)
+"""Url endpoints."""
+BASE = "api"
+DRONE = "drone"
+ZED = "zed"

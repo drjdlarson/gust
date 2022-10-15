@@ -6,7 +6,7 @@ PORT = 9810
 FORMAT = 'utf-8'
 MAX_CONNECTIONS = 10
 MAX_MSG_SIZE = 1500
-TIMEOUT = 1
+TIMEOUT = 10
 
 # messages, not used?
 # DISC_MSG = 'disconnected'

@@ -1,7 +1,7 @@
 """Define functionality for the server."""
 import platform
 import os
-from PyQt5.QtCore import QProcess
+from PyQt5.QtCore import QProcess, QProcessEnvironment
 
 import gust.server.settings as settings
 import gust.database as database
@@ -49,6 +49,7 @@ def start_server():
 
         SERVER_PROC = QProcess()
         SERVER_PROC.setProcessChannelMode(QProcess.MergedChannels)
+        SERVER_PROC.setProcessEnvironment(QProcessEnvironment.systemEnvironment())
         SERVER_PROC.start(program, args)
 
         START_CMD = program + ' ' + ' '.join(args)

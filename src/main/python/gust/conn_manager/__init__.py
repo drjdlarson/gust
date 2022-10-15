@@ -40,4 +40,4 @@ def send_info_to_conn_server(info_dict, msg_type):
 
     except socket.timeout:
         msg = "Timeout on connection with backend"
-        return False, msg["info"]
+        return False, msg

@@ -55,7 +55,7 @@ class ConnServer:
             received_info = json.loads(data.data().data().decode(conn_settings.FORMAT))
             addr = data.senderAddress()
             port = data.senderPort()
-            msg = "Message from {} -> {}".format(addr.toString(), received_info)
+            msg = "Message from {} -> {}".format(addr.toString().split(":")[-1], received_info)
             logger.info(msg)
 
             # we can call the radio manager heres

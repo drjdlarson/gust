@@ -22,8 +22,11 @@ from PyQt5.QtCore import pyqtSlot, QModelIndex, pyqtSignal, QThreadPool
 from PyQt5.QtGui import QIntValidator, QTextCursor
 import requests
 from gust.gui.ui.confirmation import Ui_MainWindow
+from gust.wsgi_apps.api.url_bases import BASE, DRONE
 
-URL_BASE = "http://localhost:8000/api/"
+
+URL_BASE = "http://localhost:8000/{}/".format(BASE)
+DRONE_BASE = "{}{}/".format(URL_BASE, DRONE)
 
 
 class DisconnectConfirmation(QDialog, Ui_MainWindow):
@@ -41,7 +44,7 @@ class DisconnectConfirmation(QDialog, Ui_MainWindow):
         self.label_custom.setText("Disconnect {}?".format(name))
 
     def clicked_ok(self):
-        url = "{}disconnect_drone".format(URL_BASE)
+        url = "{}disconnect".format(DRONE_BASE)
         url += '?' + "name=" + self.name.replace(' ', '_')
         disconn = requests.get(url).json()
 

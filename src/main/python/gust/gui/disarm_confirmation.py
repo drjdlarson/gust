@@ -16,8 +16,6 @@ from PyQt5.QtGui import QIntValidator, QTextCursor
 import requests
 from gust.gui.ui.confirmation import Ui_MainWindow
 
-URL_BASE = "http://localhost:8000/api/"
-
 
 class DisarmConfirmation(QDialog, Ui_MainWindow):
     """Main interface for the confirmation window before disconnecting"""
