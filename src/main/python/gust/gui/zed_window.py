@@ -1,5 +1,6 @@
 """Logic for zed manager/viewer window."""
 import requests
+import pyqtgraph as pg
 from PyQt5.QtWidgets import QMainWindow, QFileDialog, QMessageBox
 from PyQt5.QtCore import pyqtSlot, pyqtSignal, QTimer, QObject
 from ruamel.yaml import YAML
@@ -18,7 +19,19 @@ class ZedWindow(QMainWindow, Ui_ZedWindow):
     def __init__(self, ctx, parent=None):
         super().__init__(parent=parent)
         self.config = ConfigSet()
-        # self.manager = DataManager()
+        self.timer = None
+        self._plot_rate = 1.0
+        self.update_rate = 1.0
+
+        opts = dict(size=10, brush=pg.mkBrush(255, 255, 255, 120))
+        self.top_ax = None
+        self.top_data = pg.ScatterPlotItem(**opts)
+        self.front_ax = None
+        self.front_data = pg.ScatterPlotItem(**opts)
+        self.left_ax = None
+        self.left_data = pg.ScatterPlotItem(**opts)
+        # self.ax3d = None
+        # self.data3d = None
 
         self.setupUi(self)
 
@@ -29,6 +42,36 @@ class ZedWindow(QMainWindow, Ui_ZedWindow):
 
         self.lineEdit_id.textChanged.connect(self.id_changed)
         self.lineEdit_name.textChanged.connect(self.name_changed)
+        self.lineEdit_locx.textChanged.connect(self.loc_changed(0, self.lineEdit_locx))
+        self.lineEdit_locy.textChanged.connect(self.loc_changed(1, self.lineEdit_locy))
+        self.lineEdit_locz.textChanged.connect(self.loc_changed(2, self.lineEdit_locz))
+        self.lineEdit_dcm00.textChanged.connect(self.dcm_changed(0, 0, self.lineEdit_dcm00))
+        self.lineEdit_dcm01.textChanged.connect(self.dcm_changed(0, 1, self.lineEdit_dcm01))
+        self.lineEdit_dcm02.textChanged.connect(self.dcm_changed(0, 2, self.lineEdit_dcm02))
+        self.lineEdit_dcm10.textChanged.connect(self.dcm_changed(1, 0, self.lineEdit_dcm10))
+        self.lineEdit_dcm11.textChanged.connect(self.dcm_changed(1, 1, self.lineEdit_dcm11))
+        self.lineEdit_dcm12.textChanged.connect(self.dcm_changed(1, 2, self.lineEdit_dcm12))
+        self.lineEdit_dcm20.textChanged.connect(self.dcm_changed(2, 0, self.lineEdit_dcm20))
+        self.lineEdit_dcm21.textChanged.connect(self.dcm_changed(2, 1, self.lineEdit_dcm21))
+        self.lineEdit_dcm22.textChanged.connect(self.dcm_changed(2, 2, self.lineEdit_dcm22))
+        self.lineEdit_minx.textChanged.connect(self.min_changed(0, self.lineEdit_minx))
+        self.lineEdit_miny.textChanged.connect(self.min_changed(1, self.lineEdit_miny))
+        self.lineEdit_minz.textChanged.connect(self.min_changed(2, self.lineEdit_minz))
+        self.lineEdit_maxx.textChanged.connect(self.max_changed(0, self.lineEdit_maxx))
+        self.lineEdit_maxy.textChanged.connect(self.max_changed(1, self.lineEdit_maxy))
+        self.lineEdit_maxz.textChanged.connect(self.max_changed(2, self.lineEdit_maxz))
+        self.lineEdit_plot_rate.textChanged.connect(self.plot_rate_changed)
+        self.lineEdit_update_rate.textChanged.connect(self.update_rate_changed)
+
+        self.lineEdit_update_rate.setText(str(self.update_rate))
+        self.lineEdit_plot_rate.setText(str(self._plot_rate))
+
+    @property
+    def plot_rate_ms(self):
+        # protect against division by 0
+        if abs(self._plot_rate) < 1e-5:
+            return 1e3
+        return 1.0 / abs(self._plot_rate) * 1e3
 
     def reset_config_line_edits(self):
         self.config.id = -1
@@ -65,14 +108,69 @@ class ZedWindow(QMainWindow, Ui_ZedWindow):
     def setupUi(self, mainWindow):
         """Sets up the user interface."""
         super().setupUi(mainWindow)
+        self.setPalette(self.parentWidget().palette())
 
         self.reset_config_line_edits()
 
+        x_cage_lims = (0, 10)
+        y_cage_lims = (0, 7)
+        z_cage_lims = (0, 4)
+
+        # self.ax3d = self.widget_graphs.addPlot(row=0, col=0)
+        self.top_ax = self.widget_graphs.addPlot(row=0, col=1)
+        self.left_ax = self.widget_graphs.addPlot(row=1, col=0)
+        self.front_ax = self.widget_graphs.addPlot(row=1, col=1)
+
+        self.top_ax.addItem(self.top_data)
+        self.top_ax.setTitle("Top Down View")
+        self.top_ax.setLabel("bottom", "X (m)")
+        self.top_ax.setLabel("left", "Y (m)")
+        self.top_ax.setXRange(x_cage_lims[0], x_cage_lims[1], padding=0)
+        self.top_ax.setYRange(y_cage_lims[0], y_cage_lims[1], padding=0)
+
+        self.left_ax.addItem(self.left_data)
+        self.left_ax.setTitle("Left Side View")
+        self.left_ax.setLabel("bottom", "Y (m)")
+        self.left_ax.setLabel("left", "Z (m)")
+        self.left_ax.setXRange(y_cage_lims[0], y_cage_lims[1], padding=0)
+        self.left_ax.setYRange(z_cage_lims[0], z_cage_lims[1], padding=0)
+
+        self.front_ax.addItem(self.front_data)
+        self.front_ax.setTitle("Front View")
+        self.front_ax.setLabel("bottom", "X (m)")
+        self.front_ax.setLabel("left", "Z (m)")
+        self.front_ax.setXRange(x_cage_lims[0], x_cage_lims[1], padding=0)
+        self.front_ax.setYRange(z_cage_lims[0], z_cage_lims[1], padding=0)
+
+    def update_plot_data(self):
+        url = "{}get_current_points".format(URL_BASE)
+        resp = requests.get(url).json()
+        x = resp['xpos']
+        y = resp['ypos']
+        z = resp['zpos']
+
+        self.top_data.setData(x, y)
+        self.left_data.setData(y, z)
+        self.front_data.setData(x, z)
+
+        self.timer.start(self.plot_rate_ms)
+
     def connect_clicked(self):
         url = "{}connect?".format(URL_BASE)
-        url += "id={}&name={}".format(
+        url += "id={}&name={}&".format(
             self.config.id, self.config.name.replace(" ", "_")
         )
+        url += "locx={}&locy={}&locz={}&".format(
+            self.config.loc[0], self.config.loc[1], self.config.loc[2]
+        )
+        for row in range(3):
+            for col in range(3):
+                url += "dcm{}{}={}&".format(row, col, self.config.dcm[row, col])
+        url += "minx={}&miny={}&minz={}&".format(self.config.min[0], self.config.min[1], self.config.min[2])
+        url += "maxx={}&maxy={}&maxz={}&".format(self.config.max[0], self.config.max[1], self.config.max[2])
+        url += "conf={}&tex_conf={}&".format(self.config.conf, self.config.tex_conf)
+        url += "updateHz={}".format(self.update_rate)
+
         resp = requests.get(url).json()
 
         dlg = QMessageBox(parent=self)
@@ -90,9 +188,29 @@ class ZedWindow(QMainWindow, Ui_ZedWindow):
         dlg.setStandardButtons(QMessageBox.StandardButton.Ok)
         dlg.exec_()
 
+        if resp["success"] and self.timer is None:
+            self.timer = QTimer()
+            self.timer.timeout.connect(self.update_plot_data)
+            self.timer.start(self.plot_rate_ms)
+
     def reset_clicked(self):
         self.config = ConfigSet()
         self.reset_config_line_edits()
+
+
+    def plot_rate_changed(self, e):
+        try:
+            v = float(self.lineEdit_plot_rate.text())
+        except ValueError:
+            return
+        self._plot_rate = v
+
+    def update_rate_changed(self, e):
+        try:
+            v = float(self.lineEdit_plot_rate.text())
+        except ValueError:
+            return
+        self.update_rate = v
 
     def id_changed(self, e):
         try:
@@ -103,6 +221,56 @@ class ZedWindow(QMainWindow, Ui_ZedWindow):
 
     def name_changed(self, e):
         self.config.name = self.lineEdit_name.text()
+
+    def loc_changed(self, ind, le):
+        def f(e):
+            try:
+                v = float(le.text())
+            except ValueError:
+                return
+            self.config.loc[ind] = v
+        return f
+
+    def min_changed(self, ind, le):
+        def f(e):
+            try:
+                v = float(le.text())
+            except ValueError:
+                return
+            self.config.min[ind] = v
+        return f
+
+    def max_changed(self, ind, le):
+        def f(e):
+            try:
+                v = float(le.text())
+            except ValueError:
+                return
+            self.config.max[ind] = v
+        return f
+
+    def dcm_changed(self, row, col, le):
+        def f(e):
+            try:
+                v = float(le.text())
+            except ValueError:
+                return
+            self.config.dcm[row, col] = v
+        return f
+
+    def conf_changed(self, e):
+        try:
+            v = int(self.lineEdit_conf.text())
+        except ValueError:
+            return
+        self.config.conf = v
+
+    def tex_conf_changed(self, e):
+        try:
+            v = int(self.lineEdit_tex_conf.text())
+        except ValueError:
+            return
+        self.config.tex_conf = v
 
     def load_config(self):
         # open file dialog
