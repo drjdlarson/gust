@@ -26,6 +26,7 @@ class SensorsWindow(QMainWindow, Ui_SensorsWindow):
     def setupUi(self, mainWindow):
         """Sets up the user interface."""
         super().setupUi(mainWindow)
+        self.setPalette(self.parentWidget().palette())
 
     def zed_clicked(self):
         self._zed_window = ZedWindow(self.ctx, parent=self.parent())

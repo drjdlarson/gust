@@ -13,17 +13,22 @@ DB_FILE_KEY = "GUST_DB_FILE"
 DB_PATH_KEY = "GUST_DB_PATH"  # autoset by backend window on startup
 DB_DRIVER = "QSQLITE"
 
+
 def set_db_file(f):
     os.environ[DB_FILE_KEY] = f
 
+
 def DB_FILE():
-    return os.environ.get(DB_FILE_KEY, 'dummy.sqlite')
+    return os.environ.get(DB_FILE_KEY, "dummy.sqlite")
+
 
 def set_db_path(p):
     os.environ[DB_PATH_KEY] = p
 
+
 def DB_PATH():
-    return os.environ.get(DB_PATH_KEY, './')
+    return os.environ.get(DB_PATH_KEY, "./")
+
 
 _DB = None
 _main_table = "drone_collection"
@@ -832,6 +837,75 @@ def write_zed_obj(name, posix, obj):
         logger.critical(query.lastError().text())
 
     return res
+
+
+def get_zed_points(name, delay=None):
+    if delay is None:
+        delay = 0
+
+    ret_vals = {"xpos": [], "ypos": [], "zpos": []}
+
+    if name is None or len(name) == 0:
+        query = _start_query()
+        cmd = "SELECT name FROM zed_collection"
+        res = query.exec_(cmd)
+        if not res:
+            logger.critical(query.lastError().text())
+            return ret_vals
+
+        query.seek(-1)
+        name_lst = []
+        while query.next():
+            name_lst.append(query.value(0))
+
+        for n in name_lst:
+            query = _start_query()
+            tab_name = create_zed_table_name(n)
+            cmd = "SELECT posix FROM {} ORDER BY rowid DESC LIMIT 1;".format(tab_name)
+            res = query.exec_(cmd)
+            if not res:
+                logger.critical(query.lastError().text())
+                return ret_vals
+
+            query.last()
+            if query.value(0) is None:
+                continue
+
+            cmd = "SELECT {}, {}, {} FROM {} WHERE posix >= {:.2f}".format(
+                *list(ret_vals.keys()), tab_name, query.value(0) - 0.01 - delay
+            )
+            sub_q = _start_query()
+            res = sub_q.exec_(cmd)
+            if not res:
+                logger.critical(sub_q.lastError().text())
+                return ret_vals
+            sub_q.seek(-1)
+            while sub_q.next():
+                for ii, param in enumerate(ret_vals.keys()):
+                    ret_vals[param].append(sub_q.value(ii))
+
+    else:
+        tab_name = create_zed_table_name(name)
+        query = _start_query()
+        cmd = "SELECT posix FROM {} ORDER BY rowid DESC LIMIT 1;".format(tab_name)
+        res = query.exec_(cmd)
+        if not res:
+            logger.critical(query.lastError().text())
+            return ret_vals
+
+        query.last()
+        cmd = "SELECT {}, {}, {} FROM {} WHERE posix >= {:.2f}".format(
+            *list(ret_vals.keys()), tab_name, query.value(0) - 0.01 - delay
+        )
+        res = query.exec_(cmd)
+        if not res:
+            logger.critical(query.lastError().text())
+            return ret_vals
+        query.last()
+        for ii, param in enumerate(["xpos", "ypos", "zpos"]):
+            ret_vals[param] = query.value(param)
+
+    return ret_vals
 
 
 if __name__ == "__main__":

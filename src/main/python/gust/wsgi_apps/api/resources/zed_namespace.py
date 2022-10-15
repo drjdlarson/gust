@@ -1,5 +1,6 @@
 """Url definitions for the ZED interface."""
 import logging
+import numpy as np
 from flask import request
 from flask_restx import Resource, Namespace
 
@@ -14,33 +15,53 @@ logger = logging.getLogger("[URL-Manager]")
 
 ZED_NS = Namespace(ZED)
 
-con_parse = ZED_NS.parser()
-con_parse.add_argument('id', default=-1, type=int)
-con_parse.add_argument("name", default="", type=str)
-con_parse.add_argument("hacDist", default=0.2, type=float)
-con_parse.add_argument("updateHz", default=1, type=float)
+conParse = ZED_NS.parser()
+conParse.add_argument('id', default=-1, type=int)
+conParse.add_argument("name", default="", type=str)
+conParse.add_argument("locx", default=0, type=float)
+conParse.add_argument("locy", default=0, type=float)
+conParse.add_argument("locz", default=0, type=float)
+conParse.add_argument("dcm00", default=1, type=float)
+conParse.add_argument("dcm11", default=1, type=float)
+conParse.add_argument("dcm22", default=1, type=float)
+conParse.add_argument("dcm01", default=0, type=float)
+conParse.add_argument("dcm02", default=0, type=float)
+conParse.add_argument("dcm10", default=0, type=float)
+conParse.add_argument("dcm12", default=0, type=float)
+conParse.add_argument("dcm20", default=0, type=float)
+conParse.add_argument("dcm21", default=0, type=float)
+conParse.add_argument("req_cal", default=False, type=float)
+conParse.add_argument("minx", default=0, type=float)
+conParse.add_argument("miny", default=0, type=float)
+conParse.add_argument("minz", default=0, type=float)
+conParse.add_argument("maxx", default=0, type=float)
+conParse.add_argument("maxy", default=0, type=float)
+conParse.add_argument("maxz", default=0, type=float)
+conParse.add_argument("conf", default=60, type=int)
+conParse.add_argument("tex_conf", default=40, type=int)
+conParse.add_argument("hacDist", default=0.2, type=float)
+conParse.add_argument("updateHz", default=1, type=float)
 
 
 @ZED_NS.route("/connect")
 class ConnInfo(Resource):
-    @ZED_NS.expect(con_parse)
+    @ZED_NS.expect(conParse)
     def get(self):
         cf = ConfigSet()
-        args = con_parse.parse_args()
+        args = conParse.parse_args()
         cf.id = args["id"]
         cf.name = args["name"]
+        cf.loc = np.array([args["locx"], args["locy"], args["locz"]])
+        cf.dcm = np.array([[args["dcm00"], args["dcm01"], args["dcm02"]],
+                           [args["dcm10"], args["dcm11"], args["dcm12"]],
+                           [args["dcm20"], args["dcm21"], args["dcm22"]]])
+        cf.req_cal = args["req_cal"]
+        cf.min = np.array([args["minx"], args["miny"], args["minz"]])
+        cf.max= np.array([args["maxx"], args["maxy"], args["maxz"]])
+        cf.conf = args["conf"]
+        cf.tex_conf = args["tex_conf"]
         hac_dist = args["hacDist"]
         update_hz = args["updateHz"]
-
-        # loc_x = request.args.get("locx", default=0, type=float)
-        # loc_y = request.args.get("locy", default=0, type=float)
-        # loc_z = request.args.get("locz", default=0, type=float)
-        # dcm00 = request.args.get("dcm00", default=1, type=float)
-        # dcm11 = request.args.get("dcm11", default=1, type=float)
-        # dcm22 = request.args.get("dcm22", default=1, type=float)
-        # dcm01 = request.args.get("dcm01", default=0, type=float)
-        # dcm02 = request.args.get("dcm02", default=0, type=float)
-        # dcm03 = request.args.get("dcm03", default=0, type=float)
 
         if cf.valid:
             database.connect_db()
@@ -63,3 +84,17 @@ class ConnInfo(Resource):
                 return {"success": False, "msg": "Unable to add zed to database"}
         else:
             return {"success": False, "msg": "Invalid zed config"}
+
+
+
+getCurPointsParse = ZED_NS.parser()
+getCurPointsParse.add_argument('name', type=str, default='')
+
+@ZED_NS.route("/get_current_points")
+class GetCurPoints(Resource):
+    @ZED_NS.expect(getCurPointsParse)
+    def get(self):
+        args = getCurPointsParse.parse_args()
+        database.connect_db()
+
+        return database.get_zed_points(args.name)
