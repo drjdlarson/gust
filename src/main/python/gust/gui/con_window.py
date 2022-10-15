@@ -8,6 +8,7 @@ Created on Fri Jun 10 12:36:33 2022
 
 import sys
 import os
+import pathlib
 from functools import partial
 from PyQt5.QtWidgets import QMainWindow, QMessageBox, QDialog
 from PyQt5.QtCore import pyqtSlot, QModelIndex, pyqtSignal, QThreadPool
@@ -15,9 +16,11 @@ from PyQt5.QtGui import QIntValidator, QTextCursor
 import requests
 from gust.gui.ui.conn import Ui_MainWindow
 import gust.icon_generator as icon_generator
+from gust.wsgi_apps.api.url_bases import BASE, DRONE
 
 
-URL_BASE = "http://localhost:8000/api/"
+URL_BASE = "http://localhost:8000/{}/".format(BASE)
+DRONE_BASE = "{}{}/".format(URL_BASE, DRONE)
 COLORS = ["red", "blue", "green", "yellow", "orange", "gray", "brown"]
 RGB = [
        (255, 0, 0),
@@ -52,7 +55,7 @@ class ConWindow(QDialog, Ui_MainWindow):
         port_name = self.comboBox_port.currentText()
         self.color_id = self.comboBox_color.currentText()
         self.name = self.lineEdit_nameinput.text()
-        url = "{}connect_drone".format(URL_BASE)
+        url = "{}connect".format(DRONE_BASE)
 
         if len(port_name) > 0 or len(self.name) > 0:
             url += '?'
@@ -100,8 +103,8 @@ class ConWindow(QDialog, Ui_MainWindow):
             for (color, rgb) in zip(COLORS, RGB):
                 if self.color_id == color:
                     savename = self.name + '_' + file + '.png'
-                    savepath = '/home/lagerprocessor/Projects/gust/src/main/resources/base/map_widget/'
-                    icon_generator.prepare_icon(filename, rgb, savepath + savename)
+                    savepath = str(pathlib.Path(filename).parent.resolve())
+                    icon_generator.prepare_icon(filename, rgb, os.path.join(savepath, savename))
 
 
     def setupUi(self, mainWindow):

@@ -1,20 +1,21 @@
 """Defines main urls for wsgi app."""
 import serial.tools.list_ports
 import logging
-from flask_restx import Resource
+from flask_restx import Resource, Namespace
 from flask import request
 
 import gust.database as database
 import gust.conn_manager.conn_settings as conn_settings
-from gust.wsgi_apps.api.app import api
+from gust.wsgi_apps.api.url_bases import DRONE
 from gust.conn_manager import send_info_to_conn_server
-from gust.wsgi_apps.api.url_bases import BASE
 
 
 logger = logging.getLogger("[URL-Manager]")
 
+DRONE_NS = Namespace(DRONE)
 
-@api.route("{:s}/connect_drone".format(BASE))
+
+@DRONE_NS.route("/connect")
 class ConnInfo(Resource):
     def get(self):
         port = request.args.get("port", default="", type=str)
@@ -23,7 +24,9 @@ class ConnInfo(Resource):
         vehicle_info = {"name": name, "port": port, "color": color}
 
         if len(port) > 0 and len(name) > 0:
-            database.connect_db()
+            if not database.connect_db():
+                return {"success": False, "msg": "Failed to connect to database"}
+
             res = database.add_vehicle(name, port, color)
             if res:
                 conn_succ, info = send_info_to_conn_server(
@@ -41,7 +44,7 @@ class ConnInfo(Resource):
             return {"success": False, "msg": "Invalid name"}
 
 
-@api.route("{:s}/disconnect_drone".format(BASE))
+@DRONE_NS.route("/disconnect")
 class Disconnect(Resource):
     def get(self):
         name = request.args.get("name", default="", type=str)
@@ -52,7 +55,7 @@ class Disconnect(Resource):
             return {"success": False, "msg": "Unable to disconnect"}
 
 
-@api.route("{:s}/get_available_ports".format(BASE))
+@DRONE_NS.route("/get_available_ports")
 class PortsData(Resource):
     def get(self):
         ports = list(serial.tools.list_ports.comports())
@@ -61,7 +64,7 @@ class PortsData(Resource):
             available_ports.append(port.device)
         return {"ports": available_ports}
 
-@api.route("{:s}/sys_data".format(BASE))
+@DRONE_NS.route("/sys_data")
 class SysData(Resource):
     params = ["color", "home_lat", "home_lon", "home_alt", "voltage", "current"]
 
@@ -78,7 +81,7 @@ class SysData(Resource):
         return sys_data
 
 
-@api.route("{:s}/attitude_data".format(BASE))
+@DRONE_NS.route("/attitude_data")
 class AttitudeData(Resource):
     params = ["roll_angle", "pitch_angle", "alpha", "beta", "airspeed", "gndspeed", "vspeed", "throttle"]
 
@@ -95,7 +98,7 @@ class AttitudeData(Resource):
         return attitude_data
 
 
-@api.route("{:s}/pos_data".format(BASE))
+@DRONE_NS.route("/pos_data")
 class PosData(Resource):
     params = ["latitude", "longitude", "relative_alt", "heading", "track", "gnss_fix", "satellites_visible"]
 
@@ -113,7 +116,7 @@ class PosData(Resource):
         return pos_data
 
 
-@api.route("{:s}/sys_info".format(BASE))
+@DRONE_NS.route("/sys_info")
 class SysInfo(Resource):
     params = ["armed", "flight_mode", "mav_type", "autopilot", "custom_mode", "tof", "next_wp", "relay_sw", "engine_sw", "connection"]
 
@@ -130,7 +133,7 @@ class SysInfo(Resource):
         return sys_info
 
 
-@api.route("{:s}/channels_info".format(BASE))
+@DRONE_NS.route("/channels_info")
 class ChannelsData(Resource):
     params = ["chancount", "chan1_raw", "chan2_raw", "chan3_raw", "chan4_raw",
               "chan5_raw", "chan6_raw", "chan7_raw", "chan8_raw", "chan9_raw",

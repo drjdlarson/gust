@@ -67,8 +67,8 @@ class BackendWindow(QMainWindow, Ui_BackendWindow):
         self._scan_plugins()
 
         # connect to database
-        database.DB_PATH = os.path.dirname(
-            self.ctx.get_resource("resources_base_placeholder")
+        database.set_db_path(
+            os.path.dirname(self.ctx.get_resource("resources_base_placeholder"))
         )
         database.open_db()
 

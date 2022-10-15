@@ -21,6 +21,7 @@ class ZedHandler(QObject):
 
     def connect(self, info):
         name = info["name"]
+        print(info)
 
         if zedManager.connect_to_cameras(filename=info["config"]):
             self.hac_dist[name] = info["hac_dist"]
@@ -37,14 +38,18 @@ class ZedHandler(QObject):
     def poll(self, name):
         cam = zedManager.cameras[0]
         while self.running[name]:
-            meas_arr = cam.extract_objects(max_dist=self.hac_dist[name])
-            posix = time.time()
-            for m in meas_arr:
-                database.write_zed_obj(name, posix, m)
+            try:
+                meas_arr = cam.extract_objects(max_dist=self.hac_dist[name])
+                posix = time.time()
+                for m in meas_arr:
+                    database.write_zed_obj(name, posix, m)
+            except TypeError:
+                continue
             time.sleep(self.update_rates[name])
 
-    @classmethod
-    def kill(cls):
+    def kill(self):
+        for k in self.running.keys():
+            self.running[k] = False
         zedManager.shutdown()
 
 

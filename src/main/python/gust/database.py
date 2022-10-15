@@ -9,9 +9,21 @@ from PyQt5.QtSql import QSqlDatabase, QSqlQuery
 import serial.tools.list_ports
 
 # DB_FILE = 'test_database.sqlite'
-DB_FILE = "dummy.sqlite"
-DB_PATH = "./"  # autoset by backend window on startup
+DB_FILE_KEY = "GUST_DB_FILE"
+DB_PATH_KEY = "GUST_DB_PATH"  # autoset by backend window on startup
 DB_DRIVER = "QSQLITE"
+
+def set_db_file(f):
+    os.environ[DB_FILE_KEY] = f
+
+def DB_FILE():
+    return os.environ.get(DB_FILE_KEY, 'dummy.sqlite')
+
+def set_db_path(p):
+    os.environ[DB_PATH_KEY] = p
+
+def DB_PATH():
+    return os.environ.get(DB_PATH_KEY, './')
 
 _DB = None
 _main_table = "drone_collection"
@@ -40,8 +52,7 @@ def db_name():
     str
         full path of the database file.
     """
-    global DB_PATH, DB_FILE
-    return os.path.join(DB_PATH, DB_FILE)
+    return os.path.join(DB_PATH(), DB_FILE())
 
 
 def open_db():
@@ -77,7 +88,7 @@ def open_db():
     cmd = """CREATE TABLE IF NOT EXISTS PluginCollection (
         collection_id INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE,
         name VARCHAR(32) );"""
-    # logger.debug(cmd)
+    logger.debug(cmd)
     res1 = query.exec_(cmd)
     if not res1:
         logger.critical(query.lastError().text())
@@ -91,17 +102,15 @@ def open_db():
     UNIQUE(uid, name, port, color)
     );
     """
-    # logger.debug(cmd)
+    logger.debug(cmd)
     res2 = query.exec_(cmd)
     if not res2:
         logger.critical(query.lastError().text())
 
     cmd = """CREATE TABLE IF NOT EXISTS zed_collection (
-    uid INTEGER NOT NULL,
+    uid INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE,
     name TEXT NOT NULL,
-    config TEXT NOT NULL,
-    PRIMARY KEY (uid),
-    UNIQUE(uid)
+    config TEXT NOT NULL
     );
     """
     logger.debug(cmd)
@@ -511,13 +520,13 @@ def get_drone_ids(distinct=True, active=True):
 
 
 def create_zed_table_name(name):
-    return name.replace(" ", "").lower()
+    return "zed_data_{:s}".format(name.replace(" ", "").lower())
 
 
 def add_zed(name, config):
     query = _start_query()
 
-    cmd = 'INSERT into zed_collection (name, config) VALUES ("{}", "{}");'.format(
+    cmd = 'INSERT into zed_collection (name, config) VALUES ("{:s}", "{:s}");'.format(
         name, config
     )
     logger.info(cmd)
@@ -527,16 +536,16 @@ def add_zed(name, config):
         return False
 
     cmd = """CREATE TABLE IF NOT EXISTS {:s} (
-    uid INTEGER NOT NULL AUTO_INCREMENT,
     posix INTEGER,
     xpos FLOAT,
     ypos FLOAT,
-    zpos FLOAT,
-    PRIMARY KEY (uid)
-    )
+    zpos FLOAT
+    );
     """.format(
         create_zed_table_name(name)
     )
+    logger.info(cmd)
+    res = query.exec_(cmd)
     if not res:
         logger.critical(query.lastError().text())
         return False
