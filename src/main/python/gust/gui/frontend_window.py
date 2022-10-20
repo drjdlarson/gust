@@ -48,7 +48,6 @@ class FrontendWindow(QMainWindow, Ui_MainWindow_main):
 
         self.widget_hud.ctx = ctx
 
-
         # Pushbuttons
         self.pushButton_addvehicle.clicked.connect(self.clicked_addvehicle)
         self.pushButton_engineOff.clicked.connect(self.clicked_engineOff)
@@ -72,6 +71,7 @@ class FrontendWindow(QMainWindow, Ui_MainWindow_main):
     def setupUi(self, mainWindow):
         """Sets up the user interface."""
         super().setupUi(mainWindow)
+        self.widget_map.setup_qml(self.ctx)
 
     @pyqtSlot()
     def clicked_addvehicle(self):

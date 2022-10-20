@@ -10,7 +10,6 @@ Item {
     focus: true
 
     property variant locationTC: QtPositioning.coordinate(33.21456, -87.54322)
-    property variant customHost: " "
 
     Location {
         id: mapCenter
@@ -21,10 +20,9 @@ Item {
     }
 
 
-/*
 
 // FOR TESTING WITH OPENSTREETMAP
-
+/*
     Plugin {
         id: osmPlugin
         name: "osm" //"googlemaps"
@@ -76,7 +74,8 @@ Item {
                 name: 'osm.mapping.custom.host'
                 // value: 'file:/offline_test/'
                 // value: customHost
-                value: 'file:/home/lagerprocessor/Projects/gust/src/main/python/gust/gui/ui/offline_folders/'
+                value: 'file:MAP_FilledByMapWidget'
+                // value: 'file:/home/lagerprocessor/Projects/gust/src/main/python/gust/gui/ui/offline_folders/'
             }
 
 
@@ -91,17 +90,12 @@ Item {
                 value: 0
             }
 
+
             PluginParameter {
                 name: "osm.mapping.cache.directory"
-                value: "tiles_cache/"
+                value: "CACHE_FilledByMapWidget"
             }
 
-/*
-            PluginParameter {
-                name: "osm.mapping.custom.host"
-                value: "http://a.tile.openstreetmap.fr/hot/"
-            }
-*/
         }
 
     }

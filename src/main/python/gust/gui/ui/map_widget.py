@@ -2,9 +2,10 @@ import os
 import time
 import random
 import math
+import pathlib
 import matplotlib.image as mpimg
 from PyQt5 import QtCore, QtWidgets, QtQuickWidgets, QtPositioning, QtQuickWidgets
-from PyQt5.QtCore import QTimer
+from PyQt5.QtCore import QTimer, QTemporaryDir, QFile
 
 
 class MarkerModel(QtCore.QAbstractListModel):
@@ -153,21 +154,46 @@ class TrackLineModel(QtCore.QAbstractListModel):
 
 
 class MapWidget(QtQuickWidgets.QQuickWidget):
+
     def __init__(self, parent=None):
         self.vehicle_list = {}
         super(MapWidget, self).__init__(parent,
                                             resizeMode=QtQuickWidgets.QQuickWidget.SizeRootObjectToView)
 
-        qml_path = os.path.join(os.path.dirname(__file__), "map.qml")
+
+    def setup_qml(self, ctx):
+        self.ctx = ctx
+        qml_file = os.path.join(os.path.dirname(__file__), "map.qml")
+        resource_file = self.ctx.get_resource('map_widget/README')
+        resource_path = str(pathlib.Path(resource_file).parent.resolve())
+
+        temp_dir = QTemporaryDir();
+
+        if temp_dir.isValid():
+            temp_path = temp_dir.path()
+            temp_map_file = QFile(temp_path + "/temp_map.qml")
+            with open(qml_file, 'rt') as fin:
+                with open(temp_path + "/temp_map.qml", 'wt') as fout:
+                    replacing_str = [("MAP_FilledByMapWidget", resource_path + "/offline_folders/"),
+                                     ("CACHE_FilledByMapWidget", temp_path + "/")]
+                    lines = fin.readlines()
+                    text = ''.join(lines)
+                    for old, new in replacing_str:
+                        text = text.replace(old, new)
+                    fout.write(text)
+
+            QFile.copy(temp_path + "/temp_map.qml", resource_path + "/from_temp_qml")
+
         self.engine().clearComponentCache()
-        self.setSource(QtCore.QUrl.fromLocalFile(qml_path))
+        self.setSource(QtCore.QUrl.fromLocalFile(temp_path + "/temp_map.qml"))
         self.rootObject().setProperty("customHost", "file:offline_test/")
+
 
 
     def clear_drone_list(self):
         self.vehicle_list = {}
 
-    def add_drone(self, name, home_lat, home_lon, latitude, longitude, heading, track, mode, ctx):
+    def add_drone(self, name, home_lat, home_lon, latitude, longitude, heading, track, mode):
         if name not in self.vehicle_list:
             marker = MarkerModel(self)
             self.rootContext().setContextProperty("markermodel", marker)
@@ -181,7 +207,7 @@ class MapWidget(QtQuickWidgets.QQuickWidget):
             home = HomeMarkerModel(self)
             self.rootContext().setContextProperty("homemodel", home)
 
-            self.vehicle_list[name] = MapHelper(name, marker, hdg_line, track_line, home, home_lat, home_lon, latitude, longitude, heading, track, mode, ctx,)
+            self.vehicle_list[name] = MapHelper(name, marker, hdg_line, track_line, home, home_lat, home_lon, latitude, longitude, heading, track, mode, self.ctx,)
         else:
             self.vehicle_list[name].home_lat = home_lat
             self.vehicle_list[name].home_lon = home_lon
