@@ -41,26 +41,10 @@ class pyG5AIWidget(QWidget):
     """Generate G5 wdiget view."""
 
     def __init__(self, parent):
-    # def __init__(self):
-        self.ctx = None
-        self.roll_angle = -20
-        self.pitch_angle = 15
-        self.gndspeed = 36
-        self.airspeed = 45
-        self.altitude = 70
-        self.vspeed = 3
-        self.heading = 290
-        self.arm = 6
-        self.gnss_fix = 2
-        self.mode = 16
-
-        self.alpha = 4
-        self.beta = -3
-        self.sat_count = 6
-
+    # def __init__(self))
         super().__init__(parent=parent)
-        # super().__init__()
 
+    def setup_hud_ui(self, ctx):
         self.setWindowTitle("Attitude Indicator")
         self.setFixedSize(g5Width, g5Height)
         self.setContentsMargins(0, 0, 0, 0)
@@ -68,6 +52,9 @@ class pyG5AIWidget(QWidget):
         # parameters
         self.rollArcRadius = g5CenterY * 0.8
         self._pitchScale = 25
+
+        self.clean_hud()
+        self.ctx = ctx
 
     def clean_hud(self):
         self.roll_angle = 0
@@ -488,9 +475,7 @@ class pyG5AIWidget(QWidget):
         )
 
         # draw the satellites count
-        # pixmap = QPixmap(self.ctx.get_resource('attitude_ind_widget/satellite.png'))
-        # pixmap = QPixmap("~/Projects/gust/src/main/resources/base/attitude_ind_widget/satellite.png")
-        pixmap = QPixmap("satelite.png")
+        pixmap = QPixmap(self.ctx.get_resource('attitude_ind_widget/satellite.png'))
         x = speedBoxWidth + 28
         self.qp.drawPixmap(x, g5Height - tasHeight - 25, 22, 22, pixmap)
 

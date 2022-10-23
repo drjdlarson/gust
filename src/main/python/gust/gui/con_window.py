@@ -89,7 +89,6 @@ class ConWindow(QDialog, Ui_MainWindow):
             msgBox.exec()
             self.accept()
 
-
         else:
             msgBox.setIcon(QMessageBox.Warning)
             msgBox.setWindowTitle("Warning")

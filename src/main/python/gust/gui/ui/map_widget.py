@@ -189,7 +189,6 @@ class MapWidget(QtQuickWidgets.QQuickWidget):
         self.rootObject().setProperty("customHost", "file:offline_test/")
 
 
-
     def clear_drone_list(self):
         self.vehicle_list = {}
 
