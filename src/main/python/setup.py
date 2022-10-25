@@ -21,7 +21,8 @@ setuptools.setup(
         "pyinstaller>=4.9",
         "matplotlib",
         "scipy",
-        "pillow"
+        "pillow",
+        "dronekit",
     ],
     include_package_data=True,
     zip_safe=False,

@@ -13,15 +13,24 @@ from gust.conn_manager import send_info_to_conn_server
 logger = logging.getLogger("[URL-Manager]")
 
 DRONE_NS = Namespace(DRONE)
+conParse = DRONE_NS.parser()
+conParse.add_argument('port', default="", type=str)
+conParse.add_argument("name", default="", type=str)
+conParse.add_argument("color", default="", type=str)
+conParse.add_argument("baud", default=-1, type=int)
 
 
 @DRONE_NS.route("/connect")
 class ConnInfo(Resource):
+    @DRONE_NS.expect(conParse)
     def get(self):
-        port = request.args.get("port", default="", type=str)
-        name = request.args.get("name", default="", type=str)
-        color = request.args.get("color", default="", type=str)
-        vehicle_info = {"name": name, "port": port, "color": color}
+        args = conParse.parse_args()
+        port = args["port"]
+        name = args["name"]
+        color = args["color"]
+        baud = args["baud"]
+
+        vehicle_info = {"name": name, "port": port, "color": color, "baud": baud}
 
         if len(port) > 0 and len(name) > 0:
             if not database.connect_db():
@@ -35,7 +44,7 @@ class ConnInfo(Resource):
                 if conn_succ:
                     return {"success": True, "msg": ""}
                 elif not conn_succ:
-                    return {"success": False, "msg": "Error connecting"}
+                    return {"success": False, "msg": "Error connecting: {}".format(info)}
             else:
                 return {'success': False, 'msg': "Unable to add vehicle to database"}
         elif len(port) == 0:

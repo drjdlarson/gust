@@ -282,14 +282,14 @@ class MapHelper():
         return (lat_2, lon_2)
 
     def icon_selector(self):
-        if self.mode == 3:
-            file = 'map_widget/' + self.name + '_spos.png'
+        if self.mode == "stabilize":
+            file = 'map_widget/' + self.name + '_pos.png'
             icon_type = self.ctx.get_resource(file)
-        elif self.mode == 4:
+        elif self == "auto":
             file = 'map_widget/' + self.name + '_rtl_pos.png'
             icon_type = self.ctx.get_resource(file)
         else:
-            file = 'map_widget/' + self.name + '_pos.png'
+            file = 'map_widget/' + self.name + '_spos.png'
             icon_type = self.ctx.get_resource(file)
         return icon_type
 

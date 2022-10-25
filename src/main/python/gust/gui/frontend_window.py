@@ -161,10 +161,10 @@ class FrontendWindow(QMainWindow, Ui_MainWindow_main):
         if self.timer is None:
             self.timer = QTimer()
             self.manager.timer = self.timer
-            self.manager.rate = 750
+            self.manager.rate = 100
             self.timer.timeout.connect(self.manager.run)
             self.manager.signal.connect(self.update_frame)
-            self.timer.start(750)
+            self.timer.start(100)
 
     def update_frame(self, passed_signal):
 
@@ -187,7 +187,6 @@ class FrontendWindow(QMainWindow, Ui_MainWindow_main):
             self.tableWidget.setItem(rowPos, 1, item)
 
             item = self.flight_params[key]['flight_mode']
-            item = msg_decoder.findMode(int(item))
             item = QTableWidgetItem(str(item))
             item.setTextAlignment(QtCore.Qt.AlignCenter)
             self.tableWidget.setItem(rowPos, 2, item)

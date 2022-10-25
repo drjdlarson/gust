@@ -61,8 +61,12 @@ class MessageDecoder:
     @staticmethod
     def findMode(x):
         # getting the position of the first 1 from the right of 8-bits
+        if int(x) == 0:
+            return "NONE"
+
         x = int(x)
         pos_of_one = int(math.log2(x&-x) + 1)
+
 
         if pos_of_one == 2:
             ans = "Test"

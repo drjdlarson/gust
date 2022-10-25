@@ -654,7 +654,7 @@ def add_vehicle(name, port, color):
     table_name = create_drone_rate_table_name(name, DroneRates.RATE4)
     cmd = """CREATE TABLE IF NOT EXISTS {:s} (
        m_time float PRIMARY key,
-       armed int,
+       armed Text,
        flight_mode Text,
        mav_type int,
        autopilot int,

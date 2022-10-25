@@ -5,16 +5,20 @@ Created on Thu Jul 28 17:42:29 2022
 
 @author: lagerprocessor
 """
+import numpy as np
 import random
 import time
 import logging
 from gust.worker import Worker
 import gust.database as database
 import math
-from radio_receiver import RadioReceiver
+import dronekit
 from PyQt5.QtCore import QThreadPool, QTimer, pyqtSlot, pyqtSignal, QObject
 
 logger = logging.getLogger("[radio-manager]")
+
+d2r = np.pi / 180
+r2d = 1 / d2r
 
 
 class RadioManager(QObject):
@@ -23,13 +27,26 @@ class RadioManager(QObject):
         self.threadpool = QThreadPool()
         self.conn_status = {}
         self.debug = False
+        self.radios = {}
 
     def connect_to_radio(self, info):
         name = info["name"]
         port = info["port"]
         color = info["color"]
+        baud = info["baud"]
         msg = "Connecting to {} on {}".format(name, port)
         logger.info(msg)
+        radio = None
+
+        if port != "/dev/test/":
+            if baud < 0:
+                return {"success": False, "info": "Invalid baud rate {}".format(baud)}
+            try:
+                logger.info("trying to initiate mavlink connection")
+                # self.radios[name] = RadioReceiver(port, baud)
+                self.radios[name] = dronekit.connect(port, wait_ready=True, baud=baud)
+            except:
+                return {"success": False, "info": "Unable to connect to radio"}
 
         # creating separate threads for each connection
         self.conn_status.update({name: True})
@@ -57,24 +74,22 @@ class RadioManager(QObject):
                 time.sleep(0.2)
 
         else:
+            logger.info("mavlink connection successfull")
             mav_data = {}
 
             # Setting the first set of data to be all zero
             all_data = self.prepare_dummy_data(color)
-            zeroed_data = []
-            for rate in all_data:
-                rate["vals"] = dict.fromkeys(rate["vals"], 0)
-                zeroed_data.append(rate)
-            res = database.write_values(zeroed_data, name)
+            res = database.write_values(all_data, name)
 
-            rate1, rate2, rate3, rate4 = [zeroed_data[i] for i in range(len(zeroed_data))]
+            rate1, rate2, rate3, rate4 = [all_data[i] for i in range(len(all_data))]
             while self.conn_status[name]:
                 rate1, rate2, rate3, rate4, mav_data = self.prepare_data_from_mavlink(
-                    port, rate1, rate2, rate3, rate4, mav_data
+                    name, port, rate1, rate2, rate3, rate4, mav_data
                     )
                 rate1["vals"]["color"] = color
+                all_data = rate1, rate2, rate3, rate4
                 res = database.write_values(all_data, name)
-                # time.sleep(0.1)
+                time.sleep(0.1)
 
 
     def prepare_dummy_data(self, color):
@@ -184,30 +199,50 @@ class RadioManager(QObject):
         all_data = rate1, rate2, rate3, rate4
         return all_data
 
-    def prepare_data_from_mavlink(self, port, rate1, rate2, rate3, rate4, data):
+    def prepare_data_from_mavlink(self, name, port, rate1, rate2, rate3, rate4, data):
         current_time = self.get_current_time()
-        try:
-            radio = RadioReceiver(port)
-            available_packets = radio.get_available_messages()
 
-            # getting the MAV packet separately
-            try:
-                msg = radio.connection.messages['MAV']
-                mav_packet = {'armed': msg.armed, 'base_mode': msg.base_mode, 'flight_mode': msg.flightmode, 'mav_type': msg.mav_type, 'vehicle_type': msg.vehicle_type}
-                data['MAV'] = mav_packet
-            except:
-                pass
+        radio = self.radios[name]
+        data['MAV'] = {}
+        data['ATTITUDE'] = {}
+        data['VFR_HUD'] = {}
+        data['HEARTBEAT'] = {}
+        # data['HOME'] = {}
+        data['LOCAL_POSITION_NED'] = {}
+        data['GLOBAL_POSITION_INT'] = {}
+        data['BATTERY_STATUS'] = {}
+        data['GPS_RAW_INT'] = {}
 
-            # excluding the MAV packet
-            for packet in available_packets[1:]:
-                try:
-                    succ, msg, time_since = radio.get_msg(packet)
-                    if succ:
-                        data[packet] = radio.msg_to_dict(msg)
-                except:
-                    pass
-        except:
-            logger.warning("Heartbeat not received")
+
+        # populating data{} before writing rates for database
+        data['MAV']['armed'] = radio.armed
+        data['MAV']['base_mode'] = radio.mode
+        data['MAV']['flight_mode'] = radio.mode
+        data['MAV']['mav_type'] = 0
+        data['vehicle_type'] = radio._vehicle_type
+
+        data['ATTITUDE']['roll'] = radio.attitude.roll * r2d
+        data['ATTITUDE']['pitch'] = radio.attitude.pitch * r2d
+
+        data['VFR_HUD']['heading'] = radio.attitude.yaw * r2d
+        data['VFR_HUD']['airspeed'] = radio.airspeed
+        data['VFR_HUD']['groundspeed'] = radio.groundspeed
+
+        data['GLOBAL_POSITION_INT']['lat'] = radio.location._lat
+        data['GLOBAL_POSITION_INT']['lon'] = radio.location._lon
+        data['GLOBAL_POSITION_INT']['relative_alt'] = radio.location._relative_alt
+
+        data['BATTERY_STATUS']['voltage'] = radio.battery.voltage
+        data['BATTERY_STATUS']['current'] = radio.battery.current
+
+        data['GPS_RAW_INT']['fix_type'] = radio._fix_type
+        data['GPS_RAW_INT']['satellites_visible'] = radio._satellites_visible
+
+        # putting zero for things confused from dronekit
+        data['VFR_HUD']['climb'] = 0
+        data['VFR_HUD']['throttle'] = 0
+        data['LOCAL_POSITION_NED']['vx'] = 0
+        data['LOCAL_POSITION_NED']['vy'] = 10
 
         # populating rate dictionaries from mavlink data
         for rate in (rate1, rate2, rate3, rate4):
@@ -223,24 +258,25 @@ class RadioManager(QObject):
         rate2['vals']['alpha'] =0
         rate2['vals']['beta'] = 0
 
+
         if "MAV" in data:
             rate4["vals"]["flight_mode"] = data["MAV"]["base_mode"]
             rate4["vals"]["mav_type"] = data["MAV"]["mav_type"]
 
         if "HOME" in data:
-            rate1["vals"]["home_lat"] = data["HOME"]["lat"] * 10 ** -7
-            rate1["vals"]["home_lon"] = data["HOME"]["lon"] * 10 ** -7
-            rate1["vals"]["home_alt"] = data["HOME"]["alt"] * 10 ** -7
+            rate1["vals"]["home_lat"] = data["HOME"]["lat"]
+            rate1["vals"]["home_lon"] = data["HOME"]["lon"]
+            rate1["vals"]["home_alt"] = data["HOME"]["alt"]
 
-        if "HEARTBEAT" in data:
-            rate4["vals"]["armed"] = data["HEARTBEAT"]["system_status"]
-            rate4["vals"]["autopilot"] = data["HEARTBEAT"]["autopilot"]
-            rate4["vals"]["custom_mode"] = data["HEARTBEAT"]["custom_mode"]
+        # if "HEARTBEAT" in data:
+        #     rate4["vals"]["armed"] = data["HEARTBEAT"]["system_status"]
+        #     rate4["vals"]["autopilot"] = data["HEARTBEAT"]["autopilot"]
+        #     rate4["vals"]["custom_mode"] = data["HEARTBEAT"]["custom_mode"]
 
 
         if "ATTITUDE" in data:
-            rate2['vals']['roll_angle'] = round(math.degrees(data['ATTITUDE']['roll']))
-            rate2['vals']['pitch_angle'] = round(math.degrees(data['ATTITUDE']['pitch']))
+            rate2['vals']['roll_angle'] = data['ATTITUDE']['roll']
+            rate2['vals']['pitch_angle'] = data['ATTITUDE']['pitch']
 
         if 'VFR_HUD' in data:
             rate2['vals']['airspeed'] = round(data['VFR_HUD']['airspeed'])
@@ -255,13 +291,13 @@ class RadioManager(QObject):
             rate2['vals']['track'] = round(math.degrees(math.atan2(vy, vx)))
 
         if 'GLOBAL_POSITION_INT' in data:
-            rate2['vals']['latitude'] = data['GLOBAL_POSITION_INT']['lat'] * 10 ** -7
-            rate2['vals']['longitude'] = data['GLOBAL_POSITION_INT']['lon'] * 10 ** -7
+            rate2['vals']['latitude'] = data['GLOBAL_POSITION_INT']['lat']
+            rate2['vals']['longitude'] = data['GLOBAL_POSITION_INT']['lon']
             rate2['vals']['relative_alt'] = data['GLOBAL_POSITION_INT']['relative_alt']
 
         if 'BATTERY_STATUS' in data:
-            rate1['vals']['voltage'] = data['BATTERY_STATUS']['voltages'][0] * 10 ** -3
-            rate1['vals']['current'] = data['BATTERY_STATUS']['current_battery']
+            rate1['vals']['voltage'] = data['BATTERY_STATUS']['voltage']
+            rate1['vals']['current'] = data['BATTERY_STATUS']['current']
 
         if 'GPS_RAW_INT' in data:
             rate2['vals']['gnss_fix'] = data['GPS_RAW_INT']['fix_type']

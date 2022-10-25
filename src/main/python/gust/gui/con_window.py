@@ -32,6 +32,7 @@ RGB = [
        (100, 50, 0),
        ]
 FILES = ["home", "pos", "spos", "rtl_pos"]
+BAUD = ["9600", "38400", "56700", "115200"]
 
 class ConWindow(QDialog, Ui_MainWindow):
     """Main interface for the connection window"""
@@ -42,6 +43,7 @@ class ConWindow(QDialog, Ui_MainWindow):
         self.setupUi(self)
 
         self.comboBox_port.addItems(ports)
+        self.comboBox_baud.addItems(BAUD)
         self.comboBox_color.addItems(COLORS)
 
         self.pushButton_connect.clicked.connect(self.clicked_connect)
@@ -54,6 +56,7 @@ class ConWindow(QDialog, Ui_MainWindow):
 
         port_name = self.comboBox_port.currentText()
         self.color_id = self.comboBox_color.currentText()
+        self.baud = int(self.comboBox_baud.currentText())
         self.name = self.lineEdit_nameinput.text()
         url = "{}connect".format(DRONE_BASE)
 
@@ -77,6 +80,11 @@ class ConWindow(QDialog, Ui_MainWindow):
                 url += "color=" + self.color_id.replace(' ', '_')
                 added_data = True
 
+            if added_data:
+                url += "&"
+            url += "baud={:d}".format(self.baud)
+            added_data = True
+
         conn = requests.get(url).json()
 
         msgBox = QMessageBox()
@@ -92,7 +100,7 @@ class ConWindow(QDialog, Ui_MainWindow):
         else:
             msgBox.setIcon(QMessageBox.Warning)
             msgBox.setWindowTitle("Warning")
-            msgBox.setText("Unable to connect: <<{:s}>>".format(conn['msg']))
+            msgBox.setText("Failed connection: <<{:s}>>".format(conn['msg']))
             msgBox.exec()
 
     def generate_icons(self):

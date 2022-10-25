@@ -64,9 +64,9 @@ class pyG5AIWidget(QWidget):
         self.altitude = 0
         self.vspeed = 0
         self.heading = 0
-        self.arm = 0
+        self.arm = "None"
         self.gnss_fix = 0
-        self.mode = 16
+        self.mode = "None"
 
         self.alpha = 0
         self.beta = 0
@@ -803,25 +803,12 @@ class pyG5AIWidget(QWidget):
         self.qp.drawRect(rect)
 
         f_gnss_fix = msg_decoder.findFix(self.gnss_fix)
-        if f_gnss_fix == "3D Fix".upper():
-            self.setPen(3, Qt.white)
-            self.qp.drawText(
-                rect,
-                Qt.AlignCenter | Qt.AlignVCenter,
-                f_gnss_fix.upper(),
-            )
-        elif f_gnss_fix == "2D Fix".upper():
-            self.setPen(3, Qt.white)
-            self.qp.drawText(
-                rect, Qt.AlignCenter | Qt.AlignVCenter,
-                f_gnss_fix.upper(),
-            )
-        else:
-            self.setPen(3, Qt.red)
-            self.qp.drawText(
-                rect, Qt.AlignCenter | Qt.AlignVCenter,
-                "NO FIX",
-            )
+        self.setPen(3, Qt.white)
+        self.qp.drawText(
+            rect,
+            Qt.AlignCenter | Qt.AlignVCenter,
+            f_gnss_fix.upper(),
+        )
 
         # Arming Status on the center
         rect = QRectF(
@@ -833,20 +820,16 @@ class pyG5AIWidget(QWidget):
         self.setPen(2, Qt.transparent)
         self.qp.drawRect(rect)
 
-        if self.arm in (1, 2, 3, 4, 5, 6, 7, 8, 9):
-            f_arm = msg_decoder.findState(self.arm)
-            self.setPen(3, Qt.white)
-            self.qp.drawText(
-                rect,
-                Qt.AlignCenter | Qt.AlignVCenter,
-                f_arm.upper(),
-            )
+        if self.arm.lower() == "true":
+            f_arm = "ARMED"
         else:
-            self.setPen(3, Qt.red)
-            self.qp.drawText(
-                rect, Qt.AlignCenter | Qt.AlignVCenter,
-                "DISARMED",
-            )
+            f_arm = "DISARMED"
+        self.setPen(3, Qt.white)
+        self.qp.drawText(
+            rect,
+            Qt.AlignCenter | Qt.AlignVCenter,
+            f_arm,
+        )
 
         # Flight Mode on the right
         rect = QRectF(
@@ -858,21 +841,12 @@ class pyG5AIWidget(QWidget):
         self.setPen(2, Qt.transparent)
         self.qp.drawRect(rect)
 
-        f_mode = msg_decoder.findMode(self.mode)
-        try:
-            self.setPen(3, Qt.white)
-            self.qp.drawText(
-                rect,
-                Qt.AlignCenter | Qt.AlignVCenter,
-                f_mode.upper(),
-            )
-        except:
-            self.setPen(3, Qt.white)
-            self.qp.drawText(
-                rect,
-                Qt.AlignCenter | Qt.AlignVCenter,
-                "NONE",
-            )
+        self.setPen(3, Qt.white)
+        self.qp.drawText(
+            rect,
+            Qt.AlignCenter | Qt.AlignVCenter,
+            str(self.mode),
+        )
 
         self.qp.end()
 
