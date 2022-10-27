@@ -28,9 +28,8 @@ class RadioManager(QObject):
     def __init__(self):
         super().__init__()
         self.threadpool = QThreadPool()
-        self.conn_status = {}
         self.debug = False
-        self.radios = {}
+        self.conn = {}
 
     def connect_to_radio(self, info):
         name = info["name"]
@@ -39,54 +38,61 @@ class RadioManager(QObject):
         baud = info["baud"]
         msg = "Connecting to {} on {}".format(name, port)
         logger.info(msg)
-        radio = None
+        self.conn[name] = {}
+        self.conn[name]['type'] = 'TEST_PORT'
 
         if port != "/dev/test/":
+            self.conn[name]['type'] = 'HARDWARE'
             if baud < 0:
                 return {"success": False, "info": "Invalid baud rate {}".format(baud)}
             try:
-                logger.info("trying to initiate mavlink connection")
-                # self.radios[name] = RadioReceiver(port, baud)
-                self.radios[name] = dronekit.connect(port, wait_ready=True, baud=baud)
+                logger.info("Initiating mavlink connection")
+                self.conn[name]['conn'] = dronekit.connect(port, wait_ready=True, baud=baud)
+                # self.radios[name] = dronekit.connect(port, wait_ready=True, baud=baud)
             except:
                 return {"success": False, "info": "Unable to connect to radio"}
 
         # creating separate threads for each connection
-        self.conn_status.update({name: True})
-        worker = Worker(self.poll_radio, name, port, color)
+        self.conn[name]['status'] = True
+        worker = Worker(self.poll_radio, name, port)
         self.threadpool.start(worker)
         return {"success": True, "info": ''}
 
     def disconnect_radio(self, info):
-        logger.debug("msg received for disconnection -->> {}".format(info))
+        logger.debug("Disconnection Message: {}".format(info))
         name = info['name']
-        self.radios[name].close()
-        self.conn_status.update({name: False})
+
+        if self.conn[name]['type'] == 'HARDWARE':
+            # disconnecting mavlink connection
+            self.conn[name]['conn'].close()
+
+        self.conn[name]['status'] = False
+
+        # chaning connection status on database
         res = database.change_connection_status_value(name, 0)
         if res:
             return {"success": True, "info": ""}
 
-    def poll_radio(self, name, port, color):
+    def poll_radio(self, name, port):
         # for testing purposes only
         if port == "/dev/test/":
             msg = "Populating database with dummy data..."
             logger.info(msg)
-            while self.conn_status[name]:
-                all_data = self.prepare_dummy_data(color)
+            while self.conn[name]['status']:
+                all_data = self.prepare_dummy_data()
                 res = database.write_values(all_data, name)
                 time.sleep(0.2)
 
         else:
-            logger.info("mavlink connection successfull")
+            logger.info("Mavlink connection successfull")
             mav_data = {}
 
             # Setting the first set of data to be all zero
-            all_data = self.prepare_dummy_data(color)
+            all_data = self.prepare_dummy_data()
             res = database.write_values(all_data, name)
 
             rate1, rate2, rate3, rate4 = [all_data[i] for i in range(len(all_data))]
-            while self.conn_status[name]:
-                rate1['vals']['color'] = color
+            while self.conn[name]['status']:
                 rate1, rate2, rate3, rate4, mav_data = self.prepare_data_from_mavlink(
                     name, port, rate1, rate2, rate3, rate4, mav_data
                     )
@@ -95,7 +101,7 @@ class RadioManager(QObject):
                 time.sleep(0.1)
 
 
-    def prepare_dummy_data(self, color):
+    def prepare_dummy_data(self):
         current_time = self.get_current_time()
         randf1 = round(random.uniform(50, 100), 2)
         randf11 = round(random.uniform(0, 20), 2)
@@ -112,7 +118,6 @@ class RadioManager(QObject):
             "rate": database.DroneRates.RATE1,
             "vals": {
                 "m_time": current_time,
-                "color": color,
                 "home_lat": 33.21534,
                 "home_lon": -87.54355,
                 "home_alt": 170,
@@ -196,7 +201,6 @@ class RadioManager(QObject):
                 "next_wp": randf222,
                 "relay_sw": randint1,
                 "engine_sw": randint1,
-                "connection": 1,
             },
         }
         all_data = rate1, rate2, rate3, rate4
@@ -205,7 +209,7 @@ class RadioManager(QObject):
     def prepare_data_from_mavlink(self, name, port, rate1, rate2, rate3, rate4, data):
         current_time = self.get_current_time()
 
-        radio = self.radios[name]
+        radio = self.conn[name]['conn']
         data['MAV'] = {}
         data['ATTITUDE'] = {}
         data['VFR_HUD'] = {}
@@ -251,8 +255,6 @@ class RadioManager(QObject):
         # populating rate dictionaries from mavlink data
         for rate in (rate1, rate2, rate3, rate4):
             rate["vals"]["m_time"] = current_time
-
-        rate4["vals"]["connection"] = 1
 
         # Put zero for things not available currently
         rate1["vals"]["home_lat"] = 0

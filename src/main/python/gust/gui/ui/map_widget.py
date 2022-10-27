@@ -40,15 +40,15 @@ class MapWidget(QtQuickWidgets.QQuickWidget):
 
         self.engine().clearComponentCache()
         self.setSource(QtCore.QUrl.fromLocalFile(temp_path + "/temp_map.qml"))
-        self.rootObject().setProperty("customHost", "file:offline_test/")
 
     def remove_vehicle_from_map(self, name):
-        self.vehicle_list.pop(name)
+        # self.vehicle_list.pop(name)
+        self.vehicle_list = {}
 
     def clear_drone_list(self):
         self.vehicle_list = {}
 
-    def add_drone(self, name, home_lat, home_lon, latitude, longitude, heading, track, mode):
+    def add_drone(self, name, color, home_lat, home_lon, latitude, longitude, heading, track, mode):
         if name not in self.vehicle_list:
             marker = MarkerModel(self)
             self.rootContext().setContextProperty("markermodel", marker)
@@ -62,7 +62,7 @@ class MapWidget(QtQuickWidgets.QQuickWidget):
             home = HomeMarkerModel(self)
             self.rootContext().setContextProperty("homemodel", home)
 
-            self.vehicle_list[name] = MapHelper(name, marker, hdg_line, track_line, home, home_lat, home_lon, latitude, longitude, heading, track, mode, self.ctx,)
+            self.vehicle_list[name] = MapHelper(name, color, marker, hdg_line, track_line, home, home_lat, home_lon, latitude, longitude, heading, track, mode, self.ctx,)
         else:
             self.vehicle_list[name].home_lat = home_lat
             self.vehicle_list[name].home_lon = home_lon
@@ -78,8 +78,9 @@ class MapWidget(QtQuickWidgets.QQuickWidget):
 
 
 class MapHelper():
-    def __init__(self, name, marker, hdg_line, track_line, home, home_lat, home_lon, latitude, longitude, heading, track, mode, ctx):
+    def __init__(self, name, color, marker, hdg_line, track_line, home, home_lat, home_lon, latitude, longitude, heading, track, mode, ctx):
         self.name = name
+        self.color = color
         self.marker = marker
         self.hdg_line = hdg_line
         self.track_line = track_line
@@ -112,7 +113,7 @@ class MapHelper():
         track_path = [pos_coord, track_coord]
         self.track_line.appendLine({"track_path": track_path})
 
-        file = 'map_widget/' + self.name + '_home.png'
+        file = 'map_widget/colored_icons/' + self.color + '_home.png'
         home_icon = self.ctx.get_resource(file)
         home = (self.home_lat, self.home_lon)
         home_coord = QtPositioning.QGeoCoordinate(*home)
@@ -138,13 +139,13 @@ class MapHelper():
 
     def icon_selector(self):
         if self.mode == "stabilize".upper():
-            file = 'map_widget/' + self.name + '_pos.png'
+            file = 'map_widget/colored_icons/' + self.color + '_pos.png'
             icon_type = self.ctx.get_resource(file)
         elif self == "auto".upper():
-            file = 'map_widget/' + self.name + '_rtl_pos.png'
+            file = 'map_widget/colored_icons/' + self.color + '_rtl_pos.png'
             icon_type = self.ctx.get_resource(file)
         else:
-            file = 'map_widget/' + self.name + '_spos.png'
+            file = 'map_widget/colored_icons/' + self.color + '_spos.png'
             icon_type = self.ctx.get_resource(file)
         return icon_type
 

@@ -80,9 +80,12 @@ class FrontendWindow(QMainWindow, Ui_MainWindow_main):
         url = "{}get_available_ports".format(DRONE_BASE)
         ports = requests.get(url).json()
 
+        url = "{}get_used_colors".format(DRONE_BASE)
+        used_colors = requests.get(url).json()
+
         if self._conWindow is None:
             self._conWindow = con_window.ConWindow(
-                self.ctx, ports['ports'])
+                self.ctx, ports['ports'], used_colors['used_colors'])
 
         if self._conWindow.exec_():
             # adding a row in the table
@@ -149,14 +152,7 @@ class FrontendWindow(QMainWindow, Ui_MainWindow_main):
             if res:
                 self.tableWidget.removeRow(sel_row)
                 self.clean_hud_and_lcd()
-                self.delete_map_icons(name)
                 self.widget_map.remove_vehicle_from_map(name)
-
-    def delete_map_icons(self, name):
-        for file in FILES:
-            filename = name + '_' + file + '.png'
-            icon_file = self.ctx.get_resource('map_widget/' + filename)
-            os.remove(icon_file)
 
     def update_request(self):
         if self.timer is None:
@@ -227,7 +223,6 @@ class FrontendWindow(QMainWindow, Ui_MainWindow_main):
             self.tableWidget.setItem(rowPos, 9, item)
 
             # self.con_status will be 1 or 0.
-            self.con_status = self.flight_params[key]['connection']
             self.disconnect_button = QPushButton("Disconnect")
             self.disconnect_button.clicked.connect(self.clicked_disconnect)
             self.tableWidget.setCellWidget(rowPos, 10, self.disconnect_button)
@@ -235,6 +230,7 @@ class FrontendWindow(QMainWindow, Ui_MainWindow_main):
 
             self.widget_map.add_drone(
                 self.flight_params[key]['name'],
+                self.flight_params[key]['color'],
                 self.flight_params[key]['home_lat'],
                 self.flight_params[key]['home_lon'],
                 self.flight_params[key]['latitude'],

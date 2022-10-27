@@ -15,29 +15,29 @@ from PyQt5.QtCore import pyqtSlot, QModelIndex, pyqtSignal, QThreadPool
 from PyQt5.QtGui import QIntValidator, QTextCursor
 import requests
 from gust.gui.ui.conn import Ui_MainWindow
-import gust.icon_generator as icon_generator
 from gust.wsgi_apps.api.url_bases import BASE, DRONE
-import main.python.utilities.icon_generator
+import gust.utilities.icon_generator as icon_generator
 
 
 URL_BASE = "http://localhost:8000/{}/".format(BASE)
 DRONE_BASE = "{}{}/".format(URL_BASE, DRONE)
 BAUD = ["9600", "38400", "56700", "115200"]
 
-all_colours = icon_generator.COLORS
+all_colors = icon_generator.COLORS
 
 
 class ConWindow(QDialog, Ui_MainWindow):
     """Main interface for the connection window"""
 
-    def __init__(self, ctx, ports):
+    def __init__(self, ctx, ports, used_colors):
         super().__init__()
         self.ctx = ctx
         self.setupUi(self)
 
+        available_colors = [i for i in all_colors if i not in used_colors]
         self.comboBox_port.addItems(ports)
         self.comboBox_baud.addItems(BAUD)
-        self.comboBox_color.addItems(COLORS)
+        self.comboBox_color.addItems(available_colors)
 
         self.pushButton_connect.clicked.connect(self.clicked_connect)
         self.pushButton_cancel.clicked.connect(self.clicked_cancel)
@@ -83,7 +83,6 @@ class ConWindow(QDialog, Ui_MainWindow):
         msgBox = QMessageBox()
 
         if conn['success']:
-            self.generate_icons()
             msgBox.setIcon(QMessageBox.Information)
             msgBox.setWindowTitle("Information")
             msgBox.setText("Connected to vehicle: {}".format(self.name))
@@ -95,17 +94,6 @@ class ConWindow(QDialog, Ui_MainWindow):
             msgBox.setWindowTitle("Warning")
             msgBox.setText("Failed connection: <<{:s}>>".format(conn['msg']))
             msgBox.exec()
-
-    def generate_icons(self):
-
-        for file in FILES:
-            filename = self.ctx.get_resource('map_widget/' + file + '.png')
-            for (color, rgb) in zip(COLORS, RGB):
-                if self.color_id == color:
-                    savename = self.name + '_' + file + '.png'
-                    savepath = str(pathlib.Path(filename).parent.resolve())
-                    icon_generator.prepare_icon(filename, rgb, os.path.join(savepath, savename))
-
 
     def setupUi(self, mainWindow):
         """Sets up the user interface."""
