@@ -64,9 +64,9 @@ class pyG5AIWidget(QWidget):
         self.altitude = 0
         self.vspeed = 0
         self.heading = 0
-        self.arm = "None"
+        self.arm = "NONE"
         self.gnss_fix = 0
-        self.mode = "None"
+        self.mode = "NONE"
 
         self.alpha = 0
         self.beta = 0
@@ -646,7 +646,7 @@ class pyG5AIWidget(QWidget):
         #################################################
 
         altBoxRightAlign = 7
-        altBoxHeight = 30
+        altBoxHeight = 40
         altBoxSpikedimension = 10
         altTapeScale = 500
 
@@ -738,7 +738,7 @@ class pyG5AIWidget(QWidget):
                             speedBoxHeight,
                         ),
                         Qt.AlignLeft | Qt.AlignVCenter,
-                        "{:d}".format(int(currentTape)),
+                        "{:3d}".format(int(currentTape)),
                     )
 
             currentTape -= 1
@@ -772,8 +772,12 @@ class pyG5AIWidget(QWidget):
 
         brush = QBrush(QColor(0, 0, 0))
         self.qp.setBrush(brush)
-
         self.qp.drawPolygon(altBox)
+
+        font = self.qp.font()
+        font.setPixelSize(25)
+        # set default font size
+        self.qp.setFont(font)
 
         self.qp.drawText(
             QRectF(
@@ -783,13 +787,17 @@ class pyG5AIWidget(QWidget):
                 altBoxHeight,
             ),
             Qt.AlignHCenter | Qt.AlignVCenter,
-            "{:05d}".format(int(self.altitude)),
+            "{:03d}".format(int(self.altitude)),
         )
-
 
         #################################################
         # Status Box
         #################################################
+
+        font = self.qp.font()
+        font.setPixelSize(20)
+        # set default font size
+        self.qp.setFont(font)
 
         # GNSS Status on the left
         rect = QRectF(
@@ -807,7 +815,7 @@ class pyG5AIWidget(QWidget):
         self.qp.drawText(
             rect,
             Qt.AlignCenter | Qt.AlignVCenter,
-            f_gnss_fix.upper(),
+            f_gnss_fix,
         )
 
         # Arming Status on the center
@@ -820,7 +828,7 @@ class pyG5AIWidget(QWidget):
         self.setPen(2, Qt.transparent)
         self.qp.drawRect(rect)
 
-        if self.arm.lower() == "true":
+        if self.arm == 1:
             f_arm = "ARMED"
         else:
             f_arm = "DISARMED"

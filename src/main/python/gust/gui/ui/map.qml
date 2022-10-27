@@ -9,8 +9,6 @@ Item {
     height: 480
     focus: true
 
-    property variant locationTC: QtPositioning.coordinate(33.21456, -87.54322)
-
     Location {
         id: mapCenter
         coordinate {
@@ -18,8 +16,6 @@ Item {
             longitude: -87.54322
         }
     }
-
-
 
 // FOR TESTING WITH OPENSTREETMAP
 /*
@@ -44,17 +40,13 @@ Item {
     }
 */
 
-
     Keys.onSpacePressed: {
-        console.log(mapBase.center)
-        console.log(customHost)
         mapBase.center = mapCenter.coordinate
         mapBase.zoomLevel = 16
         // mapBase.fitViewportToVisibleMapItems()
         // var point = mapBase.fromCoordinate(locationTC, false)
         // mapBase.toCoordinate(point, false)
     }
-
 
 
      Map {
@@ -70,34 +62,26 @@ Item {
             name: 'osm'
 
             PluginParameter {
-                // name: 'osm.mapping.offline.directory'
                 name: 'osm.mapping.custom.host'
-                // value: 'file:/offline_test/'
-                // value: customHost
                 value: 'file:MAP_FilledByMapWidget'
-                // value: 'file:/home/lagerprocessor/Projects/gust/src/main/python/gust/gui/ui/offline_folders/'
             }
-
 
             PluginParameter {
                 name: "osm.mapping.providersrepository.disabled"
                 value: false
             }
 
-
             PluginParameter {
                 name: 'osm.mapping.cache.memory_size'
                 value: 0
             }
-
-
+/*
             PluginParameter {
                 name: "osm.mapping.cache.directory"
                 value: "CACHE_FilledByMapWidget"
             }
-
+*/
         }
-
     }
 
 
@@ -149,7 +133,7 @@ Item {
             delegate: MapPolyline {
                 id: heading_line
                 line.width: 3
-                line.color: 'yellow'
+                line.color: 'transparent'
                 path: model.track_path
             }
         }

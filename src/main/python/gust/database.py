@@ -104,7 +104,7 @@ def open_db():
     name TEXT,
     port TEXT,
     color TEXT,
-    UNIQUE(uid, name, port, color)
+    UNIQUE(uid, name)
     );
     """
     logger.debug(cmd)
@@ -654,7 +654,7 @@ def add_vehicle(name, port, color):
     table_name = create_drone_rate_table_name(name, DroneRates.RATE4)
     cmd = """CREATE TABLE IF NOT EXISTS {:s} (
        m_time float PRIMARY key,
-       armed Text,
+       armed int,
        flight_mode Text,
        mav_type int,
        autopilot int,
@@ -786,16 +786,6 @@ def add_values(vals, table_name):
 
     return res
 
-
-def get_drone_name(uid):
-    """Gives the vehicle name for corresponding uid. uid indexing starts from 0"""
-    query = _start_query()
-    cmd = "SELECT name FROM drone_collection WHERE uid = {};".format(uid)
-    query.exec_(cmd)
-    query.last()
-    return query.value(0)
-
-
 def write_values(flt_data, name):
     """
     Gets all parameters for a single vehicle.
@@ -824,6 +814,25 @@ def write_values(flt_data, name):
         # logger.debug(msg)
 
     return all(res)
+
+
+def get_drone_name(uid):
+    """Gives the vehicle name for corresponding uid. uid indexing starts from 0"""
+    query = _start_query()
+    cmd = "SELECT name FROM drone_collection WHERE uid = {};".format(uid)
+    query.exec_(cmd)
+    query.last()
+    return query.value(0)
+
+def get_used_colors():
+    """Returns a list of colors being used by active drones"""
+    query = _start_query()
+    cmd = "SELECT color FROM drone_collection;"
+    result = query.exec_(cmd)
+    colors = []
+    while result and query.next():
+        colors.append(query.value(0))
+    return colors
 
 
 def write_zed_obj(name, posix, obj):

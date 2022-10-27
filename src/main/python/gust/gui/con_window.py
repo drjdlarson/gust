@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+ #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
 Created on Fri Jun 10 12:36:33 2022
@@ -17,22 +17,15 @@ import requests
 from gust.gui.ui.conn import Ui_MainWindow
 import gust.icon_generator as icon_generator
 from gust.wsgi_apps.api.url_bases import BASE, DRONE
+import main.python.utilities.icon_generator
 
 
 URL_BASE = "http://localhost:8000/{}/".format(BASE)
 DRONE_BASE = "{}{}/".format(URL_BASE, DRONE)
-COLORS = ["red", "blue", "green", "yellow", "orange", "gray", "brown"]
-RGB = [
-       (255, 0, 0),
-       (0, 0, 255),
-       (0, 255, 0),
-       (255, 255, 0),
-       (255, 150, 50),
-       (130, 130, 130),
-       (100, 50, 0),
-       ]
-FILES = ["home", "pos", "spos", "rtl_pos"]
 BAUD = ["9600", "38400", "56700", "115200"]
+
+all_colours = icon_generator.COLORS
+
 
 class ConWindow(QDialog, Ui_MainWindow):
     """Main interface for the connection window"""

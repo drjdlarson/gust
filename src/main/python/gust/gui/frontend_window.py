@@ -150,6 +150,7 @@ class FrontendWindow(QMainWindow, Ui_MainWindow_main):
                 self.tableWidget.removeRow(sel_row)
                 self.clean_hud_and_lcd()
                 self.delete_map_icons(name)
+                self.widget_map.remove_vehicle_from_map(name)
 
     def delete_map_icons(self, name):
         for file in FILES:
@@ -179,7 +180,6 @@ class FrontendWindow(QMainWindow, Ui_MainWindow_main):
             color = self.flight_params[key]['color']
             item.setBackground(QtGui.QColor(color))
             self.tableWidget.setItem(rowPos, 0, item)
-
 
             item = self.flight_params[key]['name']
             item = QTableWidgetItem(item)

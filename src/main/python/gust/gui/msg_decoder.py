@@ -66,8 +66,6 @@ class MessageDecoder:
 
         x = int(x)
         pos_of_one = int(math.log2(x&-x) + 1)
-
-
         if pos_of_one == 2:
             ans = "Test"
         elif pos_of_one == 3:
@@ -86,10 +84,16 @@ class MessageDecoder:
 
     @staticmethod
     def findFix(x):
-        if x == 2:
+        if x == 1:
             ans = "2D Fix"
-        elif x == 3:
+        elif x == 2:
             ans = "3D Fix"
+        elif x == 3:
+            ans = "FIX_DGNSS"
+        elif x == 4:
+            ans = "RTK_FLOAT"
+        elif x == 5:
+            ans = "RTK_FIXED"
         else:
-            ans = "No Fix"
+            ans = "NO_FIX"
         return ans.upper()
