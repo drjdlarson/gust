@@ -116,25 +116,25 @@ Item {
 
         // 2 coordinates can be passed from map_widget
         MapItemView{
-            model: heading_line
+            model: yaw_line
             remove: myTrans
             delegate: MapPolyline {
-                id: heading_line
+                id: yaw_line
                 line.width: 3
                 line.color: 'crimson'
-                path: model.heading_path
+                path: model.yaw_path
             }
         }
 
         // 2 coordinates can be passed from map_widget
         MapItemView{
-            model: track_line
+            model: heading_line
             remove: myTrans
             delegate: MapPolyline {
-                id: heading_line
+                id: yaw_line
                 line.width: 3
                 line.color: 'transparent'
-                path: model.track_path
+                path: model.heading_path
             }
         }
 

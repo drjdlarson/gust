@@ -31,6 +31,7 @@ class ConWindow(QDialog, Ui_MainWindow):
 
     def __init__(self, ctx, ports, used_colors):
         super().__init__()
+
         self.ctx = ctx
         self.setupUi(self)
 

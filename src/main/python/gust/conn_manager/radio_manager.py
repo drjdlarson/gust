@@ -132,8 +132,8 @@ class RadioManager(QObject):
                 "latitude": 33.21534 + randf2,
                 "longitude": -87.54355 + randf2,
                 "relative_alt": randf1,
-                "heading": randf22,
-                "track": randf22 + 45,
+                "yaw": randf22,
+                "heading": randf22 + 20,
                 "gnss_fix": mode1,
                 "satellites_visible": randf11,
                 "roll_angle": randf11,
@@ -231,7 +231,7 @@ class RadioManager(QObject):
         data['ATTITUDE']['roll'] = radio.attitude.roll * r2d
         data['ATTITUDE']['pitch'] = radio.attitude.pitch * r2d
 
-        data['VFR_HUD']['heading'] = radio.attitude.yaw * r2d
+        data['VFR_HUD']['yaw'] = radio.attitude.yaw * r2d
         data['VFR_HUD']['airspeed'] = radio.airspeed
         data['VFR_HUD']['groundspeed'] = radio.groundspeed
 
@@ -241,6 +241,7 @@ class RadioManager(QObject):
 
         data['LOCAL_POSITION_NED']['vx'] = radio._vx
         data['LOCAL_POSITION_NED']['vy'] = radio._vy
+        data['LOCAL_POSITION_NED']['heading'] = radio.heading
 
         data['BATTERY_STATUS']['voltage'] = radio.battery.voltage
         data['BATTERY_STATUS']['current'] = radio.battery.current
@@ -281,15 +282,15 @@ class RadioManager(QObject):
         if 'VFR_HUD' in data:
             rate2['vals']['airspeed'] = round(data['VFR_HUD']['airspeed'])
             rate2['vals']['gndspeed'] = round(data['VFR_HUD']['groundspeed'], 1)
-            rate2['vals']['heading'] = round(data['VFR_HUD']['heading'])
+            rate2['vals']['yaw'] = round(data['VFR_HUD']['yaw'])
             rate2['vals']['vspeed'] = round(data['VFR_HUD']['climb'], 1)
             rate2['vals']['throttle'] = round(data['VFR_HUD']['throttle'])
 
         if 'LOCAL_POSITION_NED' in data:
             vx = data['LOCAL_POSITION_NED']['vx']
             vy = data['LOCAL_POSITION_NED']['vy']
-            # rate2['vals']['track'] = round(math.degrees(math.atan2(vy, vx)))
-            rate2['vals']['track'] = 0
+            # rate2['vals']['heading'] = round(math.degrees(math.atan2(vy, vx)))
+            rate2['vals']['heading'] = 0
 
         if 'GLOBAL_POSITION_INT' in data:
             rate2['vals']['latitude'] = data['GLOBAL_POSITION_INT']['lat']

@@ -587,8 +587,8 @@ def add_vehicle(name, port, color):
        latitude float,
        longitude float,
        relative_alt float,
+       yaw int,
        heading int,
-       track int,
        gnss_fix int,
        satellites_visible int,
        roll_angle float,
@@ -829,6 +829,7 @@ def get_used_colors():
     query = _start_query()
     cmd = "SELECT color FROM drone_collection WHERE connection IS 1;"
     result = query.exec_(cmd)
+    query.seek(-1)
     colors = []
     while result and query.next():
         colors.append(query.value(0))

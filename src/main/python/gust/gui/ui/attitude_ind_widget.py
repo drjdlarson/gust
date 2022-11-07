@@ -63,7 +63,7 @@ class pyG5AIWidget(QWidget):
         self.airspeed = 0
         self.altitude = 0
         self.vspeed = 0
-        self.heading = 0
+        self.yaw = 0
         self.arm = "NONE"
         self.gnss_fix = 0
         self.mode = "NONE"

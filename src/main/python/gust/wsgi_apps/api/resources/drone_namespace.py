@@ -118,7 +118,7 @@ class AttitudeData(Resource):
 
 @DRONE_NS.route("/pos_data")
 class PosData(Resource):
-    params = ["latitude", "longitude", "relative_alt", "heading", "track", "gnss_fix", "satellites_visible"]
+    params = ["latitude", "longitude", "relative_alt", "yaw", "heading", "gnss_fix", "satellites_visible"]
 
     def get(self):
         pos_data = {}
