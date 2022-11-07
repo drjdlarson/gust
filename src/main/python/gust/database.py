@@ -104,7 +104,8 @@ def open_db():
     name TEXT,
     port TEXT,
     color TEXT,
-    UNIQUE(uid, name, port, color)
+    connection INT,
+    UNIQUE(uid, name)
     );
     """
     logger.debug(cmd)
@@ -490,7 +491,7 @@ def get_drone_ids(distinct=True, active=True):
         If True, it only returns unique drones.
     active : bool, optional
         If True, it only returns vehicles that are still connected
-        connection value in rate4 = 1.
+        connection value in drone_collection
 
     Returns
     -------
@@ -499,30 +500,28 @@ def get_drone_ids(distinct=True, active=True):
 
     """
     if distinct:
-        extra = " DISTINCT"
+        extra1 = " DISTINCT"
     else:
-        extra = ""
+        extra1 = ""
+
+    if active:
+        extra2 = "WHERE connection IS 1"
+    else:
+        extra2 = ""
 
     query = _start_query()
-
     if _main_table not in _DB.tables():
         print("_main_table is not in the database")
         logger.critical("Unable to find {} in database".format(_main_table))
 
-    cmd = "SELECT {} name FROM {}".format(extra, _main_table)
+    cmd = "SELECT {} name FROM {} {}".format(extra1, _main_table, extra2)
     result = query.exec_(cmd)
 
     # query.seek(-1)
     names = []
     while result and query.next():
         names.append(query.value(0))
-
-    if not active:
-        return names
-    else:
-        active_names = list(filter(check_connection_status, names))
-        return active_names
-
+    return names
 
 def create_zed_table_name(name):
     return "zed_data_{:s}".format(name.replace(" ", "").lower())
@@ -562,7 +561,7 @@ def add_vehicle(name, port, color):
     query = _start_query()
 
     # adding to the main table
-    cmd = 'INSERT into drone_collection (uid, name, port, color) VALUES ({}, "{}", "{}", "{}");'.format(
+    cmd = 'INSERT into drone_collection (uid, name, port, color, connection) VALUES ({}, "{}", "{}", "{}", 1);'.format(
         _connected_counter, name, port, color
     )
     logger.info("Adding vehicle {} into drone collection".format(name))
@@ -572,7 +571,6 @@ def add_vehicle(name, port, color):
     table_name = create_drone_rate_table_name(name, DroneRates.RATE1)
     cmd = """CREATE TABLE IF NOT EXISTS {:s} (
        	m_time float PRIMARY key,
-        color Text,
     	home_lat float,
        	home_lon float,
        	home_alt float,
@@ -589,8 +587,8 @@ def add_vehicle(name, port, color):
        latitude float,
        longitude float,
        relative_alt float,
+       yaw int,
        heading int,
-       track int,
        gnss_fix int,
        satellites_visible int,
        roll_angle float,
@@ -662,8 +660,7 @@ def add_vehicle(name, port, color):
        tof int,
        next_wp int,
        relay_sw int,
-       engine_sw int,
-       connection int
+       engine_sw int
      );""".format(
         table_name
     )
@@ -725,16 +722,6 @@ def create_drone_rate_table_name(name, rate):
     return "{:s}_{:s}".format(name, rate)
 
 
-def check_connection_status(name):
-    table_name = create_drone_rate_table_name(name, DroneRates.RATE4)
-    query = _start_query()
-    cmd = "SELECT connection FROM {}".format(table_name)
-    query.exec_(cmd)
-    query.last()
-    res = query.value("connection")
-    return res == 1
-
-
 def change_connection_status_value(name, val):
     """
     Parameters
@@ -750,12 +737,17 @@ def change_connection_status_value(name, val):
         Result of query performed
 
     """
-    table_name = create_drone_rate_table_name(name, DroneRates.RATE4)
+
     query = _start_query()
-    cmd = "INSERT INTO {} (connection) VALUES ({});".format(table_name, val)
+    cmd = """
+    UPDATE drone_collection
+    SET connection = {} WHERE name IS '{}';
+    """.format(val, name)
     res = query.exec_(cmd)
     logger.debug("Changing connection status of {} to {}".format(name, val))
     return res
+
+
 
 
 def add_values(vals, table_name):
@@ -785,16 +777,6 @@ def add_values(vals, table_name):
     # logger.debug(cmd)
 
     return res
-
-
-def get_drone_name(uid):
-    """Gives the vehicle name for corresponding uid. uid indexing starts from 0"""
-    query = _start_query()
-    cmd = "SELECT name FROM drone_collection WHERE uid = {};".format(uid)
-    query.exec_(cmd)
-    query.last()
-    return query.value(0)
-
 
 def write_values(flt_data, name):
     """
@@ -826,6 +808,33 @@ def write_values(flt_data, name):
     return all(res)
 
 
+def get_drone_name(uid):
+    """Gives the vehicle name for corresponding uid. uid indexing starts from 0"""
+    query = _start_query()
+    cmd = "SELECT name FROM drone_collection WHERE uid = {};".format(uid)
+    query.exec_(cmd)
+    query.last()
+    return query.value(0)
+
+def get_drone_color(name):
+    """Returns the color associated with the drone"""
+    query = _start_query()
+    cmd = "SELECT color FROM drone_collection WHERE name IS '{}';".format(name)
+    query.exec_(cmd)
+    query.last()
+    return query.value(0)
+
+def get_used_colors():
+    """Returns a list of colors being used by active drones"""
+    query = _start_query()
+    cmd = "SELECT color FROM drone_collection WHERE connection IS 1;"
+    result = query.exec_(cmd)
+    query.seek(-1)
+    colors = []
+    while result and query.next():
+        colors.append(query.value(0))
+    return colors
+
 def write_zed_obj(name, posix, obj):
     tab_name = create_zed_table_name(name)
     cmd = "INSERT INTO {:s} (posix, xpos, ypos, zpos) VALUES ({:f}, {:f}, {:f}, {:f});".format(
@@ -835,7 +844,6 @@ def write_zed_obj(name, posix, obj):
     res = query.exec_(cmd)
     if not res:
         logger.critical(query.lastError().text())
-
     return res
 
 

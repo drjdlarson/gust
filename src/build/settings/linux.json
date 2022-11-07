@@ -1,6 +1,7 @@
 {
     "categories": "Utility;",
-    "description": "",
+    "description": "GCS for LAGER operations.",
     "author_email": "",
-    "url": ""
+    "url": "",
+    "after-install": "after_install.sh"
 }

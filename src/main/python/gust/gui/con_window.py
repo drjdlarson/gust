@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+ #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
 Created on Fri Jun 10 12:36:33 2022
@@ -15,34 +15,30 @@ from PyQt5.QtCore import pyqtSlot, QModelIndex, pyqtSignal, QThreadPool
 from PyQt5.QtGui import QIntValidator, QTextCursor
 import requests
 from gust.gui.ui.conn import Ui_MainWindow
-import gust.icon_generator as icon_generator
 from gust.wsgi_apps.api.url_bases import BASE, DRONE
+import gust.utilities.icon_generator as icon_generator
 
 
 URL_BASE = "http://localhost:8000/{}/".format(BASE)
 DRONE_BASE = "{}{}/".format(URL_BASE, DRONE)
-COLORS = ["red", "blue", "green", "yellow", "orange", "gray", "brown"]
-RGB = [
-       (255, 0, 0),
-       (0, 0, 255),
-       (0, 255, 0),
-       (255, 255, 0),
-       (255, 150, 50),
-       (130, 130, 130),
-       (100, 50, 0),
-       ]
-FILES = ["home", "pos", "spos", "rtl_pos"]
+BAUD = ["9600", "38400", "56700", "115200"]
+
+all_colors = icon_generator.COLORS
+
 
 class ConWindow(QDialog, Ui_MainWindow):
     """Main interface for the connection window"""
 
-    def __init__(self, ctx, ports):
+    def __init__(self, ctx, ports, used_colors):
         super().__init__()
+
         self.ctx = ctx
         self.setupUi(self)
 
+        available_colors = [i for i in all_colors if i not in used_colors]
         self.comboBox_port.addItems(ports)
-        self.comboBox_color.addItems(COLORS)
+        self.comboBox_baud.addItems(BAUD)
+        self.comboBox_color.addItems(available_colors)
 
         self.pushButton_connect.clicked.connect(self.clicked_connect)
         self.pushButton_cancel.clicked.connect(self.clicked_cancel)
@@ -54,6 +50,7 @@ class ConWindow(QDialog, Ui_MainWindow):
 
         port_name = self.comboBox_port.currentText()
         self.color_id = self.comboBox_color.currentText()
+        self.baud = int(self.comboBox_baud.currentText())
         self.name = self.lineEdit_nameinput.text()
         url = "{}connect".format(DRONE_BASE)
 
@@ -77,35 +74,27 @@ class ConWindow(QDialog, Ui_MainWindow):
                 url += "color=" + self.color_id.replace(' ', '_')
                 added_data = True
 
+            if added_data:
+                url += "&"
+            url += "baud={:d}".format(self.baud)
+            added_data = True
+
         conn = requests.get(url).json()
 
         msgBox = QMessageBox()
 
         if conn['success']:
-            self.generate_icons()
             msgBox.setIcon(QMessageBox.Information)
             msgBox.setWindowTitle("Information")
             msgBox.setText("Connected to vehicle: {}".format(self.name))
             msgBox.exec()
             self.accept()
 
-
         else:
             msgBox.setIcon(QMessageBox.Warning)
             msgBox.setWindowTitle("Warning")
-            msgBox.setText("Unable to connect: <<{:s}>>".format(conn['msg']))
+            msgBox.setText("Failed connection: <<{:s}>>".format(conn['msg']))
             msgBox.exec()
-
-    def generate_icons(self):
-
-        for file in FILES:
-            filename = self.ctx.get_resource('map_widget/' + file + '.png')
-            for (color, rgb) in zip(COLORS, RGB):
-                if self.color_id == color:
-                    savename = self.name + '_' + file + '.png'
-                    savepath = str(pathlib.Path(filename).parent.resolve())
-                    icon_generator.prepare_icon(filename, rgb, os.path.join(savepath, savename))
-
 
     def setupUi(self, mainWindow):
         """Sets up the user interface."""

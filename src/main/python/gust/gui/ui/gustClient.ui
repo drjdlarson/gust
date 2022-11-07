@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1625</width>
-    <height>1106</height>
+    <width>1285</width>
+    <height>988</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -662,7 +662,7 @@ background-color: rgb(85, 87, 83);</string>
              <enum>QFrame::Sunken</enum>
             </property>
             <property name="digitCount">
-             <number>4</number>
+             <number>3</number>
             </property>
             <property name="segmentStyle">
              <enum>QLCDNumber::Flat</enum>

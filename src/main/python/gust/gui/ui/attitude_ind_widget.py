@@ -41,26 +41,10 @@ class pyG5AIWidget(QWidget):
     """Generate G5 wdiget view."""
 
     def __init__(self, parent):
-    # def __init__(self):
-        self.ctx = None
-        self.roll_angle = -20
-        self.pitch_angle = 15
-        self.gndspeed = 36
-        self.airspeed = 45
-        self.altitude = 70
-        self.vspeed = 3
-        self.heading = 290
-        self.arm = 6
-        self.gnss_fix = 2
-        self.mode = 16
-
-        self.alpha = 4
-        self.beta = -3
-        self.sat_count = 6
-
+    # def __init__(self))
         super().__init__(parent=parent)
-        # super().__init__()
 
+    def setup_hud_ui(self, ctx):
         self.setWindowTitle("Attitude Indicator")
         self.setFixedSize(g5Width, g5Height)
         self.setContentsMargins(0, 0, 0, 0)
@@ -69,6 +53,9 @@ class pyG5AIWidget(QWidget):
         self.rollArcRadius = g5CenterY * 0.8
         self._pitchScale = 25
 
+        self.clean_hud()
+        self.ctx = ctx
+
     def clean_hud(self):
         self.roll_angle = 0
         self.pitch_angle = 0
@@ -76,10 +63,10 @@ class pyG5AIWidget(QWidget):
         self.airspeed = 0
         self.altitude = 0
         self.vspeed = 0
-        self.heading = 0
-        self.arm = 0
+        self.yaw = 0
+        self.arm = "NONE"
         self.gnss_fix = 0
-        self.mode = 16
+        self.mode = "NONE"
 
         self.alpha = 0
         self.beta = 0
@@ -488,9 +475,7 @@ class pyG5AIWidget(QWidget):
         )
 
         # draw the satellites count
-        # pixmap = QPixmap(self.ctx.get_resource('attitude_ind_widget/satellite.png'))
-        # pixmap = QPixmap("~/Projects/gust/src/main/resources/base/attitude_ind_widget/satellite.png")
-        pixmap = QPixmap("satelite.png")
+        pixmap = QPixmap(self.ctx.get_resource('attitude_ind_widget/satellite.png'))
         x = speedBoxWidth + 28
         self.qp.drawPixmap(x, g5Height - tasHeight - 25, 22, 22, pixmap)
 
@@ -661,7 +646,7 @@ class pyG5AIWidget(QWidget):
         #################################################
 
         altBoxRightAlign = 7
-        altBoxHeight = 30
+        altBoxHeight = 40
         altBoxSpikedimension = 10
         altTapeScale = 500
 
@@ -753,7 +738,7 @@ class pyG5AIWidget(QWidget):
                             speedBoxHeight,
                         ),
                         Qt.AlignLeft | Qt.AlignVCenter,
-                        "{:d}".format(int(currentTape)),
+                        "{:3d}".format(int(currentTape)),
                     )
 
             currentTape -= 1
@@ -787,8 +772,12 @@ class pyG5AIWidget(QWidget):
 
         brush = QBrush(QColor(0, 0, 0))
         self.qp.setBrush(brush)
-
         self.qp.drawPolygon(altBox)
+
+        font = self.qp.font()
+        font.setPixelSize(25)
+        # set default font size
+        self.qp.setFont(font)
 
         self.qp.drawText(
             QRectF(
@@ -798,13 +787,17 @@ class pyG5AIWidget(QWidget):
                 altBoxHeight,
             ),
             Qt.AlignHCenter | Qt.AlignVCenter,
-            "{:05d}".format(int(self.altitude)),
+            "{:03d}".format(int(self.altitude)),
         )
-
 
         #################################################
         # Status Box
         #################################################
+
+        font = self.qp.font()
+        font.setPixelSize(20)
+        # set default font size
+        self.qp.setFont(font)
 
         # GNSS Status on the left
         rect = QRectF(
@@ -818,25 +811,12 @@ class pyG5AIWidget(QWidget):
         self.qp.drawRect(rect)
 
         f_gnss_fix = msg_decoder.findFix(self.gnss_fix)
-        if f_gnss_fix == "3D Fix".upper():
-            self.setPen(3, Qt.white)
-            self.qp.drawText(
-                rect,
-                Qt.AlignCenter | Qt.AlignVCenter,
-                f_gnss_fix.upper(),
-            )
-        elif f_gnss_fix == "2D Fix".upper():
-            self.setPen(3, Qt.white)
-            self.qp.drawText(
-                rect, Qt.AlignCenter | Qt.AlignVCenter,
-                f_gnss_fix.upper(),
-            )
-        else:
-            self.setPen(3, Qt.red)
-            self.qp.drawText(
-                rect, Qt.AlignCenter | Qt.AlignVCenter,
-                "NO FIX",
-            )
+        self.setPen(3, Qt.white)
+        self.qp.drawText(
+            rect,
+            Qt.AlignCenter | Qt.AlignVCenter,
+            f_gnss_fix,
+        )
 
         # Arming Status on the center
         rect = QRectF(
@@ -848,20 +828,16 @@ class pyG5AIWidget(QWidget):
         self.setPen(2, Qt.transparent)
         self.qp.drawRect(rect)
 
-        if self.arm in (1, 2, 3, 4, 5, 6, 7, 8, 9):
-            f_arm = msg_decoder.findState(self.arm)
-            self.setPen(3, Qt.white)
-            self.qp.drawText(
-                rect,
-                Qt.AlignCenter | Qt.AlignVCenter,
-                f_arm.upper(),
-            )
+        if self.arm == 1:
+            f_arm = "ARMED"
         else:
-            self.setPen(3, Qt.red)
-            self.qp.drawText(
-                rect, Qt.AlignCenter | Qt.AlignVCenter,
-                "DISARMED",
-            )
+            f_arm = "DISARMED"
+        self.setPen(3, Qt.white)
+        self.qp.drawText(
+            rect,
+            Qt.AlignCenter | Qt.AlignVCenter,
+            f_arm,
+        )
 
         # Flight Mode on the right
         rect = QRectF(
@@ -873,21 +849,12 @@ class pyG5AIWidget(QWidget):
         self.setPen(2, Qt.transparent)
         self.qp.drawRect(rect)
 
-        f_mode = msg_decoder.findMode(self.mode)
-        try:
-            self.setPen(3, Qt.white)
-            self.qp.drawText(
-                rect,
-                Qt.AlignCenter | Qt.AlignVCenter,
-                f_mode.upper(),
-            )
-        except:
-            self.setPen(3, Qt.white)
-            self.qp.drawText(
-                rect,
-                Qt.AlignCenter | Qt.AlignVCenter,
-                "NONE",
-            )
+        self.setPen(3, Qt.white)
+        self.qp.drawText(
+            rect,
+            Qt.AlignCenter | Qt.AlignVCenter,
+            str(self.mode),
+        )
 
         self.qp.end()
 

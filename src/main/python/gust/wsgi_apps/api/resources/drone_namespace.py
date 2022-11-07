@@ -13,15 +13,24 @@ from gust.conn_manager import send_info_to_conn_server
 logger = logging.getLogger("[URL-Manager]")
 
 DRONE_NS = Namespace(DRONE)
+conParse = DRONE_NS.parser()
+conParse.add_argument('port', default="", type=str)
+conParse.add_argument("name", default="", type=str)
+conParse.add_argument("color", default="", type=str)
+conParse.add_argument("baud", default=-1, type=int)
 
 
 @DRONE_NS.route("/connect")
 class ConnInfo(Resource):
+    @DRONE_NS.expect(conParse)
     def get(self):
-        port = request.args.get("port", default="", type=str)
-        name = request.args.get("name", default="", type=str)
-        color = request.args.get("color", default="", type=str)
-        vehicle_info = {"name": name, "port": port, "color": color}
+        args = conParse.parse_args()
+        port = args["port"]
+        name = args["name"]
+        color = args["color"]
+        baud = args["baud"]
+
+        vehicle_info = {"name": name, "port": port, "color": color, "baud": baud}
 
         if len(port) > 0 and len(name) > 0:
             if not database.connect_db():
@@ -35,7 +44,7 @@ class ConnInfo(Resource):
                 if conn_succ:
                     return {"success": True, "msg": ""}
                 elif not conn_succ:
-                    return {"success": False, "msg": "Error connecting"}
+                    return {"success": False, "msg": info}
             else:
                 return {'success': False, 'msg': "Unable to add vehicle to database"}
         elif len(port) == 0:
@@ -64,9 +73,18 @@ class PortsData(Resource):
             available_ports.append(port.device)
         return {"ports": available_ports}
 
+
+@DRONE_NS.route("/get_used_colors")
+class ColorsData(Resource):
+    def get(self):
+        database.connect_db()
+        used_colors = database.get_used_colors()
+        return {"used_colors": used_colors}
+
+
 @DRONE_NS.route("/sys_data")
 class SysData(Resource):
-    params = ["color", "home_lat", "home_lon", "home_alt", "voltage", "current"]
+    params = ["home_lat", "home_lon", "home_alt", "voltage", "current"]
 
     def get(self):
         sys_data = {}
@@ -100,7 +118,7 @@ class AttitudeData(Resource):
 
 @DRONE_NS.route("/pos_data")
 class PosData(Resource):
-    params = ["latitude", "longitude", "relative_alt", "heading", "track", "gnss_fix", "satellites_visible"]
+    params = ["latitude", "longitude", "relative_alt", "yaw", "heading", "gnss_fix", "satellites_visible"]
 
     def get(self):
         pos_data = {}
@@ -118,7 +136,7 @@ class PosData(Resource):
 
 @DRONE_NS.route("/sys_info")
 class SysInfo(Resource):
-    params = ["armed", "flight_mode", "mav_type", "autopilot", "custom_mode", "tof", "next_wp", "relay_sw", "engine_sw", "connection"]
+    params = ["armed", "flight_mode", "mav_type", "autopilot", "custom_mode", "tof", "next_wp", "relay_sw", "engine_sw"]
 
     def get(self):
         sys_info = {}
@@ -130,6 +148,7 @@ class SysInfo(Resource):
             )
             key = index + 1
             sys_info[key] = database.get_params(table_name, SysInfo.params)
+            sys_info[key].update({'color': database.get_drone_color(name)})
         return sys_info
 
 

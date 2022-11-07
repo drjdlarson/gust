@@ -9,9 +9,6 @@ Item {
     height: 480
     focus: true
 
-    property variant locationTC: QtPositioning.coordinate(33.21456, -87.54322)
-    property variant customHost: " "
-
     Location {
         id: mapCenter
         coordinate {
@@ -20,11 +17,8 @@ Item {
         }
     }
 
-
-/*
-
 // FOR TESTING WITH OPENSTREETMAP
-
+/*
     Plugin {
         id: osmPlugin
         name: "osm" //"googlemaps"
@@ -46,17 +40,13 @@ Item {
     }
 */
 
-
     Keys.onSpacePressed: {
-        console.log(mapBase.center)
-        console.log(customHost)
         mapBase.center = mapCenter.coordinate
         mapBase.zoomLevel = 16
         // mapBase.fitViewportToVisibleMapItems()
         // var point = mapBase.fromCoordinate(locationTC, false)
         // mapBase.toCoordinate(point, false)
     }
-
 
 
      Map {
@@ -72,38 +62,26 @@ Item {
             name: 'osm'
 
             PluginParameter {
-                // name: 'osm.mapping.offline.directory'
                 name: 'osm.mapping.custom.host'
-                // value: 'file:/offline_test/'
-                // value: customHost
-                value: 'file:/home/lagerprocessor/Projects/gust/src/main/python/gust/gui/ui/offline_folders/'
+                value: 'file:MAP_FilledByMapWidget'
             }
-
 
             PluginParameter {
                 name: "osm.mapping.providersrepository.disabled"
                 value: false
             }
 
-
             PluginParameter {
                 name: 'osm.mapping.cache.memory_size'
                 value: 0
             }
-
-            PluginParameter {
-                name: "osm.mapping.cache.directory"
-                value: "tiles_cache/"
-            }
-
 /*
             PluginParameter {
-                name: "osm.mapping.custom.host"
-                value: "http://a.tile.openstreetmap.fr/hot/"
+                name: "osm.mapping.cache.directory"
+                value: "CACHE_FilledByMapWidget"
             }
 */
         }
-
     }
 
 
@@ -138,25 +116,25 @@ Item {
 
         // 2 coordinates can be passed from map_widget
         MapItemView{
-            model: heading_line
+            model: yaw_line
             remove: myTrans
             delegate: MapPolyline {
-                id: heading_line
+                id: yaw_line
                 line.width: 3
                 line.color: 'crimson'
-                path: model.heading_path
+                path: model.yaw_path
             }
         }
 
         // 2 coordinates can be passed from map_widget
         MapItemView{
-            model: track_line
+            model: heading_line
             remove: myTrans
             delegate: MapPolyline {
-                id: heading_line
+                id: yaw_line
                 line.width: 3
-                line.color: 'yellow'
-                path: model.track_path
+                line.color: 'transparent'
+                path: model.heading_path
             }
         }
 

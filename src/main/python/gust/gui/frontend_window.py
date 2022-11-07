@@ -42,11 +42,11 @@ class FrontendWindow(QMainWindow, Ui_MainWindow_main):
         self._rcWindow = None
         self._servoWindow = None
 
+        self._continue_updating_data = False
+
         self.manager = DataManager()
         self.ctx = ctx
         self.setupUi(self)
-
-        self.widget_hud.ctx = ctx
 
 
         # Pushbuttons
@@ -72,6 +72,9 @@ class FrontendWindow(QMainWindow, Ui_MainWindow_main):
     def setupUi(self, mainWindow):
         """Sets up the user interface."""
         super().setupUi(mainWindow)
+        self.widget_map.setup_qml(self.ctx)
+        self.widget_hud.setup_hud_ui(self.ctx)
+
 
     @pyqtSlot()
     def clicked_addvehicle(self):
@@ -79,15 +82,21 @@ class FrontendWindow(QMainWindow, Ui_MainWindow_main):
         url = "{}get_available_ports".format(DRONE_BASE)
         ports = requests.get(url).json()
 
+        url = "{}get_used_colors".format(DRONE_BASE)
+        used_colors = requests.get(url).json()
+
         if self._conWindow is None:
             self._conWindow = con_window.ConWindow(
-                self.ctx, ports['ports'])
+                self.ctx, ports['ports'], used_colors['used_colors'])
 
         if self._conWindow.exec_():
+            self._continue_updating_data = True
             # adding a row in the table
             rowPos = self.tableWidget.rowCount()
             self.tableWidget.insertRow(rowPos)
             self.update_request()
+
+        self._conWindow = None
 
 
     @pyqtSlot()
@@ -136,7 +145,7 @@ class FrontendWindow(QMainWindow, Ui_MainWindow_main):
         self._sensorsWindow.show()
 
 
-    @pyqtSlot()
+    # @pyqtSlot()
     def clicked_disconnect(self):
         button = self.sender()
         if button:
@@ -147,27 +156,25 @@ class FrontendWindow(QMainWindow, Ui_MainWindow_main):
             res = win.exec_()
             if res:
                 self.tableWidget.removeRow(sel_row)
+                self._continue_updating_data = self.tableWidget.rowCount() > 0
                 self.clean_hud_and_lcd()
-                self.delete_map_icons(name)
-
-    def delete_map_icons(self, name):
-        for file in FILES:
-            filename = name + '_' + file + '.png'
-            icon_file = self.ctx.get_resource('map_widget/' + filename)
-            os.remove(icon_file)
+                self.widget_map.remove_vehicle_from_map(name)
 
     def update_request(self):
         if self.timer is None:
             self.timer = QTimer()
             self.manager.timer = self.timer
-            self.manager.rate = 750
+            self.manager.rate = 100
             self.timer.timeout.connect(self.manager.run)
             self.manager.signal.connect(self.update_frame)
-            self.timer.start(750)
+            if self._continue_updating_data:
+                self.timer.start(100)
 
     def update_frame(self, passed_signal):
 
+        # FIX THIS LATER
         self.widget_map.clear_drone_list()
+
         self.flight_params = passed_signal
 
         # filling up the table
@@ -179,14 +186,12 @@ class FrontendWindow(QMainWindow, Ui_MainWindow_main):
             item.setBackground(QtGui.QColor(color))
             self.tableWidget.setItem(rowPos, 0, item)
 
-
             item = self.flight_params[key]['name']
             item = QTableWidgetItem(item)
             item.setTextAlignment(QtCore.Qt.AlignCenter)
             self.tableWidget.setItem(rowPos, 1, item)
 
             item = self.flight_params[key]['flight_mode']
-            item = msg_decoder.findMode(int(item))
             item = QTableWidgetItem(str(item))
             item.setTextAlignment(QtCore.Qt.AlignCenter)
             self.tableWidget.setItem(rowPos, 2, item)
@@ -227,22 +232,21 @@ class FrontendWindow(QMainWindow, Ui_MainWindow_main):
             self.tableWidget.setItem(rowPos, 9, item)
 
             # self.con_status will be 1 or 0.
-            self.con_status = self.flight_params[key]['connection']
             self.disconnect_button = QPushButton("Disconnect")
             self.disconnect_button.clicked.connect(self.clicked_disconnect)
             self.tableWidget.setCellWidget(rowPos, 10, self.disconnect_button)
 
-
             self.widget_map.add_drone(
                 self.flight_params[key]['name'],
+                self.flight_params[key]['color'],
                 self.flight_params[key]['home_lat'],
                 self.flight_params[key]['home_lon'],
                 self.flight_params[key]['latitude'],
                 self.flight_params[key]['longitude'],
+                self.flight_params[key]['yaw'],
                 self.flight_params[key]['heading'],
-                self.flight_params[key]['track'],
                 self.flight_params[key]['flight_mode'],
-                self.ctx)
+                )
 
         self.widget_map.update_map()
 
@@ -275,7 +279,7 @@ class FrontendWindow(QMainWindow, Ui_MainWindow_main):
         self.widget_hud.airspeed = self.flight_params[key_pos]['airspeed']
         self.widget_hud.altitude = self.flight_params[key_pos]['relative_alt']
         self.widget_hud.vspeed = self.flight_params[key_pos]['vspeed']
-        self.widget_hud.heading = self.flight_params[key_pos]['heading']
+        self.widget_hud.yaw = self.flight_params[key_pos]['yaw']
         self.widget_hud.arm = self.flight_params[key_pos]['armed']
         self.widget_hud.gnss_fix = self.flight_params[key_pos]['gnss_fix']
         self.widget_hud.mode = self.flight_params[key_pos]['flight_mode']
@@ -297,7 +301,6 @@ class FrontendWindow(QMainWindow, Ui_MainWindow_main):
 
         self.widget_hud.clean_hud()
         self.tableWidget.clearContents()
-        self.widget_map.clear_drone_list()
 
 
 class DataManager(QtCore.QObject):

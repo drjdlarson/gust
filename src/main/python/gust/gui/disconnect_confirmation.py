@@ -63,8 +63,6 @@ class DisconnectConfirmation(QDialog, Ui_MainWindow):
             msgBox.setText("Unable to disconnect: <<{:s}>>".format(disconn['msg']))
             msgBox.exec()
 
-
-
     def clicked_cancel(self):
         self.reject()
 
