@@ -22,13 +22,13 @@ def create_app(config_name):
     return app
 
 
-if __name__ == "__main__":
-    import os
-    import gust.wsgi_apps.api.settings as api_app_settings
+# if __name__ == "__main__":
+#     import os
+#     import gust.wsgi_apps.api.settings as api_app_settings
 
-    from gust.wsgi_apps.setup import initialize_environment
+#     from gust.wsgi_apps.setup import initialize_environment
 
-    initialize_environment()
-    app = create_app(os.getenv(api_app_settings.ENV_KEY))
+#     initialize_environment()
+#     app = create_app(os.getenv(api_app_settings.ENV_KEY))
 
-    app.run(debug=True)
+#     app.run(debug=True)

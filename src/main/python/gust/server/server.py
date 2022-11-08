@@ -7,6 +7,7 @@ import gust.server.settings as settings
 import gust.database as database
 from gust.wsgi_apps.setup import initialize_environment as wsgi_init_environ
 
+
 __all__ = ['SERVER_PROC', 'START_CMD', 'start_server', 'stop_server']
 
 SERVER_PROC = None
@@ -25,7 +26,7 @@ def _build_db_con_name(server_num):
     return '{:s}_{:02d}'.format(_DB_CON_BASE_NAME, server_num)
 
 
-def start_server():
+def start_server(ctx):
     global SERVER_PROC, START_CMD, _SERVER_NUM, _SERVER_RUNNING
 
     if _SERVER_RUNNING:
@@ -41,10 +42,12 @@ def start_server():
                     '--threads={:d}'.format(settings.NUM_WORKERS),
                     _REST_API_APP]
         else:
+            # program = ctx.get_resource('gunicorn')
             program = 'gunicorn'
             args = ['-b {:s}:{:d}'.format(settings.IP, settings.PORT),
                     '-w {:d}'.format(settings.NUM_WORKERS),
                     '--enable-stdio-inheritance',
+                    "--log-level", "debug",
                     _REST_API_APP]
 
         SERVER_PROC = QProcess()

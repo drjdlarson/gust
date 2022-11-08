@@ -1,4 +1,5 @@
 """Definition of the server window GUI."""
+import shutil
 import sys
 import os
 import logging
@@ -219,8 +220,11 @@ class BackendWindow(QMainWindow, Ui_BackendWindow):
             + "----------------------------------------------------------\n"
         )
         self.update_console_text(msg)
+        self.update_console_text(shutil.which('gunicorn') + '\n')
+        import gunicorn
+        self.update_console_text(gunicorn.__file__ + '\n')
 
-        res, err = server.start_server()
+        res, err = server.start_server(self.ctx)
 
         self.update_console_text("[server] {:s}\n".format(server.START_CMD))
 
