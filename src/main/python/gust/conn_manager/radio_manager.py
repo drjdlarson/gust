@@ -43,6 +43,8 @@ class RadioManager(QObject):
 
         if port != "/dev/test/":
             self.conn[name]['type'] = 'HARDWARE'
+
+            # should check the baud rate beforehand
             if baud < 0:
                 return {"success": False, "info": "Invalid baud rate {}".format(baud)}
             try:

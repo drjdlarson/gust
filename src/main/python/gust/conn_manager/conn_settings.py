@@ -7,6 +7,7 @@ FORMAT = 'utf-8'
 MAX_CONNECTIONS = 10
 MAX_MSG_SIZE = 1500
 TIMEOUT = 10
+RADIO_PORTS = [9820, 9830, 9840, 9850, 9860]
 
 # messages, not used?
 # DISC_MSG = 'disconnected'

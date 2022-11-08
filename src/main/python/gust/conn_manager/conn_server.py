@@ -7,6 +7,7 @@ Created on Wed Aug 10 12:18:20 2022
 """
 import json
 import logging
+from PyQt5.QtCore import QProcess
 
 from PyQt5 import QtNetwork
 
@@ -60,7 +61,8 @@ class ConnServer:
 
             # we can call the radio manager heres
             if received_info['type'] == conn_settings.DRONE_CONN:
-                response = radioManager.connect_to_radio(received_info)
+                start_radio_process()
+                response = connect_to_radio(received_info)
                 # logger.debug(response)
 
             elif received_info['type'] == conn_settings.DRONE_DISC:
@@ -87,7 +89,13 @@ class ConnServer:
         zedHandler.kill()
         cls.running = False
 
+def start_radio_process():
+    radio_process = QProcess()
+    radio_process.start()
 
+def connect_to_radio(received_info):
+    # start the QProcess here, and send the connection argument
+    pass
 
 # if __name__ == "__main__":
 #     start_conn_server()
