@@ -1,4 +1,5 @@
 """Definition of the server window GUI."""
+import shutil
 import sys
 import os
 import logging
@@ -15,7 +16,7 @@ from gust.gui.ui.backend_window import Ui_BackendWindow
 import gust.server.server as server
 import gust.server.settings as settings
 from gust.plugin_monitor import pluginMonitor
-import gust.database as database
+import utilities.database as database
 from gust.worker import Worker
 import gust.conn_manager.conn_server as conn_server
 
@@ -220,7 +221,7 @@ class BackendWindow(QMainWindow, Ui_BackendWindow):
         )
         self.update_console_text(msg)
 
-        res, err = server.start_server()
+        res, err = server.start_server(self.ctx)
 
         self.update_console_text("[server] {:s}\n".format(server.START_CMD))
 

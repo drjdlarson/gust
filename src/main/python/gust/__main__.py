@@ -9,7 +9,7 @@ from fbs_runtime.application_context.PyQt5 import ApplicationContext
 
 from gust.gui.launcher import Launcher
 import gust.server.settings as server_settings
-import gust.wsgi_apps.api.settings as api_settings
+# import gust.wsgi_apps.api.settings as api_settings
 from gust.plugin_monitor import pluginMonitor
 
 
@@ -20,10 +20,10 @@ def parse_args():
 
     parser = argparse.ArgumentParser(description='Start the ground station backend.')
 
-    msg = ('Environment to run the rest api app in. '
-           + 'The default is {:s}'.format(api_settings.ENV))
-    parser.add_argument('--api-env', type=str, help=msg, default=api_settings.ENV,
-                        choices=api_settings.env_config.keys())
+    # msg = ('Environment to run the rest api app in. '
+    #        + 'The default is {:s}'.format(api_settings.ENV))
+    # parser.add_argument('--api-env', type=str, help=msg, default=api_settings.ENV,
+    #                     choices=api_settings.env_config.keys())
 
     msg = 'Flag indicating the server should start in the background with no GUI launcher'
     parser.add_argument('--daemon', '-d', action='store_true', help=msg)
@@ -41,7 +41,7 @@ def parse_args():
     # %% Process input arguments
     args = parser.parse_args()
 
-    server_settings.ENV = args.api_env
+    # server_settings.ENV = args.api_env
     DAEMON = args.daemon
     server_settings.PORT = args.port
     server_settings.NUM_WORKERS = args.num_workers

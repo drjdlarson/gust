@@ -2,12 +2,12 @@
 import requests
 import pyqtgraph as pg
 from PyQt5.QtWidgets import QMainWindow, QFileDialog, QMessageBox
-from PyQt5.QtCore import pyqtSlot, pyqtSignal, QTimer, QObject
+from PyQt5.QtCore import QTimer
 from ruamel.yaml import YAML
 
 from zed import ConfigSet
 from gust.gui.ui.zed_window import Ui_ZedWindow
-from gust.wsgi_apps.api.url_bases import BASE, ZED
+from wsgi_apps.api.url_bases import BASE, ZED
 
 URL_BASE = "http://localhost:8000/{}/{}/".format(BASE, ZED)
 yaml = YAML()

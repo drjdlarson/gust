@@ -10,7 +10,7 @@ import random
 import time
 import logging
 from gust.worker import Worker
-import gust.database as database
+import utilities.database as database
 import math
 import dronekit
 from PyQt5.QtCore import QThreadPool, QTimer, pyqtSlot, pyqtSignal, QObject
