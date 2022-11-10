@@ -1,28 +1,8 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Created on Tue Aug  2 14:39:39 2022
-
-@author: lagerprocessor
-"""
-
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Created on Mon Jun 13 11:36:32 2022
-
-@author: lagerprocessor
-"""
-
-import sys
-import os
-from functools import partial
-from PyQt5.QtWidgets import QMainWindow, QMessageBox, QDialog
-from PyQt5.QtCore import pyqtSlot, QModelIndex, pyqtSignal, QThreadPool
-from PyQt5.QtGui import QIntValidator, QTextCursor
+"""Disconnection window ui logic."""
+from PyQt5.QtWidgets import QMessageBox, QDialog
 import requests
 from gust.gui.ui.confirmation import Ui_MainWindow
-from gust.wsgi_apps.api.url_bases import BASE, DRONE
+from wsgi_apps.api.url_bases import BASE, DRONE
 
 
 URL_BASE = "http://localhost:8000/{}/".format(BASE)
@@ -30,7 +10,7 @@ DRONE_BASE = "{}{}/".format(URL_BASE, DRONE)
 
 
 class DisconnectConfirmation(QDialog, Ui_MainWindow):
-    """Main interface for the confirmation window before disconnecting"""
+    """Main interface for the confirmation window before disconnecting."""
 
     def __init__(self, name, ctx):
         super().__init__()

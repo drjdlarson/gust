@@ -18,10 +18,8 @@ setuptools.setup(
     license="GPL",
     packages=setuptools.find_packages(),
     install_requires=[
-        "flask==2.0.2",
-        "flask-restx==0.5.1",
         "requests",
-        # "pyqt5",
+        "pyqt5",
         "werkzeug==2.0.3",
         "pyserial",
         "pyinstaller>=4.9",

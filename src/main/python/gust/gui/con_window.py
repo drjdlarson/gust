@@ -1,22 +1,8 @@
- #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Created on Fri Jun 10 12:36:33 2022
-
-@author: lagerprocessor
-"""
-
-import sys
-import os
-import pathlib
-from functools import partial
-from PyQt5.QtWidgets import QMainWindow, QMessageBox, QDialog
-from PyQt5.QtCore import pyqtSlot, QModelIndex, pyqtSignal, QThreadPool
-from PyQt5.QtGui import QIntValidator, QTextCursor
+from PyQt5.QtWidgets import QMessageBox, QDialog
 import requests
 from gust.gui.ui.conn import Ui_MainWindow
-from gust.wsgi_apps.api.url_bases import BASE, DRONE
-import gust.utilities.icon_generator as icon_generator
+from wsgi_apps.api.url_bases import BASE, DRONE
+import utilities.icon_generator as icon_generator
 
 
 URL_BASE = "http://localhost:8000/{}/".format(BASE)
@@ -27,7 +13,7 @@ all_colors = icon_generator.COLORS
 
 
 class ConWindow(QDialog, Ui_MainWindow):
-    """Main interface for the connection window"""
+    """Main interface for the connection window."""
 
     def __init__(self, ctx, ports, used_colors):
         super().__init__()

@@ -4,10 +4,10 @@ import logging
 from flask_restx import Resource, Namespace
 from flask import request
 
-import gust.database as database
-import gust.conn_manager.conn_settings as conn_settings
-from gust.wsgi_apps.api.url_bases import DRONE
-from gust.conn_manager import send_info_to_conn_server
+import utilities.database as database
+from utilities import ConnSettings as conn_settings
+from wsgi_apps.api.url_bases import DRONE
+from utilities import send_info_to_conn_server
 
 
 logger = logging.getLogger("[URL-Manager]")
