@@ -3,6 +3,6 @@
     "author": "Laboratory for Autonomy GNC and Estimation Research (LAGER)",
     "main_module": "src/main/python/gust/__main__.py",
     "version": "1.1.1",
-    "hidden_imports": ["radio_receiver", "zed", "pyqtgraph.graphicsItems.ViewBox.axisCtrlTemplate_pyqt5", "pyqtgraph.graphicsItems.PlotItem.plotConfigTemplate_pyqt5", "pyqtgraph.imageview.ImageViewTemplate_pyqt5", "gunicorn", "gust.wsgi_apps", "gust.wsgi_apps.wsgi", "gust.wsgi_apps.api"],
-    "extra_pyinstaller_args": ["--onedir", "--add-binary", "/home/lagerprocessor/anaconda3/envs/gust_dev/bin/gunicorn:."]
+    "hidden_imports": ["radio_receiver", "zed", "pyqtgraph.graphicsItems.ViewBox.axisCtrlTemplate_pyqt5", "pyqtgraph.graphicsItems.PlotItem.plotConfigTemplate_pyqt5", "pyqtgraph.imageview.ImageViewTemplate_pyqt5"],
+    "extra_pyinstaller_args": ["--onedir" ]
 }

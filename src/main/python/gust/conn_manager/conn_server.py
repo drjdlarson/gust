@@ -10,7 +10,7 @@ import logging
 
 from PyQt5 import QtNetwork
 
-import gust.conn_manager.conn_settings as conn_settings
+from utilities import ConnSettings as conn_settings
 from gust.conn_manager.radio_manager import radioManager
 from gust.conn_manager.zed_handler import zedHandler
 

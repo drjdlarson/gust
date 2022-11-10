@@ -60,7 +60,7 @@ class PluginMonitor(QObject):
         return True
 
     def _proc_pending_data(self):
-        import gust.database as database
+        import utilities.database as database
 
         while self.udp_sock.hasPendingDatagrams():
             datagram = self.udp_sock.receiveDatagram(self.udp_sock.pendingDatagramSize())
@@ -87,7 +87,7 @@ class PluginMonitor(QObject):
 
 
     def _start_plugins(self):
-        import gust.database as database
+        import utilities.database as database
 
         # get data from database
         des_plugins = database.get_plugin_names(True)

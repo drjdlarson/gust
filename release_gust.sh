@@ -1,4 +1,48 @@
 #!/bin/bash
+
+############################################################
+# Help                                                     #
+############################################################
+Help()
+{
+        echo "Create release of GUST and build dependencies automatically."
+        echo
+        echo "Syntax release_gust.sh [-h|-s]"
+        echo "-h	Print the help text."
+	echo "-s	Skip building the dependencies (e.g. WGSI apps, etc.)"
+        echo
+}
+
+
+############################################################
+# Process the input options. Add options as needed.        #
+############################################################
+skip=false
+while getopts ":hs" option; do
+	case $option in
+		s) # skip dependencies
+			skip=true
+			;;
+		h) # help
+			Help
+			exit;;
+		\?) # invalid
+			echo "Error: Invalid option"
+			echo
+			Help
+			exit;;
+	esac
+done
+
+
+############################################################
+# Main program                                             #
+############################################################
+if [ "$skip" = false ] ; then
+	./build_wsgi.sh
+fi
+
+
 echo "Cleaning..."
 fbs clean
 

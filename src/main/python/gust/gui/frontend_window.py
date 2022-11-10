@@ -23,7 +23,7 @@ from gust.gui import rc_window, servo_window
 from gust.gui.ui.map_widget import MapWidget
 from gust.gui.ui.attitude_ind_widget import pyG5AIWidget
 from gust.gui.msg_decoder import MessageDecoder as msg_decoder
-from gust.wsgi_apps.api.url_bases import BASE, DRONE
+from wsgi_apps.api.url_bases import BASE, DRONE
 
 
 URL_BASE = "http://localhost:8000/{}/".format(BASE)

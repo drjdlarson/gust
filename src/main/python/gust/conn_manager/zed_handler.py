@@ -2,7 +2,7 @@ import time
 import logging
 from PyQt5.QtCore import QThreadPool, QTimer, pyqtSlot, pyqtSignal, QObject
 
-import gust.database as database
+import utilities.database as database
 from gust.worker import Worker
 from zed import zedManager
 

@@ -2,18 +2,19 @@
 from flask import Flask
 from flask_restx import Api
 
-from gust.wsgi_apps.api.settings import env_config
-from gust.wsgi_apps.api.url_bases import BASE
+import utilities.database as database
+# from gust.wsgi_apps.api.settings import env_config
+from wsgi_apps.api.url_bases import BASE
 
 api = Api(prefix="/{:s}".format(BASE))
 
 
-def create_app(config_name):
-    from gust.wsgi_apps.api.resources.drone_namespace import DRONE_NS
-    from gust.wsgi_apps.api.resources.zed_namespace import ZED_NS
+def create_app():
+    from wsgi_apps.api.resources.drone_namespace import DRONE_NS
+    from wsgi_apps.api.resources.zed_namespace import ZED_NS
 
-    app = Flask(__name__)
-    app.config.from_object(env_config[config_name])
+    app = Flask("rest_api")
+    # app.config.from_object(env_config[config_name])
 
     api.init_app(app)
     api.add_namespace(ZED_NS)
