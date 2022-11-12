@@ -2,7 +2,7 @@
     "app_name": "gust",
     "author": "Laboratory for Autonomy GNC and Estimation Research (LAGER)",
     "main_module": "src/main/python/gust/__main__.py",
-    "version": "1.1.1",
-    "hidden_imports": ["radio_receiver", "zed", "pyqtgraph.graphicsItems.ViewBox.axisCtrlTemplate_pyqt5", "pyqtgraph.graphicsItems.PlotItem.plotConfigTemplate_pyqt5", "pyqtgraph.imageview.ImageViewTemplate_pyqt5"],
+    "version": "1.1.2",
+    "hidden_imports": ["radio_receiver", "zed", "pyqtgraph.graphicsItems.ViewBox.axisCtrlTemplate_pyqt5", "pyqtgraph.graphicsItems.PlotItem.plotConfigTemplate_pyqt5", "pyqtgraph.imageview.ImageViewTemplate_pyqt5", "pymavlink.dialects.v10", "pymavlink.dialects.v10.ardupilotmega"],
     "extra_pyinstaller_args": ["--onedir" ]
 }
