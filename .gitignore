@@ -1,3 +1,5 @@
+src/main/resources/base/wsgi_apps/
+src/main/resources/base/radio_manager
 tiles_cache/
 offline_folders/
 plugins/
