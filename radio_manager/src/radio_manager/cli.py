@@ -1,116 +1,15 @@
 """GUST plugin for <NAME>."""
 import argparse
-import socket
-import json
 import dronekit
 import random, time
 import numpy as np
-import gust.database as database
+import sys
+import utilities.database as database
+from argparse import ArgumentParser
 
 d2r = np.pi / 100
 r2d = 1 / d2r
 
-# from <NAME>.schema import validate_data_with_schema, load_schema
-
-# <IMPORTS>
-
-
-# %% Internal global variables
-_ID = None
-_PORT = 9500
-
-_SOCKET = None
-_SOCK_TIMEOUT = 1
-
-# %% Predefined functions (do not modify)
-def __parse_cmd_args():
-    """Parse the command line arguments.
-
-    This parses the required commandline arguements, sets the appropriate
-    global variables, and provides a help menu. These should not need to be
-    changed.
-
-    Returns
-    -------
-    None.
-    """
-    global _ID, _PORT
-
-    parser = argparse.ArgumentParser(description='GUST plugin for <NAME>')
-
-    parser.add_argument('id', type=int, help='Unique id for this plugin instance.')
-    parser.add_argument('--port', '-p', type=int, help='Port to send data on.',
-                        default=_PORT)
-
-    args = parser.parse_args()
-
-    _ID = args.id
-    _PORT = args.port
-
-
-def __format_udp_packet(data_dict, schema):
-    """Formats the data as a UDP packet readable by the gust backend application.
-
-    This should not be modified, the gust backend requires a known format for
-    the packets received.
-
-    Parameters
-    ----------
-    *data : iterable
-        Each element must be a primitive type; either string, int, or float.
-
-    Raises
-    ------
-    RuntimeError
-        If an unsupported type is found in the data.
-
-    Returns
-    -------
-    bytes
-        Properly encoded packet of data for sending over a UDP socket.
-    """
-    msg = {'plugin_name': '<NAME>', 'id': int(_ID), 'data': data_dict}
-
-    packet, passed = validate_data_with_schema(msg, schema)
-    return json.dumps(packet).encode('utf-8')
-
-
-def send_data(data_dict, schema):
-    """Sends data over a UDP socket to the gust backend.
-
-    This function can be used as is and does not need to be modified.
-
-    Parameters
-    ----------
-    *data : iterable
-        Each element must be a primitive type; either string, int, or float..
-
-    Returns
-    -------
-    success : bool
-        Flag indicating if the data was sent properly.
-    """
-    global _SOCKET
-
-    success = False
-
-    if _SOCKET is None:
-        _SOCKET = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        _SOCKET.settimeout(_SOCK_TIMEOUT)
-
-    packet = __format_udp_packet(data_dict, schema)
-
-    try:
-        _SOCKET.sendto(packet, ('127.0.0.1', _PORT))
-        success = True
-
-    except socket.error as msg:
-        print('Error Code : {:s}\nMessage: {:s}'.format(str(msg[0]), msg[1]))
-
-    except RuntimeError:
-        pass
-
-    return success
 
 
 # %% Custom Functions
@@ -324,43 +223,74 @@ def prepare_data_from_mavlink(radio, name, port, rate1, rate2, rate3, rate4, dat
 def get_current_time():
     return time.time()
 
+def define_parser():
+    parser = ArgumentParser(description="Process command line options for radio connection")
+
+    default = "DroneX"
+    parser.add_argument(
+        "--name",
+        type=str,
+        help="Name of the vehicle. The default is {}".format(default),
+        default=default
+        )
+
+    default = "/dev/test/"
+    parser.add_argument(
+        "--port",
+        type=str,
+        help="Port of radio connection. The default is {}".format(default),
+        default=default
+        )
+
+    default = "red"
+    parser.add_argument(
+        "--color",
+        type=str,
+        help="Color for the vehicle's icons. The default is {}".format(default),
+        default=default
+        )
+
+    default = 38400
+    parser.add_argument(
+        "--baud",
+        type=int,
+        help="Baud rate for radio connection. The default is {}".format(default),
+        default=default
+        )
+
+    return parser
 
 
 # %% Main function
-def main():
-    __parse_cmd_args()
-    schema = load_schema('<NAME>_schema.json')
 
-    # get msg from conn_server using socket
-    # setup socket for receiving message from conn_server
-    received_info = {}
+if __name__ == "__main__":
 
-    # similar to poll_radio
-    name = received_info["name"]
-    port = received_info["port"]
-    color = received_info["color"]
-    baud = received_info["baud"]
+    args = define_parser().parse_args()
 
+    name = args.name
+    port = args.port
+    color = args.color
+    baud = args.baud
 
-    # or maybe throw this in the conn_server side
-    msg = "Connecting to {} on {}".format(name, port)
+    if not database.connect_db():
+        sys.exit(-2)
+
+    time.sleep(0.125)
 
     if port == '/dev/test/':
-        # PROBABLY COULD SOME SORT OF CONDITION TO CHECK CONNECTION?
+        import os
+        print(os.environ[database.DB_PATH_KEY], flush=True)
         while True:
             all_data = prepare_dummy_data()
             res = database.write_values(all_data, name)
             time.sleep(0.2)
 
     else:
-
         # setting up the connection with mavlink
         try:
             radio = dronekit.connect(port, wait_ready=True, baud=baud)
         except:
-            # RETURN SOMETHING TO CONN_SERVER SAYING THAT ITS NOT CONNECTED
-            # msg = {'success': False, 'info': Unable to connect to radio}
-            pass
+            sys.exit(-1)
 
         mav_data = {}
         all_data = prepare_dummy_data()
@@ -368,7 +298,6 @@ def main():
 
         rate1, rate2, rate3, rate4 = [all_data[i] for i in range(len(all_data))]
 
-        # SOME CONDITION HERE? TO CHECK CONNECTION
         while True:
             rate1, rate2, rate3, rate4, mav_data = prepare_data_from_mavlink(
                 radio, name, port, rate1, rate2, rate3, rate4, mav_data
@@ -376,8 +305,3 @@ def main():
             all_data = rate1, rate2, rate3, rate4
             res = database.wrte_values(all_data, name)
             time.sleep(0.075)
-
-
-
-# %% Entry Point
-main()

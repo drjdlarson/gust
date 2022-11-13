@@ -90,7 +90,9 @@ class FrontendWindow(QMainWindow, Ui_MainWindow_main):
                 self.ctx, ports['ports'], used_colors['used_colors'])
 
         if self._conWindow.exec_():
+            time.sleep(0.25)
             self._continue_updating_data = True
+
             # adding a row in the table
             rowPos = self.tableWidget.rowCount()
             self.tableWidget.insertRow(rowPos)
@@ -172,14 +174,15 @@ class FrontendWindow(QMainWindow, Ui_MainWindow_main):
 
     def update_frame(self, passed_signal):
 
-        # FIX THIS LATER
-        self.widget_map.clear_drone_list()
-
         self.flight_params = passed_signal
+
+        print(self.flight_params)
+
 
         # filling up the table
         for key in self.flight_params:
             rowPos = int(key) - 1
+            # rowPos = int(key)
 
             item = QTableWidgetItem()
             color = self.flight_params[key]['color']

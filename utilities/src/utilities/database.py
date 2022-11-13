@@ -829,7 +829,7 @@ def get_used_colors():
     query = _start_query()
     cmd = "SELECT color FROM drone_collection WHERE connection IS 1;"
     result = query.exec_(cmd)
-    query.seek(-1)
+    # query.seek(-1)
     colors = []
     while result and query.next():
         colors.append(query.value(0))

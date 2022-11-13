@@ -55,6 +55,10 @@ class MapWidget(QtQuickWidgets.QQuickWidget):
         # self.update()
 
     def add_drone(self, name, color, home_lat, home_lon, latitude, longitude, yaw, heading, mode):
+
+        # fix this later
+        self.clear_drone_list()
+
         if name not in self.vehicle_list:
             marker = MarkerModel(self)
             self.rootContext().setContextProperty("markermodel", marker)

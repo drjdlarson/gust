@@ -6,24 +6,24 @@ Created on Wed Aug 10 12:18:20 2022
 @author: lagerprocessor
 """
 import json
+import platform
 import logging
-from PyQt5.QtCore import QProcess
-
+import time
+from PyQt5.QtCore import QProcess, QProcessEnvironment
 from PyQt5 import QtNetwork
-
 from utilities import ConnSettings as conn_settings
-from gust.conn_manager.radio_manager import radioManager
+import utilities.database as database
 from gust.conn_manager.zed_handler import zedHandler
 
 
 logger = logging.getLogger("[conn-server]")
 
-
 class ConnServer:
     running = False
+    _radios = {}
 
     @classmethod
-    def start_conn_server(cls):
+    def start_conn_server(cls, ctx):
         """UDP Socket Server.
 
         Allow the connection server to start listening to socket connection and
@@ -38,6 +38,7 @@ class ConnServer:
 
         cls.running = True
 
+        database.connect_db()
         conn = QtNetwork.QUdpSocket()
         conn.bind(conn_settings.PORT)
 
@@ -61,12 +62,19 @@ class ConnServer:
 
             # we can call the radio manager heres
             if received_info['type'] == conn_settings.DRONE_CONN:
-                start_radio_process()
-                response = connect_to_radio(received_info)
-                # logger.debug(response)
+                succ, err = cls.connect_to_radio(received_info, ctx)
+                response = {'success': succ, 'info': err}
 
             elif received_info['type'] == conn_settings.DRONE_DISC:
-                response = radioManager.disconnect_radio(received_info)
+                name = received_info['name']
+                if name in cls._radios:
+                    if 'windows' in platform.system().lower():
+                        cls._radios[name].kill()
+                    else:
+                        cls._radios[name].terminate()
+                        time.sleep(0.125)
+                    del cls._radios[name]
+                    database.change_connection_status_value(name, 0)
 
             elif received_info['type'] == conn_settings.ZED_CONN:
                 response = zedHandler.connect(received_info)
@@ -79,7 +87,6 @@ class ConnServer:
             # conn.sendto(f_response, addr)
             conn.writeDatagram(f_response, addr, port)
 
-
         logger.info("Closing the conn-server socket")
         # conn.shutdown()
         conn.close()
@@ -88,14 +95,46 @@ class ConnServer:
     def kill(cls):
         zedHandler.kill()
         cls.running = False
+        for p in cls._radios.values():
+            if 'windows' in platform.system().lower():
+                p.kill()
+            else:
+                p.terminate()
+                time.sleep(0.125)
 
-def start_radio_process():
-    radio_process = QProcess()
-    radio_process.start()
+    @classmethod
+    def connect_to_radio(cls, received_info, ctx):
+        name = received_info['name']
+        msg = "Connecting to {} on {}".format(name, received_info['port'])
+        logger.info(msg)
 
-def connect_to_radio(received_info):
-    # start the QProcess here, and send the connection argument
-    pass
+        program = ctx.get_resource('radio_manager/radio_manager')
+        args = [
+            '--name',
+            "{}".format(name),
+            "--port",
+            "{}".format(received_info['port']),
+            "--color",
+            "{}".format(received_info['color']),
+            "--baud",
+            "{}".format(received_info['baud']),
+            ]
+
+        if name in cls._radios:
+            succ = False
+            err = 'Radio process alread running'
+
+        else:
+            cls._radios[name] = QProcess()
+            cls._radios[name].setProcessChannelMode(QProcess.MergedChannels)
+            cls._radios[name].setProcessEnvironment(QProcessEnvironment.systemEnvironment())
+            cls._radios[name].start(program, args)
+
+            succ = True
+            err = None
+
+        return succ, err
+
 
 # if __name__ == "__main__":
 #     start_conn_server()
