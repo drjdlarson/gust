@@ -38,8 +38,12 @@ mkdir ./src/main/resources/base/radio_manager
 pyinstaller --onefile --noconfirm --noupx --clean \
 	-n radio_manager \
 	-p ./radio_manager \
-	--hidden-import pymavlink.dialects.v10 \
-	--hidden-import pymavlink.dialects.v10.ardupilotmega \
+	--hidden-import lxml \
+	--hidden-import lxml.etree \
+	--hidden-import urllib2 \
+	--hidden-import urlparse \
+	--collect-all pymavlink \
+	--collect-all dronekit \
 	--distpath ./src/main/resources/base/radio_manager \
 	--workpath ./radio_manager/build \
 	--specpath ./radio_manager \

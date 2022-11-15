@@ -4,6 +4,8 @@ import dronekit
 import random, time
 import numpy as np
 import sys
+import signal
+
 import utilities.database as database
 from argparse import ArgumentParser
 
@@ -261,8 +263,23 @@ def define_parser():
     return parser
 
 
-# %% Main function
+def _cleanup_handler(signum, frame, radio):
+    radio.close()
 
+    os._exit(0)
+
+
+_handleable_sigs = (
+    signal.SIGKILL,
+    signal.SIGSEGV,
+    signal.SIGTERM,
+    signal.SIGINT,
+    signal.SIGQUIT,
+    signal.SIGSTOP,
+)
+
+
+# %% Main function
 if __name__ == "__main__":
 
     args = define_parser().parse_args()
@@ -279,7 +296,6 @@ if __name__ == "__main__":
 
     if port == '/dev/test/':
         import os
-        print(os.environ[database.DB_PATH_KEY], flush=True)
         while True:
             all_data = prepare_dummy_data()
             res = database.write_values(all_data, name)
@@ -292,6 +308,12 @@ if __name__ == "__main__":
         except:
             sys.exit(-1)
 
+        for sig in _handleable_sigs:
+            try:
+                signal.signal(sig, lambda signum, frame: _cleanup_handler(signum, frame, radio))
+            except (ValueError, OSError):
+                continue
+
         mav_data = {}
         all_data = prepare_dummy_data()
         res = database.write_values(all_data, name)
@@ -303,5 +325,5 @@ if __name__ == "__main__":
                 radio, name, port, rate1, rate2, rate3, rate4, mav_data
                 )
             all_data = rate1, rate2, rate3, rate4
-            res = database.wrte_values(all_data, name)
+            res = database.write_values(all_data, name)
             time.sleep(0.075)

@@ -126,11 +126,13 @@ class ConnServer:
 
         else:
             cls._radios[name] = QProcess()
-            cls._radios[name].setProcessChannelMode(QProcess.MergedChannels)
+            cls._radios[name].setProcessChannelMode(QProcess.ProcessChannelMode.MergedChannels)
             cls._radios[name].setProcessEnvironment(QProcessEnvironment.systemEnvironment())
             cls._radios[name].start(program, args)
 
-            succ = True
+            succ = cls._radios[name].waitForStarted()
+            if not succ:
+                logger.info("failed to start process")
             err = None
 
         return succ, err

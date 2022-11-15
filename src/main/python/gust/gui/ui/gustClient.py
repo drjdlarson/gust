@@ -417,12 +417,12 @@ class Ui_MainWindow_main(object):
 "font: 12pt \"Umpush\";")
         self.pushButton_tune.setObjectName("pushButton_tune")
         self.gridLayout_3.addWidget(self.pushButton_tune, 2, 0, 1, 1)
-        self.pushButton_servo = QtWidgets.QPushButton(self.gridlayout_functions)
-        self.pushButton_servo.setStyleSheet("background-color: rgb(48,132,70);\n"
+        self.pushButton_planning = QtWidgets.QPushButton(self.gridlayout_functions)
+        self.pushButton_planning.setStyleSheet("background-color: rgb(48,132,70);\n"
 "color: rgb(255, 255, 255);\n"
 "font: 12pt \"Umpush\";")
-        self.pushButton_servo.setObjectName("pushButton_servo")
-        self.gridLayout_3.addWidget(self.pushButton_servo, 2, 1, 1, 1)
+        self.pushButton_planning.setObjectName("pushButton_planning")
+        self.gridLayout_3.addWidget(self.pushButton_planning, 2, 1, 1, 1)
         self.pushButton_sensors = QtWidgets.QPushButton(self.gridlayout_functions)
         self.pushButton_sensors.setStyleSheet("background-color: rgb(48,132,70);\n"
 "color: rgb(255, 255, 255);\n"
@@ -559,9 +559,9 @@ class Ui_MainWindow_main(object):
         self.label_voltage.setText(_translate("MainWindow_main", "Voltage"))
         self.label_current.setText(_translate("MainWindow_main", "Current"))
         self.pushButton_tune.setText(_translate("MainWindow_main", "Tune Parameters"))
-        self.pushButton_servo.setText(_translate("MainWindow_main", "Servo Channels"))
+        self.pushButton_planning.setText(_translate("MainWindow_main", "Planning"))
         self.pushButton_sensors.setText(_translate("MainWindow_main", "Sensors"))
-        self.pushButton_rc.setText(_translate("MainWindow_main", "RC Channels"))
+        self.pushButton_rc.setText(_translate("MainWindow_main", "Channels"))
         self.pushButton_RTL.setText(_translate("MainWindow_main", "RTL"))
         self.pushButton_engineOff.setText(_translate("MainWindow_main", "Engine OFF"))
         self.pushButton_disarm.setText(_translate("MainWindow_main", "Disarm"))

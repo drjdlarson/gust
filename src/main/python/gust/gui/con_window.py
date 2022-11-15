@@ -9,7 +9,7 @@ URL_BASE = "http://localhost:8000/{}/".format(BASE)
 DRONE_BASE = "{}{}/".format(URL_BASE, DRONE)
 BAUD = ["9600", "38400", "56700", "115200"]
 
-all_colors = icon_generator.COLORS
+ALL_COLORS = icon_generator.COLORS
 
 
 class ConWindow(QDialog, Ui_MainWindow):
@@ -21,7 +21,7 @@ class ConWindow(QDialog, Ui_MainWindow):
         self.ctx = ctx
         self.setupUi(self)
 
-        available_colors = [i for i in all_colors if i not in used_colors]
+        available_colors = [i for i in ALL_COLORS if i not in used_colors]
         self.comboBox_port.addItems(ports)
         self.comboBox_baud.addItems(BAUD)
         self.comboBox_color.addItems(available_colors)

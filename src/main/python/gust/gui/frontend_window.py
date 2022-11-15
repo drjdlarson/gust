@@ -17,7 +17,7 @@ from PyQt5.QtCore import Qt, pyqtSlot, QModelIndex, pyqtSignal, QThreadPool, QTh
 from PyQt5.QtGui import QIntValidator, QTextCursor
 import requests
 from gust.gui.ui.gustClient import Ui_MainWindow_main
-from gust.gui import con_window, log_window, sensors_window
+from gust.gui import con_window, log_window, sensors_window, planning_selection_window
 from gust.gui import engineoff_confirmation, disconnect_confirmation, rtl_confirmation, disarm_confirmation
 from gust.gui import rc_window, servo_window
 from gust.gui.ui.map_widget import MapWidget
@@ -41,6 +41,7 @@ class FrontendWindow(QMainWindow, Ui_MainWindow_main):
         self._sensorsWindow = None
         self._rcWindow = None
         self._servoWindow = None
+        self._planningWindow = None
 
         self._continue_updating_data = False
 
@@ -56,9 +57,10 @@ class FrontendWindow(QMainWindow, Ui_MainWindow_main):
         self.pushButton_disarm.clicked.connect(self.clicked_disarm)
 
         self.pushButton_sensors.clicked.connect(self.clicked_sensors)
-        self.pushButton_rc.clicked.connect(self.clicked_rc)
-        self.pushButton_servo.clicked.connect(self.clicked_servo)
+        # self.pushButton_rc.clicked.connect(self.clicked_rc)
+        # self.pushButton_servo.clicked.connect(self.clicked_servo)
         self.pushButton_tune.clicked.connect(self.clicked_tune)
+        self.pushButton_planning.clicked.connect(self.clicked_planning)
 
         # Setting few features of the table
         header = self.tableWidget.horizontalHeader()
@@ -97,9 +99,7 @@ class FrontendWindow(QMainWindow, Ui_MainWindow_main):
             rowPos = self.tableWidget.rowCount()
             self.tableWidget.insertRow(rowPos)
             self.update_request()
-
         self._conWindow = None
-
 
     @pyqtSlot()
     def clicked_engineOff(self):
@@ -146,6 +146,16 @@ class FrontendWindow(QMainWindow, Ui_MainWindow_main):
                 self.ctx, parent=self)
         self._sensorsWindow.show()
 
+    @pyqtSlot()
+    def clicked_planning(self):
+        print("clicked planning function")
+
+        if self._planningWindow is None:
+            print("if statement inside clicked_planning")
+            self._planningWindow = planning_selection_window.PlanningSelectionWindow(
+                self.ctx, parent=self)
+        self._planningWindow.show()
+        self._planningWindow = None
 
     # @pyqtSlot()
     def clicked_disconnect(self):
@@ -175,9 +185,6 @@ class FrontendWindow(QMainWindow, Ui_MainWindow_main):
     def update_frame(self, passed_signal):
 
         self.flight_params = passed_signal
-
-        print(self.flight_params)
-
 
         # filling up the table
         for key in self.flight_params:

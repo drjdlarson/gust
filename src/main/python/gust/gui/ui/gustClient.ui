@@ -919,14 +919,14 @@ font: 12pt &quot;Umpush&quot;;</string>
            </widget>
           </item>
           <item row="2" column="1">
-           <widget class="QPushButton" name="pushButton_servo">
+           <widget class="QPushButton" name="pushButton_planning">
             <property name="styleSheet">
              <string notr="true">background-color: rgb(48,132,70);
 color: rgb(255, 255, 255);
 font: 12pt &quot;Umpush&quot;;</string>
             </property>
             <property name="text">
-             <string>Servo Channels</string>
+             <string>Planning</string>
             </property>
            </widget>
           </item>
@@ -950,7 +950,7 @@ color: rgb(255, 255, 255);
 font: 12pt &quot;Umpush&quot;;</string>
             </property>
             <property name="text">
-             <string>RC Channels</string>
+             <string>Channels</string>
             </property>
            </widget>
           </item>
