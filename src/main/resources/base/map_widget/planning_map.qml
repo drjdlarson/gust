@@ -163,7 +163,6 @@ Item {
             }
         }
 
-
         // The code below enables SSAA
         layer.enabled: true
         layer.smooth: false

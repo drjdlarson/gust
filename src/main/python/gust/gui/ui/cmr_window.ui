@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>988</width>
-    <height>658</height>
+    <width>1097</width>
+    <height>696</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -18,7 +18,7 @@
     <item>
      <layout class="QVBoxLayout" name="verticalLayout" stretch="1,0,0,0">
       <item>
-       <widget class="MapWidget" name="widget_cmr_map" native="true">
+       <widget class="PlanningMapWidget" name="widget_cmr_map" native="true">
         <property name="minimumSize">
          <size>
           <width>680</width>
@@ -29,13 +29,6 @@
       </item>
       <item>
        <layout class="QHBoxLayout" name="horizontalLayout_checkboxes">
-        <item>
-         <widget class="QCheckBox" name="checkBox_grid">
-          <property name="text">
-           <string>Grid</string>
-          </property>
-         </widget>
-        </item>
         <item>
          <spacer name="horizontalSpacer">
           <property name="orientation">
@@ -48,6 +41,13 @@
            </size>
           </property>
          </spacer>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="checkBox_grid">
+          <property name="text">
+           <string>Grid</string>
+          </property>
+         </widget>
         </item>
        </layout>
       </item>
@@ -135,7 +135,11 @@
       <item>
        <layout class="QFormLayout" name="formLayout_grid_planning">
         <item row="0" column="0">
-         <widget class="QLineEdit" name="lineEdit_grid_spacing"/>
+         <widget class="QLineEdit" name="lineEdit_grid_spacing">
+          <property name="readOnly">
+           <bool>false</bool>
+          </property>
+         </widget>
         </item>
         <item row="0" column="1">
          <widget class="QLabel" name="label_grid_spacing">
@@ -144,7 +148,75 @@
           </property>
          </widget>
         </item>
+        <item row="1" column="0">
+         <widget class="QLabel" name="label_3">
+          <property name="text">
+           <string>FOR SINGLE LINE::</string>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="0">
+         <widget class="QLineEdit" name="lineEdit_start_lat"/>
+        </item>
+        <item row="3" column="0">
+         <widget class="QLineEdit" name="lineEdit_start_lon">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+         </widget>
+        </item>
+        <item row="4" column="0">
+         <widget class="QLineEdit" name="lineEdit_end_lat"/>
+        </item>
+        <item row="5" column="0">
+         <widget class="QLineEdit" name="lineEdit_end_lon">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="1">
+         <widget class="QLabel" name="label">
+          <property name="text">
+           <string>Start Latitude</string>
+          </property>
+         </widget>
+        </item>
+        <item row="3" column="1">
+         <widget class="QLabel" name="label_2">
+          <property name="text">
+           <string>Start Longitude</string>
+          </property>
+         </widget>
+        </item>
+        <item row="4" column="1">
+         <widget class="QLabel" name="label_4">
+          <property name="text">
+           <string>End Latitude</string>
+          </property>
+         </widget>
+        </item>
+        <item row="5" column="1">
+         <widget class="QLabel" name="label_5">
+          <property name="text">
+           <string>End Longitude</string>
+          </property>
+         </widget>
+        </item>
        </layout>
+      </item>
+      <item>
+       <widget class="QPushButton" name="pushButton_draw_grid">
+        <property name="text">
+         <string>Show Grid</string>
+        </property>
+       </widget>
       </item>
       <item>
        <widget class="Line" name="line_5">
@@ -171,37 +243,37 @@
         <item row="0" column="1">
          <widget class="QLabel" name="label_rel_height">
           <property name="text">
-           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;H (m)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Rel. Height H (m)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
           </property>
          </widget>
         </item>
         <item row="1" column="0">
-         <widget class="QLineEdit" name="lineEdit_theta_max"/>
+         <widget class="QLineEdit" name="lineEdit_spacing"/>
         </item>
         <item row="1" column="1">
-         <widget class="QLabel" name="label_theta_max">
+         <widget class="QLabel" name="label_spacing">
           <property name="text">
-           <string>&lt;p&gt;&amp;theta;&lt;sub&gt;max&lt;/sub&gt;&lt;/p&gt;</string>
+           <string>Spacing (m)</string>
           </property>
          </widget>
         </item>
         <item row="2" column="0">
-         <widget class="QLineEdit" name="lineEdit_theta_min"/>
+         <widget class="QLineEdit" name="lineEdit_theta_max"/>
         </item>
         <item row="2" column="1">
-         <widget class="QLabel" name="label_theta_min">
+         <widget class="QLabel" name="label_theta_max">
           <property name="text">
-           <string>&lt;p&gt;&amp;theta;&lt;sub&gt;min&lt;/sub&gt;&lt;/p&gt;</string>
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Max. θ&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
           </property>
          </widget>
         </item>
         <item row="3" column="0">
-         <widget class="QLineEdit" name="lineEdit_theta_spacing"/>
+         <widget class="QLineEdit" name="lineEdit_theta_min"/>
         </item>
         <item row="3" column="1">
-         <widget class="QLabel" name="label_theta_spacing">
+         <widget class="QLabel" name="label_theta_min">
           <property name="text">
-           <string>&lt;p&gt;d&amp;theta;&lt;/p&gt;</string>
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Min. θ&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
           </property>
          </widget>
         </item>
@@ -217,14 +289,14 @@
       <item>
        <layout class="QHBoxLayout" name="horizontalLayout">
         <item>
-         <widget class="QPushButton" name="pushButton">
+         <widget class="QPushButton" name="pushButton_load_wp">
           <property name="text">
            <string>Load Waypoints</string>
           </property>
          </widget>
         </item>
         <item>
-         <widget class="QPushButton" name="pushButton_2">
+         <widget class="QPushButton" name="pushButton_generate_wp">
           <property name="text">
            <string>Generate Waypoints</string>
           </property>
@@ -279,9 +351,9 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>MapWidget</class>
+   <class>PlanningMapWidget</class>
    <extends>QWidget</extends>
-   <header>gust.gui.ui.map_widget.h</header>
+   <header>gust.gui.ui.planning_map_widget.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

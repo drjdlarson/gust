@@ -25,7 +25,7 @@ class PlanningSelectionWindow(QMainWindow, Ui_MainWindow):
         print("after connect functions")
 
     def clicked_cancel(self):
-        self.reject()
+        self.close()
 
     def clicked_open(self):
 
