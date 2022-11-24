@@ -17,6 +17,8 @@ Item {
         }
     }
 
+
+
 // FOR TESTING WITH OPENSTREETMAP
 /*
     Plugin {
@@ -85,7 +87,6 @@ Item {
         }
     }
 
-
     Transition {
         id: myTrans
         NumberAnimation {
@@ -114,26 +115,11 @@ Item {
         fieldOfView: mapBase.fieldOfView
         z: mapBase.z + 1
 
-        MapItemView{
-            model: grid_line
-            delegate: MapPolyline {
-                id: grid_line
-                line.width: 4
-                line.color: 'yellow'
-                path: model.grid_coordinates
-            }
+        MapPolyline {
+            line.width: 3
+            line.color: line_item.color
+            path: line_item.path
         }
-
-        MapItemView{
-            model: waypoint_line
-            delegate: MapPolyline {
-                id: grid_line
-                line.width: 3
-                line.color: model.wp_color
-                path: model.wp_coordinates
-            }
-        }
-
 
         // The code below enables SSAA
         layer.enabled: true

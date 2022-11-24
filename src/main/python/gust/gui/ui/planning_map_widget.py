@@ -11,6 +11,7 @@ import random
 import math
 import pathlib
 import matplotlib.image as mpimg
+from functools import partial
 from PyQt5 import QtCore, QtWidgets, QtQuickWidgets, QtPositioning, QtQuickWidgets
 from PyQt5.QtCore import QTimer, QTemporaryDir, QFile, QAbstractListModel, Qt, QByteArray, QModelIndex, QVariant
 
@@ -22,8 +23,9 @@ class PlanningMapWidget(QtQuickWidgets.QQuickWidget):
     def __init__(self, parent=None):
         super(PlanningMapWidget, self).__init__(parent,
                                                 resizeMode=QtQuickWidgets.QQuickWidget.SizeRootObjectToView)
-        self._grid = None
-        self._waypoints = None
+        self._grid_line = None
+        self._waypoints_line = None
+
 
 # %%
     # FOR TESTING ONLY
@@ -50,11 +52,6 @@ class PlanningMapWidget(QtQuickWidgets.QQuickWidget):
         self.engine().clearComponentCache()
         self.setSource(QtCore.QUrl.fromLocalFile(temp_path + "/temp_planning_map.qml"))
 
-        self._grid = GridLines(self)
-        self.rootContext().setContextProperty("grid_line", self._grid)
-
-        self._waypoints = WaypointLines()
-        self.rootContext().setContextProperty("waypoint_line", self._waypoints)
 # %%
 
     def setup_qml(self, ctx):
@@ -85,82 +82,53 @@ class PlanningMapWidget(QtQuickWidgets.QQuickWidget):
 
 
     def display_grid_lines(self, coordinates):
-        if self._grid is not None:
+        if self._grid_line is None:
+            self._grid_line = Lines()
+            self.rootContext().setContextProperty("line_item", self._grid_line)
+
+            self._grid_line.color = "yellow"
             q_coordinates = [QtPositioning.QGeoCoordinate(*ii) for ii in coordinates]
-            self._grid.add_grid_lines(q_coordinates)
+            self._grid_line.path = q_coordinates
 
     def display_waypoint_lines(self, coordinates, color):
-        if self._waypoints is not None:
+        if self._waypoints_line is None:
+            self._waypoints_line = Lines()
+            self.rootContext().setContextProperty("line_item", self._waypoints_line)
+
+            self._waypoints_line.color = color
             q_coordinates = [QtPositioning.QGeoCoordinate(*ii) for ii in coordinates]
-            self._waypoints.add_waypoint_lines(
-                {"wp_coordinates": q_coordinates,
-                 "color": color}
-                )
+            self._waypoints_line.path = q_coordinates
 
-    def clear_grid_lines(self):
-        if self._grid is not None:
-            self._grid.remove_grid_lines()
-            self._grid.add_grid_lines()
+    def change_grid_line_color(self, color):
+        if self._grid_line is not None:
+            self._grid_line.color = color
 
-class GridLines(QAbstractListModel):
-    PositionRole = Qt.UserRole + 1
+
+class Lines(QAbstractListModel):
+    pathChanged = QtCore.pyqtSignal(list)
+    colorChanged = QtCore.pyqtSignal(str)
 
     def __init__(self, parent=None):
-        super(GridLines, self).__init__(parent)
-        self._grid_lines = []
+        super(Lines, self).__init__(parent)
+        self._color = "black"
+        self._path = None
 
-    def rowCount(self, index=QModelIndex()):
-        return len(self._grid_lines)
+    @QtCore.pyqtProperty(str, notify=colorChanged)
+    def color(self):
+        return self._color
 
-    def roleNames(self):
-        return {
-            GridLines.PositionRole: b"grid_coordinates"
-            }
+    @color.setter
+    def color(self, new_color):
+        if self._color != new_color:
+            self._color = new_color
+            self.colorChanged.emit(new_color)
 
-    def data(self, index, role=Qt.DisplayRole):
-        if 0 <= index.row() < self.rowCount():
-            if role == GridLines.PositionRole:
-                return self._grid_lines[index.row()]
-        return QVariant()
+    @QtCore.pyqtProperty(list, notify=pathChanged)
+    def path(self):
+        return self._path
 
-    def add_grid_lines(self, coordinates=None):
-        self.beginInsertRows(QModelIndex(), self.rowCount(), self.rowCount())
-        self._grid_lines.append(coordinates)
-        self.endInsertRows()
-
-    def remove_grid_lines(self):
-        self.beginInsertRows(QModelIndex(), self.rowCount(), self.rowCount())
-        self._grid_lines = []
-        self.endInsertRows()
-
-        print("it should be removed now")
-
-class WaypointLines(QAbstractListModel):
-    PositionRole = Qt.UserRole + 1
-    ColorRole = Qt.UserRole + 2
-
-    def __init__(self, parent=None):
-        super(WaypointLines, self).__init__(parent)
-        self._waypoint_lines = []
-
-    def rowCount(self, index=QModelIndex()):
-        return len(self._waypoint_lines)
-
-    def roleNames(self):
-        return {
-            WaypointLines.PositionRole: b"wp_coordinates",
-            WaypointLines.ColorRole: b"wp_color"
-            }
-
-    def data(self, index, role=Qt.DisplayRole):
-        if 0 <= index.row() < self.rowCount():
-            if role == WaypointLines.PositionRole:
-                return self._waypoint_lines[index.row()]['wp_coordinates']
-            elif role == WaypointLines.ColorRole:
-                return self._waypoint_lines[index.row()]['color']
-        return QVariant()
-
-    def add_waypoint_lines(self, waypoints):
-        self.beginInsertRows(QModelIndex(), self.rowCount(), self.rowCount())
-        self._waypoint_lines.append(waypoints)
-        self.endInsertRows()
+    @path.setter
+    def path(self, new_path):
+        if self._path != new_path:
+            self._path = new_path
+            self.pathChanged.emit(new_path)

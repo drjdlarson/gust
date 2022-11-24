@@ -44,10 +44,10 @@ class TestCmrWindow(QMainWindow, Ui_MainWindow):
         self.pushButton_load_wp.clicked.connect(self.clicked_load_waypoints)
 
         self.checkBox_grid.stateChanged.connect(self.grid_checkbox_changed)
+        self.checkBox_waypoints.stateChanged.connect(self.waypoints_checkbox_changed)
 
     def clicked_load_waypoints(self):
-        pass
-
+        self.widget_cmr_map.change_grid_line_color()
 
     def clicked_generate_waypoints(self):
         waypoints = {}
@@ -58,18 +58,10 @@ class TestCmrWindow(QMainWindow, Ui_MainWindow):
         waypoints.update({1: {'coordinates': dummy_wp1, 'color': 'red'}})
         waypoints.update({2: {'coordinates': dummy_wp2, 'color': 'blue'}})
 
-        self.widget_cmr_map.display_waypoint_lines(waypoints[1]['coordinates'], waypoints[1]['color'])
-        self.widget_cmr_map.display_waypoint_lines(waypoints[2]['coordinates'], waypoints[2]['color'])
+        self.widget_cmr_map.display_waypoint_lines(dummy_wp1 , "blue")
+        # self.widget_cmr_map.display_waypoint_lines(waypoints[2]['coordinates'], waypoints[2]['color'])
 
-        self.checkboxes = {}
-        for key, value in waypoints.items():
-            color = value['color']
-            self.checkboxes.update({color: QCheckBox()})
-            self.checkboxes[color].setText(color)
-            self.checkboxes[color].setChecked(True)
-            self.horizontalLayout_checkboxes.addWidget(self.checkboxes[color])
-        self.widget_cmr_map.clear_grid_lines()
-
+        self.checkBox_waypoints.setCheckState(True)
 
     def clicked_draw_grid(self):
         """
@@ -89,9 +81,16 @@ class TestCmrWindow(QMainWindow, Ui_MainWindow):
                             float(self.lineEdit_end_lon.text())))
 
         self.widget_cmr_map.display_grid_lines(grid_points)
+
         self.checkBox_grid.setChecked(True)
 
     def grid_checkbox_changed(self):
+        if self.checkBox_grid.isChecked() == True:
+            self.widget_cmr_map.change_grid_line_color("yellow")
+        else:
+            self.widget_cmr_map.change_grid_line_color("transparent")
+
+    def waypoints_checkbox_changed(self):
         pass
 
     def setupUi(self, mainWindow):
