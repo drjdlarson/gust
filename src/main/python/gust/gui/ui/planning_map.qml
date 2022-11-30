@@ -114,12 +114,24 @@ Item {
         bearing: mapBase.bearing
         fieldOfView: mapBase.fieldOfView
         z: mapBase.z + 1
-
+/*
         MapPolyline {
             line.width: 3
             line.color: line_item.color
             path: line_item.path
         }
+*/
+        MapItemView{
+            model: line_model
+            remove: myTrans
+            delegate: MapPolyline {
+                id: path_line
+                line.width: 3
+                line.color: line_color
+                path: line_path
+            }
+        }
+
 
         // The code below enables SSAA
         layer.enabled: true

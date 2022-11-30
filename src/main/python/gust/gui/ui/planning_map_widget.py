@@ -23,8 +23,8 @@ class PlanningMapWidget(QtQuickWidgets.QQuickWidget):
     def __init__(self, parent=None):
         super(PlanningMapWidget, self).__init__(parent,
                                                 resizeMode=QtQuickWidgets.QQuickWidget.SizeRootObjectToView)
-        self._grid_line = None
-        self._waypoints_line = None
+        self._grid_line_names = []
+        self._waypoint_line_names = []
 
 
 # %%
@@ -51,6 +51,9 @@ class PlanningMapWidget(QtQuickWidgets.QQuickWidget):
 
         self.engine().clearComponentCache()
         self.setSource(QtCore.QUrl.fromLocalFile(temp_path + "/temp_planning_map.qml"))
+
+        self.line_model = LineModel()
+        self.rootContext().setContextProperty("line_model", self.line_model)
 
 # %%
 
@@ -81,28 +84,39 @@ class PlanningMapWidget(QtQuickWidgets.QQuickWidget):
         self.setSource(QtCore.QUrl.fromLocalFile(temp_path + "/temp_map.qml"))
 
 
-    def display_grid_lines(self, coordinates):
-        if self._grid_line is None:
-            self._grid_line = Lines()
-            self.rootContext().setContextProperty("line_item", self._grid_line)
+    def change_grid_line_state(self, val):
+        if self._grid_line_names:
+            if val == 1:
+                self.line_model.change_line_color("yellow_grid", "yellow")
+            else:
+                self.line_model.change_line_color("yellow_grid", "transparent")
 
-            self._grid_line.color = "yellow"
-            q_coordinates = [QtPositioning.QGeoCoordinate(*ii) for ii in coordinates]
-            self._grid_line.path = q_coordinates
+    def change_waypoints_line_state(self, val):
+        if self._waypoint_line_names:
+            for name in self._waypoint_line_names:
+                color = name.split("_")[0]
+                if val == 1:
+                    self.line_model.change_line_color(name, color)
+                else:
+                    self.line_model.change_line_color(name, "transparent")
 
-    def display_waypoint_lines(self, coordinates, color):
-        if self._waypoints_line is None:
-            self._waypoints_line = Lines()
-            self.rootContext().setContextProperty("line_item", self._waypoints_line)
+    def add_grid_lines(self, coordinates):
+        grid_line = Lines()
+        grid_line.setColor("yellow")
+        qcoordinates = [QtPositioning.QGeoCoordinate(*ii) for ii in coordinates]
+        grid_line.setPath(qcoordinates)
+        self.line_model.addLine("yellow_grid", grid_line)
 
-            self._waypoints_line.color = color
-            q_coordinates = [QtPositioning.QGeoCoordinate(*ii) for ii in coordinates]
-            self._waypoints_line.path = q_coordinates
+        self._grid_line_names.append("yellow_grid")
 
-    def change_grid_line_color(self, color):
-        if self._grid_line is not None:
-            self._grid_line.color = color
+    def add_waypoint_lines(self, coordinates, color):
+        wp_line = Lines()
+        wp_line.setColor(color)
+        qcoordinates = [QtPositioning.QGeoCoordinate(*ii) for ii in coordinates]
+        wp_line.setPath(qcoordinates)
+        self.line_model.addLine("{}_wp".format(color), wp_line)
 
+        self._waypoint_line_names.append("{}_wp".format(color))
 
 class Lines(QAbstractListModel):
     pathChanged = QtCore.pyqtSignal(list)
@@ -113,22 +127,73 @@ class Lines(QAbstractListModel):
         self._color = "black"
         self._path = None
 
-    @QtCore.pyqtProperty(str, notify=colorChanged)
-    def color(self):
+    def color_val(self):
         return self._color
 
-    @color.setter
-    def color(self, new_color):
-        if self._color != new_color:
-            self._color = new_color
-            self.colorChanged.emit(new_color)
+    def setColor(self, new_color):
+        self._color = new_color
+        self.colorChanged.emit(new_color)
 
-    @QtCore.pyqtProperty(list, notify=pathChanged)
-    def path(self):
+    def path_val(self):
         return self._path
 
-    @path.setter
-    def path(self, new_path):
-        if self._path != new_path:
-            self._path = new_path
-            self.pathChanged.emit(new_path)
+    def setPath(self, new_path):
+        self._path = new_path
+        self.pathChanged.emit(new_path)
+
+
+class LineModel(QAbstractListModel):
+    PathRole = Qt.UserRole + 1
+    ColorRole = Qt.UserRole + 2
+
+    _roles = {PathRole: QByteArray(b"line_path"), ColorRole: QByteArray(b"line_color")}
+
+    def __init__(self, parent=None):
+        QAbstractListModel.__init__(self, parent)
+        self._lines = []
+        self.object_names = []
+
+    def rowCount(self, index=QModelIndex()):
+        return len(self._lines)
+
+    def roleNames(self):
+        return self._roles
+
+    def data(self, index, role=Qt.DisplayRole):
+        if index.row() >= self.rowCount():
+            return QVariant()
+        line = self._lines[index.row()]
+
+        if role == LineModel.PathRole:
+            return line.path_val()
+        elif role == LineModel.ColorRole:
+            return line.color_val()
+
+        return QVariant()
+
+    def setData(self, index, value, role=Qt.EditRole):
+        if index.isValid():
+            line = self._lines[index.row()]
+            if role == LineModel.PathRole:
+                line.setPath(value)
+            elif role == LineModel.ColorRole:
+                line.setColor(value)
+            self.dataChanged.emit(index, index)
+            return True
+        return QAbstractListModel.setData(self, index, value, role)
+
+    def addLine(self, name, line):
+        self.beginInsertRows(QModelIndex(), self.rowCount(), self.rowCount())
+        self._lines.append(line)
+        self.endInsertRows()
+        self.object_names.append(name)
+
+    def flags(self, index):
+        if not index.isValid():
+            return Qt.ItemIsEnabled
+        return QAbstractListModel.flags(index)|Qt.ItemIsEditable
+
+    def change_line_color(self, name, new_color):
+        if name in self.object_names:
+            ind = self.index(self.object_names.index(name), 0)
+            self.setData(ind, new_color, LineModel.ColorRole)

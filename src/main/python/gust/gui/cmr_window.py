@@ -47,20 +47,23 @@ class TestCmrWindow(QMainWindow, Ui_MainWindow):
         self.checkBox_waypoints.stateChanged.connect(self.waypoints_checkbox_changed)
 
     def clicked_load_waypoints(self):
-        self.widget_cmr_map.change_grid_line_color()
+        pass
 
     def clicked_generate_waypoints(self):
         waypoints = {}
 
-        dummy_wp1 = [(33.13514, -87.1241241), (32.23414, -86.324241), (33.63514, -87.31441241)]
-        dummy_wp2 = [(33.736514, -86.1241241), (32.154135, -86.6474241), (32.63514, -87.141241)]
+        dummy_wp1 = [(33.21589373771255, -87.56986696619138),
+                     (33.19992239477393, -87.54676703331124),
+                     (33.218759762150036, -87.512328099724)]
+        dummy_wp2 = [(33.209829960064916, -87.5773701534723),
+                     (33.21101600187825, -87.51407923194029),
+                     (33.19971306791958, -87.55377156217645)]
 
         waypoints.update({1: {'coordinates': dummy_wp1, 'color': 'red'}})
         waypoints.update({2: {'coordinates': dummy_wp2, 'color': 'blue'}})
 
-        self.widget_cmr_map.display_waypoint_lines(dummy_wp1 , "blue")
-        # self.widget_cmr_map.display_waypoint_lines(waypoints[2]['coordinates'], waypoints[2]['color'])
-
+        self.widget_cmr_map.add_waypoint_lines(dummy_wp1 , "blue")
+        self.widget_cmr_map.add_waypoint_lines(dummy_wp2, 'red')
         self.checkBox_waypoints.setCheckState(True)
 
     def clicked_draw_grid(self):
@@ -80,18 +83,20 @@ class TestCmrWindow(QMainWindow, Ui_MainWindow):
         grid_points.append((float(self.lineEdit_end_lat.text()),
                             float(self.lineEdit_end_lon.text())))
 
-        self.widget_cmr_map.display_grid_lines(grid_points)
-
+        self.widget_cmr_map.add_grid_lines(grid_points)
         self.checkBox_grid.setChecked(True)
 
     def grid_checkbox_changed(self):
         if self.checkBox_grid.isChecked() == True:
-            self.widget_cmr_map.change_grid_line_color("yellow")
+            self.widget_cmr_map.change_grid_line_state(1)
         else:
-            self.widget_cmr_map.change_grid_line_color("transparent")
+            self.widget_cmr_map.change_grid_line_state(0)
 
     def waypoints_checkbox_changed(self):
-        pass
+        if self.checkBox_waypoints.isChecked() == True:
+            self.widget_cmr_map.change_waypoints_line_state(1)
+        else:
+            self.widget_cmr_map.change_waypoints_line_state(0)
 
     def setupUi(self, mainWindow):
         super().setupUi(mainWindow)
@@ -100,6 +105,9 @@ class TestCmrWindow(QMainWindow, Ui_MainWindow):
         rsrc_path = '/home/lagerprocessor/Projects/gust/src/main/resources/base/cmr_planning/'
         pixmap = QPixmap(rsrc_path + 'cmr_schematic.jpeg')
         self.label_schematic.setPixmap(pixmap)
+
+        self.checkBox_waypoints.setTristate(False)
+        self.checkBox_grid.setTristate(False)
 
         self.widget_cmr_map.setup_qml_for_test(rsrc_path)
         self.set_default_values()
