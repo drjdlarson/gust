@@ -1,10 +1,4 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Created on Tue Nov 22 16:58:22 2022
-
-@author: lagerprocessor
-"""
+"""Map Widget for all planning windows"""
 import os
 import time
 import random
@@ -16,8 +10,6 @@ from PyQt5 import QtCore, QtWidgets, QtQuickWidgets, QtPositioning, QtQuickWidge
 from PyQt5.QtCore import QTimer, QTemporaryDir, QFile, QAbstractListModel, Qt, QByteArray, QModelIndex, QVariant
 
 
-# TODO: Replace the Test Class and fix file paths to use ctx
-
 class PlanningMapWidget(QtQuickWidgets.QQuickWidget):
 
     def __init__(self, parent=None):
@@ -26,13 +18,13 @@ class PlanningMapWidget(QtQuickWidgets.QQuickWidget):
         self._grid_line_names = []
         self._waypoint_line_names = []
 
+    def setup_qml(self, ctx):
+        self.ctx = ctx
+        qml_file = self.ctx.get_resource("cmr_planning/planning_map.qml")
+        resource_file = self.ctx.get_resource('cmr_planning/README')
+        resource_path = str(pathlib.Path(resource_file).parent.resolve())
 
-# %%
-    # FOR TESTING ONLY
-    def setup_qml_for_test(self, resource_path):
-        qml_file = 'ui/planning_map.qml'
-
-        self.temp_dir = QTemporaryDir()
+        self.temp_dir = QTemporaryDir();
 
         if self.temp_dir.isValid():
             temp_path = self.temp_dir.path()
@@ -54,35 +46,6 @@ class PlanningMapWidget(QtQuickWidgets.QQuickWidget):
 
         self.line_model = LineModel()
         self.rootContext().setContextProperty("line_model", self.line_model)
-
-# %%
-
-    def setup_qml(self, ctx):
-        self.ctx = ctx
-        qml_file = self.ctx.get_resource("map_widget/map.qml")
-        resource_file = self.ctx.get_resource('map_widget/README')
-        resource_path = str(pathlib.Path(resource_file).parent.resolve())
-
-        self.temp_dir = QTemporaryDir();
-
-        if self.temp_dir.isValid():
-            temp_path = self.temp_dir.path()
-            temp_map_file = QFile(temp_path + "/temp_map.qml")
-            with open(qml_file, 'rt') as fin:
-                with open(temp_path + "/temp_map.qml", 'wt') as fout:
-                    replacing_str = [("MAP_FilledByMapWidget", resource_path + "/offline_folders/"),
-                                     ("CACHE_FilledByMapWidget", temp_path + "/")]
-                    lines = fin.readlines()
-                    text = ''.join(lines)
-                    for old, new in replacing_str:
-                        text = text.replace(old, new)
-                    fout.write(text)
-
-            # QFile.copy(temp_path + "/temp_map.qml", resource_path + "/from_temp_qml")
-
-        self.engine().clearComponentCache()
-        self.setSource(QtCore.QUrl.fromLocalFile(temp_path + "/temp_map.qml"))
-
 
     def change_grid_line_state(self, val):
         if self._grid_line_names:
