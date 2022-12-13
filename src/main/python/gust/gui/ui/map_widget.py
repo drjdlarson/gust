@@ -1,20 +1,21 @@
+"""Map Widget for the main frontend window"""
 import os
 import time
 import random
 import math
 import pathlib
 import matplotlib.image as mpimg
+from functools import partial
 from PyQt5 import QtCore, QtWidgets, QtQuickWidgets, QtPositioning, QtQuickWidgets
-from PyQt5.QtCore import QTimer, QTemporaryDir, QFile
+from PyQt5.QtCore import QTimer, QTemporaryDir, QFile, QAbstractListModel, Qt, QByteArray, QModelIndex, QVariant
 
 
 class MapWidget(QtQuickWidgets.QQuickWidget):
 
     def __init__(self, parent=None):
-        self.vehicle_list = {}
-        self.temp_dir = None
         super(MapWidget, self).__init__(parent,
-                                            resizeMode=QtQuickWidgets.QQuickWidget.SizeRootObjectToView)
+                                        resizeMode=QtQuickWidgets.QQuickWidget.SizeRootObjectToView)
+        self._vehicles = {}
 
     def setup_qml(self, ctx):
         self.ctx = ctx
@@ -22,7 +23,7 @@ class MapWidget(QtQuickWidgets.QQuickWidget):
         resource_file = self.ctx.get_resource('map_widget/README')
         resource_path = str(pathlib.Path(resource_file).parent.resolve())
 
-        self.temp_dir = QTemporaryDir();
+        self.temp_dir = QTemporaryDir()
 
         if self.temp_dir.isValid():
             temp_path = self.temp_dir.path()
@@ -42,59 +43,50 @@ class MapWidget(QtQuickWidgets.QQuickWidget):
         self.engine().clearComponentCache()
         self.setSource(QtCore.QUrl.fromLocalFile(temp_path + "/temp_map.qml"))
 
-    def clear_drone_list(self):
-        self.vehicle_list = {}
+    def add_drone(self, name, color, home_lat, home_lon, latitude, longitude, yaw, heading, mode):
+        if not self._vehicles:
+            self.marker_model = MarkerModel(self)
+            self.rootContext().setContextProperty("markermodel", self.marker_model)
+
+            self.heading_line_model = HeadingLineModel(self)
+            self.rootContext().setContextProperty("heading_line", self.heading_line_model)
+
+            self.yaw_line_model = YawLineModel(self)
+            self.rootContext().setContextProperty("yaw_line", self.yaw_line_model)
+
+            self.home_model = HomeModel()
+            self.rootContext().setContextProperty("homemodel", self.home_model)
+
+        if name not in self._vehicles:
+            print("creating maphelper instance")
+            self._vehicles[name] = MapHelper(name, color, self.marker_model, self.heading_line_model, self.yaw_line_model,
+                                             self.home_model, home_lat, home_lon, latitude, longitude, yaw, heading, mode, self.ctx)
+            self._vehicles[name].add_objects_in_map()
+        else:
+            print('its updating the same instance now')
+            self._vehicles[name].home_lat = home_lat
+            self._vehicles[name].home_lon = home_lon
+            self._vehicles[name].latitude = latitude
+            self._vehicles[name].longitude = longitude
+            self._vehicles[name].yaw = yaw
+            self._vehicles[name].heading = heading
+            self._vehicles[name].mode = mode
+            self._vehicles[name].update_objects_in_map()
 
     def remove_vehicle_from_map(self, name):
-        # self.rootContext().setContextProperty("markermodel", None)
-        # self.rootContext().setContextProperty("yaw_line", None)
-        # self.rootContext().setContextProperty("heading_line", None)
-        # self.rootContext().setContextProperty("homemodel", None)
-        self.vehicle_list[name].clear_items()
-        self.vehicle_list.pop(name)
-        # self.update()
-
-    def add_drone(self, name, color, home_lat, home_lon, latitude, longitude, yaw, heading, mode):
-
-        # fix this later
-        self.clear_drone_list()
-
-        if name not in self.vehicle_list:
-            marker = MarkerModel(self)
-            self.rootContext().setContextProperty("markermodel", marker)
-
-            yaw_line = yawLineModel(self)
-            self.rootContext().setContextProperty("yaw_line", yaw_line)
-
-            heading_line = headingLineModel(self)
-            self.rootContext().setContextProperty("heading_line", heading_line)
-
-            home = HomeMarkerModel(self)
-            self.rootContext().setContextProperty("homemodel", home)
-
-            self.vehicle_list[name] = MapHelper(name, color, marker, yaw_line, heading_line, home, home_lat, home_lon, latitude, longitude, yaw, heading, mode, self.ctx,)
-        else:
-            self.vehicle_list[name].home_lat = home_lat
-            self.vehicle_list[name].home_lon = home_lon
-            self.vehicle_list[name].latitude = latitude
-            self.vehicle_list[name].longitude = longitude
-            self.vehicle_list[name].yaw = yaw
-            self.vehicle_list[name].heading = heading
-            self.vehicle_list[name].mode = mode
-
-    def update_map(self):
-        for vehicle in self.vehicle_list.values():
-            vehicle.update_map()
+        if name in self._vehicles:
+            self._vehicles[name].remove_all_models()
+            del self._vehicles[name]
 
 
 class MapHelper():
-    def __init__(self, name, color, marker, yaw_line, heading_line, home, home_lat, home_lon, latitude, longitude, yaw, heading, mode, ctx):
+    def __init__(self, name, color, marker_model, heading_model, yaw_model, home_model, home_lat, home_lon, latitude, longitude, yaw, heading, mode, ctx):
         self.name = name
         self.color = color
-        self.marker = marker
-        self.yaw_line = yaw_line
-        self.heading_line = heading_line
-        self.home = home
+        self.marker_model = marker_model
+        self.heading_model = heading_model
+        self.home_model = home_model
+        self.yaw_model = yaw_model
         self.home_lat = home_lat
         self.home_lon = home_lon
         self.latitude = latitude
@@ -104,35 +96,54 @@ class MapHelper():
         self.mode = mode
         self.ctx = ctx
 
-    def update_map(self):
-        self.icon = self.icon_selector()
+    def remove_all_models(self):
+        self.marker_model.removeMarker(self.name)
+        self.yaw_model.removeYawLine(self.name)
+        self.heading_model.removeHeadingLine(self.name)
+        self.home_model.removeHome(self.name)
+
+    def add_objects_in_map(self):
+        self.marker_model.addMarker(self.name, self.prepare_marker_object())
+        self.yaw_model.addYawLine(
+            self.name, self.prepare_line_object("red", self.yaw))
+        self.heading_model.addHeadingLine(
+            self.name, self.prepare_line_object("white", self.heading))
+        self.home_model.addHome(self.name, self.prepare_home_object())
+
+    def update_objects_in_map(self):
+        self.marker_model.updateMarker(self.name, self.prepare_marker_object())
+        self.yaw_model.updateYawLine(
+            self.name, self.prepare_line_object("red", self.yaw))
+        self.heading_model.updateHeadingLine(
+            self.name, self.prepare_line_object("white", self.heading))
+        self.home_model.updateHome(self.name, self.prepare_home_object())
+
+    def prepare_line_object(self, color, angle):
+        line = Line()
+        line.setColor(color)
+        coordinates = [(self.latitude, self.longitude), self.get_points(angle)]
+        qcoordinates = [QtPositioning.QGeoCoordinate(
+            *ii) for ii in coordinates]
+        line.setPath(qcoordinates)
+        return line
+
+    def prepare_home_object(self):
+        home = Marker()
+        file = 'map_widget/colored_icons/' + self.color + '_home.png'
+        home.setSource(self.ctx.get_resource(file))
+        home_pos = (self.home_lat, self.home_lon)
+        home_pos_coord = QtPositioning.QGeoCoordinate(*home_pos)
+        home.setPosition(home_pos_coord)
+        return home
+
+    def prepare_marker_object(self):
+        marker = Marker()
+        marker.setSource(self.drone_icon_selector())
+        marker.setRotation(self.yaw)
         pos = (self.latitude, self.longitude)
         pos_coord = QtPositioning.QGeoCoordinate(*pos)
-        self.marker.appendMarker(
-            {"position": pos_coord,
-             "source": self.icon_selector(),
-             "yaw": self.yaw,
-             }
-        )
-
-        yaw_coord = QtPositioning.QGeoCoordinate(*self.get_points(self.yaw))
-        yaw_path = [pos_coord, yaw_coord]
-        self.yaw_line.appendLine({"yaw_path": yaw_path})
-
-        heading_coord = QtPositioning.QGeoCoordinate(*self.get_points(self.heading))
-        heading_path = [pos_coord, heading_coord]
-        self.heading_line.appendLine({"heading_path": heading_path})
-
-        file = 'map_widget/colored_icons/' + self.color + '_home.png'
-        home_icon = self.ctx.get_resource(file)
-        home = (self.home_lat, self.home_lon)
-        home_coord = QtPositioning.QGeoCoordinate(*home)
-        self.home.appendMarker(
-            {"home": home_coord,
-              "source": home_icon,
-              "name": self.name,
-                }
-            )
+        marker.setPosition(pos_coord)
+        return marker
 
     def get_points(self, angle):
         R = 6378.1
@@ -140,14 +151,15 @@ class MapHelper():
         angle = math.radians(angle)
         lat_1 = math.radians(self.latitude)
         lon_1 = math.radians(self.longitude)
-        lat_2 = math.asin(math.sin(lat_1) * math.cos(dis / R) + math.cos(lat_1) * math.sin(dis / R) * math.cos(angle))
+        lat_2 = math.asin(math.sin(lat_1) * math.cos(dis / R) +
+                          math.cos(lat_1) * math.sin(dis / R) * math.cos(angle))
         lon_2 = lon_1 + math.atan2(math.sin(angle) * math.sin(dis / R) * math.cos(lat_1),
                                    math.cos(dis / R) - math.sin(lat_1) * math.sin(lat_2))
         lat_2 = math.degrees(lat_2)
         lon_2 = math.degrees(lon_2)
         return (lat_2, lon_2)
 
-    def icon_selector(self):
+    def drone_icon_selector(self):
         if self.mode == "stabilize".upper():
             file = 'map_widget/colored_icons/' + self.color + '_pos.png'
             icon_type = self.ctx.get_resource(file)
@@ -159,207 +171,328 @@ class MapHelper():
             icon_type = self.ctx.get_resource(file)
         return icon_type
 
-    def clear_items(self):
-        self.marker.remove_marker()
-        self.yaw_line.remove_lines()
-        self.heading_line.remove_lines()
-        self.home.remove_marker()
 
+class MarkerModel(QAbstractListModel):
+    PositionRole = Qt.UserRole + 1
+    SourceRole = Qt.UserRole + 2
+    RotationRole = Qt.UserRole + 3
 
-class MarkerModel(QtCore.QAbstractListModel):
-    PositionRole, SourceRole, yawRole = range(QtCore.Qt.UserRole, QtCore.Qt.UserRole + 3)
+    _roles = {PositionRole: QByteArray(b"position_marker"),
+              SourceRole: QByteArray(b"source_marker"),
+              RotationRole: QByteArray(b"rotation_marker")}
 
     def __init__(self, parent=None):
-        super(MarkerModel, self).__init__(parent)
+        QAbstractListModel.__init__(self, parent)
         self._markers = []
+        self.vehicle_names = []
 
-    def rowCount(self, parent=QtCore.QModelIndex()):
+    def rowCount(self, index=QModelIndex()):
         return len(self._markers)
 
-    def data(self, index, role=QtCore.Qt.DisplayRole):
-        if 0 <= index.row() < self.rowCount():
-            if role == MarkerModel.PositionRole:
-                return self._markers[index.row()]["position"]
-            elif role == MarkerModel.SourceRole:
-                return self._markers[index.row()]["source"]
-            elif role == MarkerModel.yawRole:
-                return self._markers[index.row()]["yaw"]
-        return QtCore.QVariant()
-
     def roleNames(self):
-        return {
-            MarkerModel.PositionRole: b"position_marker",
-            MarkerModel.SourceRole: b"source_marker",
-            MarkerModel.yawRole: b"rotation_marker"}
+        return self._roles
 
-    def remove_marker(self):
-        if self.rowCount() == 0:
-            return
-        self.beginRemoveRows(QtCore.QModelIndex(), 0, self.rowCount())
-        for ii in range(len(self._markers)-1, -1, -1):
-            del self._markers[ii]
-        # self._markers = []
-        self.endRemoveRows()
+    def data(self, index, role=Qt.DisplayRole):
+        if index.row() >= self.rowCount():
+            return QVariant()
+        marker = self._markers[index.row()]
 
-    def update_marker(self, marker):
-        if not self._markers:
-            self.beginInsertRows(QtCore.QModelIndex(), self.rowCount(), self.rowCount())
-            self._markers.append(marker)
-            self.endInsertRows()
-        else:
-            print("In the else part")
-            self._markers[0]['position'].setLatitude(marker['position'].latitude())
-            print(self._markers[0]['position'].latitude())
+        if role == MarkerModel.PositionRole:
+            return marker.position_val()
+        elif role == MarkerModel.SourceRole:
+            return marker.source_val()
+        elif role == MarkerModel.RotationRole:
+            return marker.rotation_val()
+        return QVariant()
 
-            # self._markers[0]['source'] = marker['source']
-            # self._markers[0]['yaw'] = marker['yaw']
-            # del self._markers[0]
-            # self._markers.append(marker)
-            # self._markers[0] = marker
+    def setData(self, index, value, role=Qt.EditRole):
+        if index.isValid():
+            marker = self._markers[index.row()]
+            if role == MarkerModel.PositionRole:
+                marker.setPosition(value)
+            elif role == MarkerModel.SourceRole:
+                marker.setSource(value)
+            elif role == MarkerModel.RotationRole:
+                marker.setRotation(value)
+            self.dataChanged.emit(index, index)
+            return True
+        return QAbstractListModel.setData(self, index, value, role)
 
-    def appendMarker(self, marker):
-        self.beginInsertRows(QtCore.QModelIndex(), self.rowCount(), self.rowCount())
+    def addMarker(self, name, marker):
+        self.beginInsertRows(QModelIndex(), self.rowCount(), self.rowCount())
         self._markers.append(marker)
         self.endInsertRows()
+        self.vehicle_names.append(name)
 
+    def flags(self, index):
+        if not index.isValid():
+            return Qt.ItemIsEnabled
+        return QAbstractListModel.flags(index) | Qt.ItemIsEditable
 
-class HomeMarkerModel(QtCore.QAbstractListModel):
-    HomeRole, SourceRole, NameRole = range(QtCore.Qt.UserRole, QtCore.Qt.UserRole + 3)
+    def updateMarker(self, name, new_marker):
+        if name in self.vehicle_names:
+            ind = self.index(self.vehicle_names.index(name), 0)
+            self.setData(ind, new_marker.position_val(),
+                         MarkerModel.PositionRole)
+            self.setData(ind, new_marker.source_val(), MarkerModel.SourceRole)
+            self.setData(ind, new_marker.rotation_val(),
+                         MarkerModel.RotationRole)
 
-    def __init__(self, parent=None):
-        super(HomeMarkerModel, self).__init__(parent)
-        self._homes = []
-
-    def rowCount(self, parent=QtCore.QModelIndex()):
-        return len(self._homes)
-
-    def data(self, index, role=QtCore.Qt.DisplayRole):
-        if 0 <= index.row() < self.rowCount():
-            if role == HomeMarkerModel.HomeRole:
-                return self._homes[index.row()]['home']
-            elif role == HomeMarkerModel.SourceRole:
-                return self._homes[index.row()]['source']
-            elif role == HomeMarkerModel.NameRole:
-                return self._homes[index.row()]['name']
-        return QtCore.QVariant()
-
-    def roleNames(self):
-        return {
-            HomeMarkerModel.HomeRole: b"home_marker",
-            HomeMarkerModel.SourceRole: b"home_source",
-            HomeMarkerModel.NameRole: b"name"
-            }
-
-    def remove_marker(self):
-        if self.rowCount() == 0:
-            return
-        self.beginRemoveRows(QtCore.QModelIndex(), self.rowCount(), self.rowCount())
-        self._homes = []
+    def removeMarker(self, name):
+        row_index = self.vehicle_names.index(name)
+        self.beginRemoveRows(QModelIndex(), row_index, row_index)
+        del self._markers[row_index]
         self.endRemoveRows()
+        self.vehicle_names.remove(name)
 
-    def update_marker(self, marker):
-        self.beginInsertRows(QtCore.QModelIndex(), self.rowCount(), self.rowCount())
-        if not self._homes:
-            self._homes.append(marker)
-        else:
-            self._homes[-1].update(marker)
-        self.endInsertRows()
 
-    def appendMarker(self, marker):
-        self.beginInsertRows(QtCore.QModelIndex(), self.rowCount(), self.rowCount())
-        self._homes.append(marker)
-        self.endInsertRows()
+class YawLineModel(QAbstractListModel):
+    PathRole = Qt.UserRole + 1
+    ColorRole = Qt.UserRole + 2
 
-class yawLineModel(QtCore.QAbstractListModel):
-    yawPath = QtCore.Qt.UserRole
+    _roles = {PathRole: QByteArray(b"yaw_path"),
+              ColorRole: QByteArray(b"yaw_color")}
 
     def __init__(self, parent=None):
-        super(yawLineModel, self).__init__(parent)
+        QAbstractListModel.__init__(self, parent)
         self._yawlines = []
+        self.vehicle_names = []
 
-    def rowCount(self, parent=QtCore.QModelIndex()):
+    def rowCount(self, index=QModelIndex()):
         return len(self._yawlines)
 
-    def data(self, index, role=QtCore.Qt.DisplayRole):
-        if 0 <= index.row() < self.rowCount():
-            if role == yawLineModel.yawPath:
-                return self._yawlines[index.row()]["yaw_path"]
-        return QtCore.QVariant()
-
     def roleNames(self):
-        return {
-            yawLineModel.yawPath: b"yaw_path",
-        }
+        return self._roles
 
-    def remove_lines(self):
-        if self.rowCount() == 0:
-            return
-        self.beginRemoveRows(QtCore.QModelIndex(), self.rowCount(), self.rowCount())
-        self._yawlines = []
-        self.endRemoveRows()
+    def data(self, index, role=Qt.DisplayRole):
+        if index.row() >= self.rowCount():
+            return QVariant()
+        yawline = self._yawlines[index.row()]
 
-    def update_line(self, line):
-        self.beginInsertRows(QtCore.QModelIndex(), self.rowCount(), self.rowCount())
-        if not self._yawlines:
-            self._yawlines.append(line)
-        else:
-            self._yawlines[-1].update(line)
-        self.endInsertRows()
+        if role == YawLineModel.PathRole:
+            return yawline.path_val()
+        elif role == YawLineModel.ColorRole:
+            return yawline.color_val()
+        return QVariant()
 
-    def appendLine(self, line):
-        self.beginInsertRows(QtCore.QModelIndex(), self.rowCount(), self.rowCount())
+    def setData(self, index, value, role=Qt.EditRole):
+        if index.isValid():
+            yawline = self._yawlines[index.row()]
+            if role == YawLineModel.PathRole:
+                yawline.setPath(value)
+            elif role == YawLineModel.ColorRole:
+                yawline.setColor(value)
+            self.dataChanged.emit(index, index)
+            return True
+        return QAbstractListModel.setData(self, index, value, role)
+
+    def addYawLine(self, name, line):
+        self.beginInsertRows(QModelIndex(), self.rowCount(), self.rowCount())
         self._yawlines.append(line)
         self.endInsertRows()
+        self.vehicle_names.append(name)
 
-class headingLineModel(QtCore.QAbstractListModel):
-    headingPath = QtCore.Qt.UserRole
+    def flags(self, index):
+        if not index.isValid():
+            return Qt.ItemIsEnabled
+        return QAbstractListModel.flags(index) | Qt.ItemIsEditable
+
+    def updateYawLine(self, name, new_line):
+        if name in self.vehicle_names:
+            ind = self.index(self.vehicle_names.index(name), 0)
+            self.setData(ind, new_line.path_val(), YawLineModel.PathRole)
+            self.setData(ind, new_line.color_val(), YawLineModel.ColorRole)
+
+    def removeYawLine(self, name):
+        row_index = self.vehicle_names.index(name)
+        self.beginRemoveRows(QModelIndex(), row_index, row_index)
+        del self._yawlines[row_index]
+        self.endRemoveRows()
+        self.vehicle_names.remove(name)
+
+
+class HeadingLineModel(QAbstractListModel):
+    PathRole = Qt.UserRole + 1
+    ColorRole = Qt.UserRole + 2
+
+    _roles = {PathRole: QByteArray(b"heading_path"),
+              ColorRole: QByteArray(b"heading_color")}
 
     def __init__(self, parent=None):
-        super(headingLineModel, self).__init__(parent)
+        QAbstractListModel.__init__(self, parent)
         self._headinglines = []
+        self.vehicle_names = []
 
-    def rowCount(self, parent=QtCore.QModelIndex()):
+    def rowCount(self, index=QModelIndex()):
         return len(self._headinglines)
 
-    def data(self, index, role=QtCore.Qt.DisplayRole):
-        if 0 <= index.row() < self.rowCount():
-            if role == headingLineModel.headingPath:
-                return self._headinglines[index.row()]["heading_path"]
-        return QtCore.QVariant()
-
     def roleNames(self):
-        return {
-            headingLineModel.headingPath: b"heading_path",
-        }
+        return self._roles
 
-    def remove_lines(self):
-        if self.rowCount() == 0:
-            return
-        self.beginRemoveRows(QtCore.QModelIndex(), self.rowCount(), self.rowCount())
-        self._headinglines = []
-        self.endRemoveRows()
+    def data(self, index, role=Qt.DisplayRole):
+        if index.row() >= self.rowCount():
+            return QVariant()
+        headingline = self._headinglines[index.row()]
 
-    def update_line(self, line):
-        self.beginInsertRows(QtCore.QModelIndex(), self.rowCount(), self.rowCount())
-        if not self._headinglines:
-            self._headinglines.append(line)
-        else:
-            self._headinglines[-1].update(line)
-        self.endInsertRows()
+        if role == HeadingLineModel.PathRole:
+            return headingline.path_val()
+        elif role == HeadingLineModel.ColorRole:
+            return headingline.color_val()
+        return QVariant()
 
-    def appendLine(self, line):
-        self.beginInsertRows(QtCore.QModelIndex(), self.rowCount(), self.rowCount())
+    def setData(self, index, value, role=Qt.EditRole):
+        if index.isValid():
+            headingline = self._headinglines[index.row()]
+            if role == HeadingLineModel.PathRole:
+                headingline.setPath(value)
+            elif role == HeadingLineModel.ColorRole:
+                headingline.setColor(value)
+            self.dataChanged.emit(index, index)
+            return True
+        return QAbstractListModel.setData(self, index, value, role)
+
+    def addHeadingLine(self, name, line):
+        self.beginInsertRows(QModelIndex(), self.rowCount(), self.rowCount())
         self._headinglines.append(line)
         self.endInsertRows()
+        self.vehicle_names.append(name)
+
+    def flags(self, index):
+        if not index.isValid():
+            return Qt.ItemIsEnabled
+        return QAbstractListModel.flags(index) | Qt.ItemIsEditable
+
+    def updateHeadingLine(self, name, new_line):
+        if name in self.vehicle_names:
+            ind = self.index(self.vehicle_names.index(name), 0)
+            self.setData(ind, new_line.path_val(), HeadingLineModel.PathRole)
+            self.setData(ind, new_line.color_val(), HeadingLineModel.ColorRole)
+
+    def removeHeadingLine(self, name):
+        row_index = self.vehicle_names.index(name)
+        self.beginRemoveRows(QModelIndex(), row_index, row_index)
+        del self._headinglines[row_index]
+        self.endRemoveRows()
+        self.vehicle_names.remove(name)
 
 
+class HomeModel(QAbstractListModel):
+    PositionRole = Qt.UserRole + 1
+    SourceRole = Qt.UserRole + 2
+
+    _roles = {PositionRole: QByteArray(b"position_home"),
+              SourceRole: QByteArray(b"source_home")}
+
+    def __init__(self, parent=None):
+        QAbstractListModel.__init__(self, parent)
+        self._homes = []
+        self.vehicle_names = []
+
+    def rowCount(self, index=QModelIndex()):
+        return len(self._homes)
+
+    def roleNames(self):
+        return self._roles
+
+    def data(self, index, role=Qt.DisplayRole):
+        if index.row() >= self.rowCount():
+            return QVariant()
+        home = self._homes[index.row()]
+
+        if role == HomeModel.PositionRole:
+            return home.position_val()
+        elif role == HomeModel.SourceRole:
+            return home.source_val()
+        return QVariant()
+
+    def setData(self, index, value, role=Qt.EditRole):
+        if index.isValid():
+            home = self._homes[index.row()]
+            if role == HomeModel.PositionRole:
+                home.setPosition(value)
+            elif role == HomeModel.SourceRole:
+                home.setSource(value)
+            self.dataChanged.emit(index, index)
+            return True
+        return QAbstractListModel.setData(self, index, value, role)
+
+    def addHome(self, name, home):
+        self.beginInsertRows(QModelIndex(), self.rowCount(), self.rowCount())
+        self._homes.append(home)
+        self.endInsertRows()
+        self.vehicle_names.append(name)
+
+    def flags(self, index):
+        if not index.isValid():
+            return Qt.ItemIsEnabled
+        return QAbstractListModel.flags(index) | Qt.ItemIsEditable
+
+    def updateHome(self, name, new_home):
+        if name in self.vehicle_names:
+            ind = self.index(self.vehicle_names.index(name), 0)
+            self.setData(ind, new_home.position_val(), HomeModel.PositionRole)
+            self.setData(ind, new_home.source_val(), HomeModel.SourceRole)
+
+    def removeHome(self, name):
+        row_index = self.vehicle_names.index(name)
+        self.beginRemoveRows(QModelIndex(), row_index, row_index)
+        del self._homes[row_index]
+        self.endRemoveRows()
+        self.vehicle_names.remove(name)
 
 
-if __name__ == '__main__':
+class Marker(QAbstractListModel):
+    positionChanged = QtCore.pyqtSignal()
+    sourceChanged = QtCore.pyqtSignal(str)
+    rotationChanged = QtCore.pyqtSignal(float)
 
-    import sys
-    app = QtWidgets.QApplication(sys.argv)
-    w = MapWidget()
+    def __init__(self, parent=None):
+        super(Marker, self).__init__(parent)
+        self._source = None
+        self._position = None
+        self._rotation = None
 
-    w.show()
-    sys.exit(app.exec_())
+    def position_val(self):
+        return self._position
+
+    def setPosition(self, new_pos):
+        self._position = new_pos
+        self.positionChanged.emit()
+
+    def source_val(self):
+        return self._source
+
+    def setSource(self, new_source):
+        self._source = new_source
+        self.sourceChanged.emit(new_source)
+
+    def rotation_val(self):
+        return self._rotation
+
+    def setRotation(self, new_rotation):
+        self._rotation = new_rotation
+        self.rotationChanged.emit(new_rotation)
+
+
+class Line(QAbstractListModel):
+    pathChanged = QtCore.pyqtSignal(list)
+    colorChanged = QtCore.pyqtSignal(str)
+
+    def __init__(self, parent=None):
+        super(Line, self).__init__(parent)
+        self._color = "black"
+        self._path = None
+
+    def color_val(self):
+        return self._color
+
+    def setColor(self, new_color):
+        self._color = new_color
+        self.colorChanged.emit(new_color)
+
+    def path_val(self):
+        return self._path
+
+    def setPath(self, new_path):
+        self._path = new_path
+        self.pathChanged.emit(new_path)

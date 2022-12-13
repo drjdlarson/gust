@@ -258,8 +258,6 @@ class FrontendWindow(QMainWindow, Ui_MainWindow_main):
                 self.flight_params[key]['flight_mode'],
                 )
 
-        self.widget_map.update_map()
-
         if self.once_clicked:
             self.vehicle_selected()
 

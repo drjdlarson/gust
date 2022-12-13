@@ -121,7 +121,7 @@ Item {
             delegate: MapPolyline {
                 id: yaw_line
                 line.width: 3
-                line.color: 'crimson'
+                line.color: yaw_color
                 path: model.yaw_path
             }
         }
@@ -131,10 +131,10 @@ Item {
             model: heading_line
             remove: myTrans
             delegate: MapPolyline {
-                id: yaw_line
+                id: heading_line
                 line.width: 3
-                line.color: 'transparent'
-                path: model.heading_path
+                line.color: heading_color
+                path: heading_path
             }
         }
 
@@ -142,7 +142,7 @@ Item {
             model: markermodel
             remove: myTrans
             delegate: MapQuickItem {
-                coordinate: model.position_marker
+                coordinate: position_marker
                 // coordinate: {33.2098, -87.5692}
                 //coordinate: QtPositioning.coordinate(33.21534, -87.54355)
                 anchorPoint.x: image.width/2
@@ -152,13 +152,34 @@ Item {
                     Image {
                         id: image
                         //anchors.fill: parent
-                        source: model.source_marker
+                        source: source_marker
                         sourceSize.width: 30
                         sourceSize.height: 30
                         width: 30
                         height: 30
                         // rotation: model.rotation_marker
-                        transform: Rotation {origin.x: width/2; origin.y: height/2; angle: model.rotation_marker}
+                        transform: Rotation {origin.x: width/2; origin.y: height/2; angle: rotation_marker}
+                        }
+            }
+        }
+
+        MapItemView{
+            model: homemodel
+            remove: myTrans
+            delegate: MapQuickItem {
+                coordinate: position_home
+                anchorPoint.x: image.width/2
+                anchorPoint.y: image.height/2
+                autoFadeIn: false
+                sourceItem:
+                    Image {
+                        id: image
+                        //anchors.fill: parent
+                        source: source_home
+                        sourceSize.width: 30
+                        sourceSize.height: 30
+                        width: 30
+                        height: 30
                         }
             }
         }
