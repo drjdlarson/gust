@@ -77,7 +77,6 @@ class ConnServer:
                     del cls._radios[name]
                     database.change_connection_status_value(name, 0)
 
-
             elif received_info['type'] == conn_settings.ZED_CONN:
                 response = zedHandler.connect(received_info)
 
@@ -136,7 +135,7 @@ class ConnServer:
 
         if name in cls._radios:
             succ = False
-            err = 'Radio process alread running'
+            err = 'Radio process already running'
 
         else:
             cls._radios[name] = QProcess()
@@ -146,7 +145,7 @@ class ConnServer:
 
             succ = cls._radios[name].waitForStarted()
             if not succ:
-                logger.info("failed to start process")
+                logger.info("Failed to start Radio process")
             err = None
 
         return succ, err
@@ -159,16 +158,41 @@ class ConnServer:
 
     @classmethod
     def start_cmr_process(cls, ctx):
-        # write script to have start cmr process right here
+        if cls._cmr_proc is None:
+            logger.info("Starting the CMR manager QProcess")
+            program = ctx.get_resource('cmr_manager/cmr_manager')
+            args = []
 
-        succ = False
-        err = "I cant start right now, but its working"
+            cls._cmr_proc = QProcess()
+            cls._cmr_proc.setProcessChannelMode(QProcess.MergedChannels)
+            cls._cmr_proc.setProcessEnvironment(QProcessEnvironment.systemEnvirotnment())
+            cls._cmr_proc.start(program, args)
+
+            succ = cls._cmr_proc.waitForStarted()
+            err = None
+
+            if not succ:
+                err = 'Failed to start CMR process'
+                logger.info(err)
+
+        else:
+            succ = False
+            err = "CMR Process already running"
+
         return succ, err
 
     @classmethod
     def stop_cmr_process(cls):
-        succ = False
-        err = "I cant stop right now, but its working"
+        if 'windows' in platform.system().lower():
+            cls._cmr_proc.kill()
+        else:
+            cls._cmr_proc.terminate()
+            time.sleep(0.125)
+        cls._cmr_proc = None
+
+        succ = True
+        err = ""
+
         return succ, err
 
 
