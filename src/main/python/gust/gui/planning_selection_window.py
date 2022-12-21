@@ -18,11 +18,8 @@ class PlanningSelectionWindow(QMainWindow, Ui_MainWindow):
         self._generalWindow = None
 
         self.comboBox_planning_types.addItems(PLANNING_TYPES)
-
-        print("planning selection window")
         self.pushButton_open.clicked.connect(self.clicked_open)
         self.pushButton_cancel.clicked.connect(self.clicked_cancel)
-        print("after connect functions")
 
     def clicked_cancel(self):
         self.close()
@@ -30,11 +27,8 @@ class PlanningSelectionWindow(QMainWindow, Ui_MainWindow):
     def clicked_open(self):
 
         sel_type = self.comboBox_planning_types.currentText()
-
-        print("clicked open inside planning selection window")
         if sel_type == 'CMR Planning':
             if self._cmrWindow is None:
-                print("if statement inside clicked_open")
                 self._cmrWindow = cmr_window.CmrWindow(
                     self.ctx, parent=self)
             self._cmrWindow.show()

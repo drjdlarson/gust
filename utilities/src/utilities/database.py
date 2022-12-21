@@ -916,6 +916,31 @@ def get_zed_points(name, delay=None):
     return ret_vals
 
 
+def add_cmr_table():
+    query = _start_query()
+    cmd = """CREATE TABLE IF NOT EXISTS cmr_table (
+    name TEXT,
+    wp_color TEXT,
+    next_wp INTEGER,
+    wp_reached INTEGER
+    UNIQUE(name, wp_color)
+    );
+    """
+    logger.debug(cmd)
+    res = query.exec_(cmd)
+    if not res:
+        logger.warning("Unable to add CMR table")
+    return res
+
+def add_cmr_vehicle(name, wp_color):
+    query = _start_query()
+    cmd = """INSERT INTO cmr_table (name, wp_color, next_wp,wp_reached) VALUES ("{}", "{}", 1, 0);
+    """.format(name, wp_color)
+    res = query.exec_(cmd)
+    if not res:
+        logger.warning("Unable to add {} with {} waypoints to cmr_table".format(name, wp_color))
+    return res
+
 if __name__ == "__main__":
     import random
     import time

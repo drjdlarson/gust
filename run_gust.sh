@@ -18,6 +18,7 @@ while getopts ":hb" option; do
 		b) # build wsgi
 			./build_wsgi.sh
 			./build_radiomanager.sh
+			./build_cmr_manager.sh
 			;;
 		h) # display help
 			Help

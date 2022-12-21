@@ -1,4 +1,4 @@
-"""GUST plugin for <NAME>."""
+"""GUST plugin for Radio Manager."""
 import argparse
 import dronekit
 import random, time
@@ -291,8 +291,6 @@ if __name__ == "__main__":
 
     if not database.connect_db():
         sys.exit(-2)
-
-    time.sleep(0.125)
 
     if port == '/dev/test/':
         import os

@@ -20,6 +20,7 @@ from gust.gui.ui.gustClient import Ui_MainWindow_main
 from gust.gui import con_window, log_window, sensors_window, planning_selection_window
 from gust.gui import engineoff_confirmation, disconnect_confirmation, rtl_confirmation, disarm_confirmation
 from gust.gui import rc_window, servo_window
+
 from gust.gui.ui.map_widget import MapWidget
 from gust.gui.ui.attitude_ind_widget import pyG5AIWidget
 from gust.gui.msg_decoder import MessageDecoder as msg_decoder
@@ -62,12 +63,6 @@ class FrontendWindow(QMainWindow, Ui_MainWindow_main):
         self.pushButton_tune.clicked.connect(self.clicked_tune)
         self.pushButton_planning.clicked.connect(self.clicked_planning)
 
-        # Setting few features of the table
-        header = self.tableWidget.horizontalHeader()
-        header.setMinimumSectionSize(120)
-        header.setSectionResizeMode(QHeaderView.ResizeToContents)
-        header.setStretchLastSection(True)
-
         self.once_clicked = False
         self.tableWidget.cellClicked.connect(self.item_clicked)
 
@@ -92,7 +87,7 @@ class FrontendWindow(QMainWindow, Ui_MainWindow_main):
                 self.ctx, ports['ports'], used_colors['used_colors'])
 
         if self._conWindow.exec_():
-            time.sleep(0.25)
+            time.sleep(1.0)
             self._continue_updating_data = True
 
             # adding a row in the table

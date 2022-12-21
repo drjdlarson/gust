@@ -21,6 +21,7 @@ logger = logging.getLogger("[conn-server]")
 class ConnServer:
     running = False
     _radios = {}
+    _cmr_proc = None
 
     @classmethod
     def start_conn_server(cls, ctx):
@@ -76,8 +77,21 @@ class ConnServer:
                     del cls._radios[name]
                     database.change_connection_status_value(name, 0)
 
+
             elif received_info['type'] == conn_settings.ZED_CONN:
                 response = zedHandler.connect(received_info)
+
+            elif received_info['type'] == conn_settings.UPLOAD_WP:
+                succ, err = cls.upload_waypoints(received_info)
+                response = {'success': succ, 'info': err}
+
+            elif received_info['type'] == conn_settings.START_CMR:
+                succ, err = cls.start_cmr_process(ctx)
+                response = {'success': succ, 'info': err}
+
+            elif received_info['type'] == conn_settings.STOP_CMR:
+                succ, err = cls.stop_cmr_process()
+                resposne = {'success': succ, 'info': err}
 
             else:
                 continue
@@ -135,6 +149,26 @@ class ConnServer:
                 logger.info("failed to start process")
             err = None
 
+        return succ, err
+
+    @classmethod
+    def upload_waypoints(cls, received_info):
+        succ = False
+        err = "There's nothing here right now, but its working"
+        return succ, err
+
+    @classmethod
+    def start_cmr_process(cls, ctx):
+        # write script to have start cmr process right here
+
+        succ = False
+        err = "I cant start right now, but its working"
+        return succ, err
+
+    @classmethod
+    def stop_cmr_process(cls):
+        succ = False
+        err = "I cant stop right now, but its working"
         return succ, err
 
 

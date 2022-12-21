@@ -41,6 +41,7 @@ done
 if [ "$skip" = false ] ; then
 	./build_wsgi.sh
 	./build_radiomanager.sh
+	./build_cmr_manager
 fi
 
 

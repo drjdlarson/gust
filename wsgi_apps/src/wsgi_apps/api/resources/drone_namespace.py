@@ -19,6 +19,9 @@ conParse.add_argument("name", default="", type=str)
 conParse.add_argument("color", default="", type=str)
 conParse.add_argument("baud", default=-1, type=int)
 
+uploadParse = DRONE_NS.parser()
+uploadParse.add_argument('name', default="", type=str)
+uploadParse.add_argument('wp_color', default="", type=str)
 
 @DRONE_NS.route("/connect")
 class ConnInfo(Resource):
@@ -52,6 +55,34 @@ class ConnInfo(Resource):
         elif len(name) == 0:
             return {"success": False, "msg": "Invalid name"}
 
+@DRONE_NS.route("/upload_wp")
+class UploadWP(Resource):
+    cmr_started = False
+    @DRONE_NS.expect(uploadParse)
+    def get(self):
+        args = uploadParse.parse_args()
+        name = args["name"]
+        wp_color = args["wp_color"]
+
+        upload_info = {'name': name, "wp_color": wp_color}
+
+        if not database.connect_db():
+            return {'success': False, "msg": "Failed to connect to database"}
+
+        if not self.cmr_started:
+            res = database.add_cmr_table()
+
+        res = database.add_cmr_vehicle(name, wp_color)
+        if res:
+            self.cmr_started = True
+            upload_succ, info = send_info_to_conn_server(upload_info, conn_settings.UPLOAD_WP)
+            if upload_succ:
+                return {"success": True, "msg": ""}
+            elif not upload_succ:
+                return {"success": False, "msg": info}
+        else:
+            return {'success': False, 'msg': "Unable to add waypoint info to the database"}
+
 
 @DRONE_NS.route("/disconnect")
 class Disconnect(Resource):
@@ -63,6 +94,30 @@ class Disconnect(Resource):
         else:
             return {"success": False, "msg": "Unable to disconnect"}
 
+@DRONE_NS.route("/start_cmr_proc")
+class CmrProcessTrigger(Resource):
+    def get(self):
+        succ, info = send_info_to_conn_server({}, conn_settings.START_CMR)
+        return {"success": succ, 'msg': info}
+
+
+@DRONE_NS.route("/stop_cmr_proc")
+class CmrProcessStop(Resource):
+    def get(self):
+        succ, info = send_info_to_conn_server({}, conn_settings.STOP_CMR)
+        return {"success": succ, 'msg': info}
+
+
+@DRONE_NS.route("/get_connected_drones_with_color")
+class DroneAndColor(Resource):
+    def get(self):
+        drone_and_colors = {}
+        database.connect_db()
+        names = database.get_drone_ids()
+        for name in names:
+            color = database.get_drone_color(name)
+            drone_and_colors[name] = color
+        return drone_and_colors
 
 @DRONE_NS.route("/get_available_ports")
 class PortsData(Resource):

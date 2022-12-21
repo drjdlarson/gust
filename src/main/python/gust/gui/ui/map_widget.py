@@ -58,12 +58,10 @@ class MapWidget(QtQuickWidgets.QQuickWidget):
             self.rootContext().setContextProperty("homemodel", self.home_model)
 
         if name not in self._vehicles:
-            print("creating maphelper instance")
             self._vehicles[name] = MapHelper(name, color, self.marker_model, self.heading_line_model, self.yaw_line_model,
                                              self.home_model, home_lat, home_lon, latitude, longitude, yaw, heading, mode, self.ctx)
             self._vehicles[name].add_objects_in_map()
         else:
-            print('its updating the same instance now')
             self._vehicles[name].home_lat = home_lat
             self._vehicles[name].home_lon = home_lon
             self._vehicles[name].latitude = latitude

@@ -1,17 +1,27 @@
 """Logic for CMR planning window"""
-from PyQt5.QtWidgets import QMainWindow, QFileDialog, QMessageBox, QCheckBox
-from PyQt5.QtGui import QPixmap
-from PyQt5.QtCore import QAbstractListModel, Qt, QByteArray
+from PyQt5 import QtGui, QtCore
+from PyQt5.QtWidgets import QMainWindow, QFileDialog, QMessageBox, QCheckBox, QTableWidgetItem, QPushButton, QComboBox
+from PyQt5.QtCore import QAbstractListModel, Qt, QByteArray, QProcess, QProcessEnvironment
 import math
-import os
+import os, platform
+import logging
 import pathlib
-
+import requests
+import dronekit
+import utilities.database as database
+from utilities import ConnSettings as conn_settings
 from gust.gui.ui.cmr_window import Ui_MainWindow
+from wsgi_apps.api.url_bases import BASE, DRONE
 
 
 d2r = math.pi / 180
 r2d = 1 / d2r
+URL_BASE = "http://localhost:8000/{}/".format(BASE)
+DRONE_BASE = "{}{}/".format(URL_BASE, DRONE)
 
+_CMR_RUNNING = False
+
+logger = logging.getLogger("[cmr-operation]")
 
 class CmrWindow(QMainWindow, Ui_MainWindow):
     """Main interface for the CMR Planning window."""
@@ -21,11 +31,128 @@ class CmrWindow(QMainWindow, Ui_MainWindow):
 
         self.ctx = ctx
         self.setupUi(self)
+        self.all_vehicles = {}
+        self.cmr_vehicles = []
+
         self.pushButton_draw_grid.clicked.connect(self.clicked_draw_grid)
         self.pushButton_generate_wp.clicked.connect(self.clicked_generate_waypoints)
         self.pushButton_load_wp.clicked.connect(self.clicked_load_waypoints)
         self.checkBox_grid.stateChanged.connect(self.grid_checkbox_changed)
         self.checkBox_waypoints.stateChanged.connect(self.waypoints_checkbox_changed)
+        self.pushButton_refresh.clicked.connect(self.clicked_refresh)
+        self.pushButton_start_cmr.clicked.connect(self.clicked_start_cmr_operation)
+        self.pushButton_stop_cmr.clicked.connect(self.clicked_stop_cmr_operation)
+
+        # Test pushbuttons
+        self.pushButton_test_upload_waypoints.clicked.connect(self.clicked_test_upload_waypoints)
+        self.pushButton_test_goto_next.clicked.connect(self.clicked_test_goto_next)
+
+    def clicked_start_cmr_operation(self):
+        global _CMR_RUNNING
+
+        if _CMR_RUNNING:
+            succ = False
+            error = "CMR process already running"
+
+        else:
+            # if len(self.cmr_vehicles) >= 2:
+            if len(self.cmr_vehicles) == 0:
+                url = "{}start_cmr_proc".format(DRONE_BASE)
+                cmr_start = requests.get(url).json()
+                succ = cmr_start['success']
+                error = cmr_start['msg']
+            else:
+                succ = False
+                error = "Cannot start CMR process with less than 2 vehicles"
+        msgBox = QMessageBox()
+        if succ:
+            _CMR_RUNNING = True
+            msgBox.setIcon(QMessageBox.Information)
+            msgBox.setText("Starting CMR Process")
+            msgBox.exec()
+        else:
+            msgBox.setIcon(QMessageBox.Warning)
+            msgBox.setText(error)
+            msgBox.exec()
+
+
+    def clicked_stop_cmr_operation(self):
+        global _CMR_RUNNING
+
+        if not _CMR_RUNNING:
+            succ = False
+            error = "CMR Process is not running"
+        else:
+            url = "{}stop_cmr_process".format(DRONE_BASE)
+            cmr_stop = requests.get(url).json()
+            succ = cmr_stop['success']
+            error = cmr_stop['msg']
+
+        msgBox = QMessageBox()
+        if succ:
+            _CMR_RUNNING = False
+            msgBox.setIcon(QMessageBox.Information)
+            msgBox.setText("CMR Process is stopped")
+            msgBox.exec()
+        else:
+            msgBox.setIcon(QMessageBox.Warning)
+            msgBox.setText(error)
+            msgBox.exec()
+
+
+    def clicked_refresh(self):
+        url = "{}get_connected_drones_with_color".format(DRONE_BASE)
+        self.all_vehicles = requests.get(url).json()
+        self.populate_drone_table()
+
+    def populate_drone_table(self):
+        for name, drone_color in self.all_vehicles.items():
+            index = list(self.all_vehicles.keys()).index(name)
+
+            item = QTableWidgetItem()
+            item.setBackground(QtGui.QColor(drone_color))
+            self.tableWidget_drones.setItem(index, 0, item)
+
+            item = QTableWidgetItem(name)
+            item.setTextAlignment(QtCore.Qt.AlignCenter)
+            self.tableWidget_drones.setItem(index, 1, item)
+
+            self.comboBox_wp_selection = QComboBox()
+            self.comboBox_wp_selection.addItems(self.wp_colors)
+            self.tableWidget_drones.setCellWidget(index, 2, self.comboBox_wp_selection)
+
+            self.upload_button = QPushButton("Upload")
+            self.upload_button.clicked.connect(self.clicked_upload_waypoints)
+            self.tableWidget_drones.setCellWidget(index, 3, self.upload_button)
+
+    def clicked_upload_waypoints(self):
+        button = self.sender()
+        if button:
+            sel_row = self.tableWidget_drones.indexAt(button.pos()).row()
+            drone_name = self.tableWidget_drones.item(sel_row, 1).text()
+            wp_color = self.tableWidget_drones.cellWidget(sel_row, 2).currentText()
+            print("Uploading {} Waypoints to {}".format(wp_color, drone_name))
+
+            url = "{}upload_wp".format(DRONE_BASE)
+            url += "?name=" + drone_name.replace(' ', '_')
+            url += "&wp_color=" + wp_color.replace(' ', '_')
+            upload = requests.get(url).json()
+
+            msgBox = QMessageBox()
+
+            if upload['success']:
+                self.cmr_vehicles.append(drone_name)
+                msgBox.setIcon(QMessageBox.Information)
+                msgBox.setText("Uploaded {} waypoints to {}".format(wp_color, drone_name))
+                msgBox.exec()
+
+            else:
+                msgBox.setIcon(QMessageBox.Warning)
+                msgBox.setText("Unable to upload {} waypoints to {}:: {:s}".format(wp_color, drone_name, upload["msg"]))
+                msgBox.exec()
+
+    def clicked_test_goto_next(self):
+        pass
 
     def clicked_load_waypoints(self):
         pass
@@ -36,7 +163,8 @@ class CmrWindow(QMainWindow, Ui_MainWindow):
         self.theta_max = float(self.lineEdit_theta_max.text())
         self.theta_min = float(self.lineEdit_theta_min.text())
 
-        waypoints = {}
+        self.waypoints = {}
+        self.wp_colors = ['red', 'blue']
 
         wp1 = [(33.21589373771255, -87.56986696619138),
                (33.19992239477393, -87.54676703331124),
@@ -48,15 +176,30 @@ class CmrWindow(QMainWindow, Ui_MainWindow):
         # other side of the survey line
         wp2 = self.calculate_waypoints_S(-1)
 
-        waypoints.update({1: {'coordinates': wp2, 'color': 'red'}})
-        waypoints.update({2: {'coordinates': wp1, 'color': 'blue'}})
+        self.waypoints.update({1: {'coordinates': wp2, 'color': 'red'}})
+        self.waypoints.update({2: {'coordinates': wp1, 'color': 'blue'}})
 
-        self.write_waypoints_to_a_file(waypoints)
+        self.write_waypoints_to_a_file(self.waypoints)
         self.widget_cmr_map.add_waypoint_lines(wp1, "blue")
         self.widget_cmr_map.add_waypoint_lines(wp2, 'red')
         self.checkBox_waypoints.setCheckState(True)
 
     def write_waypoints_to_a_file(self, waypoints):
+        """
+        Writes two waypoint files.
+        Compatible to use with MP and QGC
+
+        Parameters
+        ----------
+        waypoints : dict
+            keys: index for drone
+            values: list of coordinates and color code of waypoint
+
+        Returns
+        -------
+        None.
+
+        """
         for key, value in waypoints.items():
             name = "{}_waypoints.txt".format(value['color'])
             list_of_waypoints = value['coordinates']
@@ -67,7 +210,84 @@ class CmrWindow(QMainWindow, Ui_MainWindow):
             if os.path.exists(filename):
                 os.remove(filename)
             with open(filename, 'w') as f:
-                f.write('\n'.join(f'{tup[0]}, {tup[1]}' for tup in list_of_waypoints))
+                f.write('QGC WPL 110\n')
+                # manually writing the first line.
+                f.write("0\t1\t0\t16\t0\t0\t0.0\t0.0\t1.0\t1.0\t0.0\t1\n")
+                for index, tup in enumerate(list_of_waypoints):
+                    seq = index + 1
+                    frame = 3
+                    command = 16
+                    param1 = 1.0
+                    param2 = 0.0
+                    param3 = 0.0
+                    param4 = 0.0
+                    x = tup[0]
+                    y = tup[1]
+                    z = self.H
+                    f.write("{}\t0\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t1\n".format(seq, frame, command, param1, param2, param3, param4, x, y, z))
+
+
+    def clicked_test_upload_waypoints(self):
+        print('connecting to whatever is available...')
+        self.v = dronekit.connect('/dev/ttyUSB0', wait_ready=True, baud=57600)
+
+        print('uploading the mission now...')
+        print(self.v.mode.name)
+        print('\n')
+        self.upload_mission(self.ctx.get_resource('cmr_planning/red_waypoints.txt'))
+        print('uploaded the mission!')
+
+
+    def upload_mission(self, aFileName):
+        """Upload a mission from a file"""
+        missionList = self.readmission(aFileName)
+        print('Uploading waypoints from {}\n'.format(aFileName))
+        print('Clearing older mission\n')
+
+        cmds = self.v.commands
+        cmds.clear()
+        cmds.upload()
+
+        print('uploading new mission\n')
+        for command in missionList:
+            cmds.add(command)
+        print('Added all commands')
+        cmds.upload(timeout=20)
+        print("Uploaded the mission")
+
+    def readmission(self, aFileName):
+        """
+        Load a mission from a file into a list.
+
+        This function is used by upload_mission().
+        """
+        print("Reading mission from file: {}\n".format(aFileName))
+        cmds = self.v.commands
+        missionlist=[]
+        with open(aFileName) as f:
+            for i, line in enumerate(f):
+                if i==0:
+                    if not line.startswith('QGC WPL 110'):
+                        raise Exception('File is not supported WP version')
+                else:
+                    linearray=line.split('\t')
+                    ln_seq = int(linearray[0])
+                    ln_currentwp = int(linearray[1])
+                    ln_frame = int(linearray[2])
+                    ln_command = int(linearray[3])
+                    ln_param1 = float(linearray[4])
+                    ln_param2 = float(linearray[5])
+                    ln_param3 = float(linearray[6])
+                    ln_param4 = float(linearray[7])
+                    ln_x = float(linearray[8])
+                    ln_y = float(linearray[9])
+                    ln_z = float(linearray[10])
+                    ln_autocontinue = int(linearray[11])
+                    cmd = dronekit.Command(0, 0, 0, ln_frame, ln_command, 0, 0, ln_param1, ln_param2, ln_param3, ln_param4, ln_x, ln_y, ln_z)
+                    print("\n{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}".format(0, 0, 0, ln_frame, ln_command, 0, 0, ln_param1, ln_param2, ln_param3, ln_param4, ln_x, ln_y, ln_z))
+                    missionlist.append(cmd)
+        return missionlist
+
 
 
     def calculate_waypoints_frontback(self, direction):
@@ -331,7 +551,7 @@ class CmrWindow(QMainWindow, Ui_MainWindow):
     def setupUi(self, mainWindow):
         super().setupUi(mainWindow)
 
-        pixmap = QPixmap(self.ctx.get_resource('cmr_planning/cmr_schematic.jpeg'))
+        pixmap = QtGui.QPixmap(self.ctx.get_resource('cmr_planning/cmr_schematic.jpeg'))
         self.label_schematic.setPixmap(pixmap)
 
         self.widget_cmr_map.setup_qml(self.ctx)

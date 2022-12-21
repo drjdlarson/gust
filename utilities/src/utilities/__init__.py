@@ -14,6 +14,12 @@ class ConnSettings:
     # DRONE message_type
     DRONE_CONN = 'drone_connect'
     DRONE_DISC = 'drone_disconnect'
+    UPLOAD_WP = 'upload_waypoints'
+
+    # CMR Process
+    CMR_PORT = 9850
+    START_CMR = 'start_cmr_process'
+    STOP_CMR = 'stop_cmr_process'
 
     # ZED message_type
     ZED_CONN = 'zed_connect'
