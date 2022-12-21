@@ -8,7 +8,8 @@ Created on Wed Aug 10 12:18:20 2022
 import json
 import platform
 import logging
-import time
+import time, sys
+import random
 from PyQt5.QtCore import QProcess, QProcessEnvironment
 from PyQt5 import QtNetwork
 from utilities import ConnSettings as conn_settings
@@ -21,6 +22,8 @@ logger = logging.getLogger("[conn-server]")
 class ConnServer:
     running = False
     _radios = {}
+    available_udp_ports = []
+    _radio_udp_port = {}
     _cmr_proc = None
 
     @classmethod
@@ -39,6 +42,8 @@ class ConnServer:
 
         cls.running = True
 
+        cls.available_udp_ports = conn_settings.RADIO_PORTS
+
         database.connect_db()
         conn = QtNetwork.QUdpSocket()
         conn.bind(conn_settings.PORT)
@@ -54,6 +59,7 @@ class ConnServer:
 
             # data, addr = conn.recvfrom(conn_settings.MAX_MSG_SIZE)
             # received_info = json.loads(data.decode(conn_settings.FORMAT))
+
             data = conn.receiveDatagram(conn.pendingDatagramSize())
             received_info = json.loads(data.data().data().decode(conn_settings.FORMAT))
             addr = data.senderAddress()
@@ -118,7 +124,8 @@ class ConnServer:
     @classmethod
     def connect_to_radio(cls, received_info, ctx):
         name = received_info['name']
-        msg = "Connecting to {} on {}".format(name, received_info['port'])
+        cls._radio_udp_port[name] = random.choice(cls.available_udp_ports)
+        msg = "Connecting to {} on {}: udp connection: {}".format(name, received_info['port'], cls._radio_udp_port[name])
         logger.info(msg)
 
         program = ctx.get_resource('radio_manager/radio_manager')
@@ -131,6 +138,8 @@ class ConnServer:
             "{}".format(received_info['color']),
             "--baud",
             "{}".format(received_info['baud']),
+            "--udp_port",
+            "{}".format(cls._radio_udp_port[name]),
             ]
 
         if name in cls._radios:
@@ -145,9 +154,12 @@ class ConnServer:
 
             succ = cls._radios[name].waitForStarted()
             if not succ:
-                logger.info("Failed to start Radio process")
-            err = None
+                err = "Failed to start Radio process"
+                logger.info(err)
+                return succ, err
 
+            err = None
+            cls.available_udp_ports.remove(cls._radio_udp_port[name])
         return succ, err
 
     @classmethod
@@ -194,12 +206,3 @@ class ConnServer:
         err = ""
 
         return succ, err
-
-
-# if __name__ == "__main__":
-#     start_conn_server()
-#     print("Starting the conn_server ...")
-
-#     empty = {}
-#     empty.update({'type': conn_settings.DRONE_CONN})
-#     print(empty['type'])

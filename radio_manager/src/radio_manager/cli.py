@@ -5,8 +5,11 @@ import random, time
 import numpy as np
 import sys
 import signal
-
+import os
+import json
+from PyQt5 import QtNetwork
 import utilities.database as database
+from utilities import ConnSettings as conn_settings
 from argparse import ArgumentParser
 
 d2r = np.pi / 100
@@ -221,6 +224,30 @@ def prepare_data_from_mavlink(radio, name, port, rate1, rate2, rate3, rate4, dat
         rate2['vals']['satellites_visible'] = data['GPS_RAW_INT']['satellites_visible']
     return rate1, rate2, rate3, rate4, data
 
+def check_for_signal(conn):
+    if not conn.hasPendingDatagrams():
+        return
+
+    data = conn.receiveDatagram(conn.pendingDatagramSize())
+    received_signal = json.loads(data.data().data().decode(conn_settings.FORMAT))
+
+    if received_signal['type'] == conn_settings.UPLOAD_WP:
+        succ, err = upload_waypoints(received_signal)
+        response = {'success': succ, "info": err}
+
+    if received_signal['type'] == conn_settings.GOTO_NEXT_WP:
+        succ, err = goto_next_wp(received_signal)
+        response = {'success': succ, "info": err}
+
+def goto_next_wp(received_signal):
+    succ = False
+    err = ""
+    return succ, err
+
+def upload_waypoints(received_signal):
+    succ = False
+    err = ""
+    return succ, err
 
 def get_current_time():
     return time.time()
@@ -260,6 +287,14 @@ def define_parser():
         default=default
         )
 
+    default = 9830
+    parser.add_argument(
+        "--udp_port",
+        type=str,
+        help="Port for UDP socket connection. The default is {}".format(default),
+        default=default
+        )
+
     return parser
 
 
@@ -283,18 +318,21 @@ _handleable_sigs = (
 if __name__ == "__main__":
 
     args = define_parser().parse_args()
-
     name = args.name
     port = args.port
     color = args.color
     baud = args.baud
+    udp_port = args.udp_port
 
     if not database.connect_db():
         sys.exit(-2)
 
+    sig_conn = QtNetwork.QUdpSocket()
+    sig_conn.bind(udp_port)
+
     if port == '/dev/test/':
-        import os
         while True:
+            check_for_signal(sig_conn)
             all_data = prepare_dummy_data()
             res = database.write_values(all_data, name)
             time.sleep(0.2)
@@ -319,6 +357,7 @@ if __name__ == "__main__":
         rate1, rate2, rate3, rate4 = [all_data[i] for i in range(len(all_data))]
 
         while True:
+            check_for_signal(sig_conn)
             rate1, rate2, rate3, rate4, mav_data = prepare_data_from_mavlink(
                 radio, name, port, rate1, rate2, rate3, rate4, mav_data
                 )

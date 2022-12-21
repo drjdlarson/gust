@@ -15,9 +15,11 @@ class ConnSettings:
     DRONE_CONN = 'drone_connect'
     DRONE_DISC = 'drone_disconnect'
     UPLOAD_WP = 'upload_waypoints'
+    GOTO_NEXT_WP = 'goto_next_waypoint'
+    RADIO_PORTS = [9820, 9825, 9830, 9835, 9840, 9850, 9855, 9860, 9865]
 
     # CMR Process
-    CMR_PORT = 9850
+    CMR_PORT = 9880
     START_CMR = 'start_cmr_process'
     STOP_CMR = 'stop_cmr_process'
 
