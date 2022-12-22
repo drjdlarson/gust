@@ -30,14 +30,17 @@ class ConnSettings:
     def ADDR(cls):
         return cls.IP, cls.PORT
 
+    @classmethod
+    def RADIO_UDP_ADDR(cls, port):
+        return cls.IP, port
 
-def send_info_to_conn_server(info_dict, msg_type):
-    """Packages and sends information to conn_server as a UDP socket client.
+def send_info_to_udp_server(info_dict, msg_type, server_addr=ConnSettings.ADDR()):
+    """Packages and sends information to UDP servers as a UDP socket client.
 
     Parameters
     ----------
     info_dict : dict
-        Information to be sent to conn_server
+        Information to be sent to UDP socket server
     msg_type : str
         Type of information in the dictionary.
         msg_type can be specified based on conn_settings
@@ -56,7 +59,7 @@ def send_info_to_conn_server(info_dict, msg_type):
     msg.update(info_dict)
 
     f_msg = json.dumps(msg).encode(ConnSettings.FORMAT)
-    client.sendto(f_msg, ConnSettings.ADDR())
+    client.sendto(f_msg, server_addr)
 
     # Try to receive data being sent back from conn_server
     try:

@@ -922,7 +922,7 @@ def add_cmr_table():
     name TEXT,
     wp_color TEXT,
     next_wp INTEGER,
-    wp_reached INTEGER
+    wp_reached INTEGER,
     UNIQUE(name, wp_color)
     );
     """

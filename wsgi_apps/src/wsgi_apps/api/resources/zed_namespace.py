@@ -5,7 +5,7 @@ from flask_restx import Resource, Namespace
 
 import utilities.database as database
 from utilities import ConnSettings as conn_settings
-from utilities import send_info_to_conn_server
+from utilities import send_info_to_udp_server
 from wsgi_apps.api.url_bases import ZED
 from zed import ConfigSet, write_config_file
 
@@ -74,7 +74,7 @@ class ConnInfo(Resource):
                     "hac_dist": hac_dist,
                     "update_rate": 1.0 / update_hz,
                 }
-                conn_succ, info = send_info_to_conn_server(msg, conn_settings.ZED_CONN)
+                conn_succ, info = send_info_to_udp_server(msg, conn_settings.ZED_CONN)
                 if conn_succ:
                     return {"success": True, "msg": ""}
                 else:

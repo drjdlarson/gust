@@ -56,7 +56,7 @@ class CmrWindow(QMainWindow, Ui_MainWindow):
 
         else:
             # if len(self.cmr_vehicles) >= 2:
-            if len(self.cmr_vehicles) == 0:
+            if 1:
                 url = "{}start_cmr_proc".format(DRONE_BASE)
                 cmr_start = requests.get(url).json()
                 succ = cmr_start['success']
@@ -83,7 +83,7 @@ class CmrWindow(QMainWindow, Ui_MainWindow):
             succ = False
             error = "CMR Process is not running"
         else:
-            url = "{}stop_cmr_process".format(DRONE_BASE)
+            url = "{}stop_cmr_proc".format(DRONE_BASE)
             cmr_stop = requests.get(url).json()
             succ = cmr_stop['success']
             error = cmr_stop['msg']
@@ -131,7 +131,6 @@ class CmrWindow(QMainWindow, Ui_MainWindow):
             sel_row = self.tableWidget_drones.indexAt(button.pos()).row()
             drone_name = self.tableWidget_drones.item(sel_row, 1).text()
             wp_color = self.tableWidget_drones.cellWidget(sel_row, 2).currentText()
-            print("Uploading {} Waypoints to {}".format(wp_color, drone_name))
 
             url = "{}upload_wp".format(DRONE_BASE)
             url += "?name=" + drone_name.replace(' ', '_')

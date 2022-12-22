@@ -103,17 +103,17 @@ class MapHelper():
     def add_objects_in_map(self):
         self.marker_model.addMarker(self.name, self.prepare_marker_object())
         self.yaw_model.addYawLine(
-            self.name, self.prepare_line_object("red", self.yaw))
+            self.name, self.prepare_line_object("white", self.yaw))
         self.heading_model.addHeadingLine(
-            self.name, self.prepare_line_object("white", self.heading))
+            self.name, self.prepare_line_object("black", self.heading))
         self.home_model.addHome(self.name, self.prepare_home_object())
 
     def update_objects_in_map(self):
         self.marker_model.updateMarker(self.name, self.prepare_marker_object())
         self.yaw_model.updateYawLine(
-            self.name, self.prepare_line_object("red", self.yaw))
+            self.name, self.prepare_line_object("white", self.yaw))
         self.heading_model.updateHeadingLine(
-            self.name, self.prepare_line_object("white", self.heading))
+            self.name, self.prepare_line_object("black", self.heading))
         self.home_model.updateHome(self.name, self.prepare_home_object())
 
     def prepare_line_object(self, color, angle):

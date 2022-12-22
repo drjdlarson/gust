@@ -14,8 +14,8 @@ from PyQt5.QtCore import QProcess, QProcessEnvironment
 from PyQt5 import QtNetwork
 from utilities import ConnSettings as conn_settings
 import utilities.database as database
+from utilities import send_info_to_udp_server
 from gust.conn_manager.zed_handler import zedHandler
-
 
 logger = logging.getLogger("[conn-server]")
 
@@ -44,7 +44,6 @@ class ConnServer:
 
         cls.available_udp_ports = conn_settings.RADIO_PORTS
 
-        database.connect_db()
         conn = QtNetwork.QUdpSocket()
         conn.bind(conn_settings.PORT)
 
@@ -57,8 +56,8 @@ class ConnServer:
             if not conn.hasPendingDatagrams():
                 continue
 
-            # data, addr = conn.recvfrom(conn_settings.MAX_MSG_SIZE)
-            # received_info = json.loads(data.decode(conn_settings.FORMAT))
+            # to handle cases where database connection might be closed.
+            database.connect_db()
 
             data = conn.receiveDatagram(conn.pendingDatagramSize())
             received_info = json.loads(data.data().data().decode(conn_settings.FORMAT))
@@ -67,7 +66,6 @@ class ConnServer:
             msg = "Message from {} -> {}".format(addr.toString().split(":")[-1], received_info)
             logger.info(msg)
 
-            # we can call the radio manager heres
             if received_info['type'] == conn_settings.DRONE_CONN:
                 succ, err = cls.connect_to_radio(received_info, ctx)
                 response = {'success': succ, 'info': err}
@@ -82,6 +80,9 @@ class ConnServer:
                         time.sleep(0.125)
                     del cls._radios[name]
                     database.change_connection_status_value(name, 0)
+                    response = {'success': True, 'info': ''}
+                else:
+                    response = {'success': False, 'info': 'Radio connection not found in conn_server'}
 
             elif received_info['type'] == conn_settings.ZED_CONN:
                 response = zedHandler.connect(received_info)
@@ -89,6 +90,11 @@ class ConnServer:
             elif received_info['type'] == conn_settings.UPLOAD_WP:
                 succ, err = cls.upload_waypoints(received_info)
                 response = {'success': succ, 'info': err}
+
+            elif received_info['type'] == conn_settings.GOTO_NEXT_WP:
+                succ, err = cls.upload_waypoints(received_info)
+                response = {'success': succ, 'info': err}
+
 
             elif received_info['type'] == conn_settings.START_CMR:
                 succ, err = cls.start_cmr_process(ctx)
@@ -99,11 +105,10 @@ class ConnServer:
                 resposne = {'success': succ, 'info': err}
 
             else:
-                continue
+                response = {'success': False, 'info': "Signal not recognized by conn_server. \n Received signal: {}".format(str(received_info))}
 
             # Sending message back to client socket
             f_response = json.dumps(response).encode(conn_settings.FORMAT)
-            # conn.sendto(f_response, addr)
             conn.writeDatagram(f_response, addr, port)
 
         logger.info("Closing the conn-server socket")
@@ -164,20 +169,35 @@ class ConnServer:
 
     @classmethod
     def upload_waypoints(cls, received_info):
-        succ = False
-        err = "There's nothing here right now, but its working"
+        name = received_info['name']
+        udp_port = cls._radio_udp_port[name]
+        succ, err = send_info_to_udp_server(received_info, conn_settings.UPLOAD_WP, conn_settings.RADIO_UDP_ADDR(udp_port))
         return succ, err
+
+    @classmethod
+    def goto_next_waypoint(cls, received_info):
+        name = received_info['name']
+        udp_port = cls._radio_udp_port[name]
+        succ, err = send_info_to_udp_server(received_info, conn_settings.GOTO_NEXT_WP, conn_settings.RADIO_UDP_ADDR(udp_port))
+        logger.info('This is what is received from the radio_manager-->> {}'.format(err))
+        return succ, err
+
 
     @classmethod
     def start_cmr_process(cls, ctx):
         if cls._cmr_proc is None:
             logger.info("Starting the CMR manager QProcess")
             program = ctx.get_resource('cmr_manager/cmr_manager')
-            args = []
+            args = [
+                '--port',
+                '{}'.format(conn_settings.CMR_PORT),
+                '--ip',
+                '{}'.format(conn_settings.IP),
+                ]
 
             cls._cmr_proc = QProcess()
             cls._cmr_proc.setProcessChannelMode(QProcess.MergedChannels)
-            cls._cmr_proc.setProcessEnvironment(QProcessEnvironment.systemEnvirotnment())
+            cls._cmr_proc.setProcessEnvironment(QProcessEnvironment.systemEnvironment())
             cls._cmr_proc.start(program, args)
 
             succ = cls._cmr_proc.waitForStarted()

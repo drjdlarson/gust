@@ -7,7 +7,7 @@ from flask import request
 import utilities.database as database
 from utilities import ConnSettings as conn_settings
 from wsgi_apps.api.url_bases import DRONE
-from utilities import send_info_to_conn_server
+from utilities import send_info_to_udp_server
 
 
 logger = logging.getLogger("[URL-Manager]")
@@ -41,7 +41,7 @@ class ConnInfo(Resource):
 
             res = database.add_vehicle(name, port, color)
             if res:
-                conn_succ, info = send_info_to_conn_server(
+                conn_succ, info = send_info_to_udp_server(
                     vehicle_info, conn_settings.DRONE_CONN
                     )
                 if conn_succ:
@@ -75,7 +75,7 @@ class UploadWP(Resource):
         res = database.add_cmr_vehicle(name, wp_color)
         if res:
             self.cmr_started = True
-            upload_succ, info = send_info_to_conn_server(upload_info, conn_settings.UPLOAD_WP)
+            upload_succ, info = send_info_to_udp_server(upload_info, conn_settings.UPLOAD_WP)
             if upload_succ:
                 return {"success": True, "msg": ""}
             elif not upload_succ:
@@ -88,23 +88,24 @@ class UploadWP(Resource):
 class Disconnect(Resource):
     def get(self):
         name = request.args.get("name", default="", type=str)
-        disconn_succ, info = send_info_to_conn_server({'name': name}, conn_settings.DRONE_DISC)
+        disconn_succ, info = send_info_to_udp_server({'name': name}, conn_settings.DRONE_DISC)
         if disconn_succ:
             return {"success": True, 'msg': ""}
         else:
             return {"success": False, "msg": "Unable to disconnect"}
 
+
 @DRONE_NS.route("/start_cmr_proc")
 class CmrProcessTrigger(Resource):
     def get(self):
-        succ, info = send_info_to_conn_server({}, conn_settings.START_CMR)
+        succ, info = send_info_to_udp_server({}, conn_settings.START_CMR)
         return {"success": succ, 'msg': info}
 
 
 @DRONE_NS.route("/stop_cmr_proc")
 class CmrProcessStop(Resource):
     def get(self):
-        succ, info = send_info_to_conn_server({}, conn_settings.STOP_CMR)
+        succ, info = send_info_to_udp_server({}, conn_settings.STOP_CMR)
         return {"success": succ, 'msg': info}
 
 

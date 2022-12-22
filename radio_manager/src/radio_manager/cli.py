@@ -3,6 +3,7 @@ import argparse
 import dronekit
 import random, time
 import numpy as np
+import logging
 import sys
 import signal
 import os
@@ -16,6 +17,7 @@ d2r = np.pi / 100
 r2d = 1 / d2r
 
 
+logger = logging.getLogger('[radio-manager]')
 
 # %% Custom Functions
 
@@ -230,23 +232,32 @@ def check_for_signal(conn):
 
     data = conn.receiveDatagram(conn.pendingDatagramSize())
     received_signal = json.loads(data.data().data().decode(conn_settings.FORMAT))
+    addr = data.senderAddress()
+    port = data.senderPort()
 
     if received_signal['type'] == conn_settings.UPLOAD_WP:
         succ, err = upload_waypoints(received_signal)
         response = {'success': succ, "info": err}
 
-    if received_signal['type'] == conn_settings.GOTO_NEXT_WP:
+    elif received_signal['type'] == conn_settings.GOTO_NEXT_WP:
         succ, err = goto_next_wp(received_signal)
         response = {'success': succ, "info": err}
 
+    else:
+        response = {'success': False, "info": "Signal not recognized by Radio manager.\n Received signal: {}".format(str(received_signal))}
+
+    # Sending message back to client socket (Conn-server)
+    f_response = json.dumps(response).encode(conn_settings.FORMAT)
+    conn.writeDatagram(f_response, addr, port)
+
 def goto_next_wp(received_signal):
-    succ = False
-    err = ""
+    succ = True
+    err = "Next waypoint signal works. {} going to waypoint {}".format(received_signal['name'], received_signal['next_wp'])
     return succ, err
 
 def upload_waypoints(received_signal):
     succ = False
-    err = ""
+    err = "Upload waypoints is working, you have reached the radio_manager"
     return succ, err
 
 def get_current_time():
@@ -298,8 +309,9 @@ def define_parser():
     return parser
 
 
-def _cleanup_handler(signum, frame, radio):
+def _cleanup_handler(signum, frame, radio, conn):
     radio.close()
+    conn.close()
 
     os._exit(0)
 
@@ -328,7 +340,7 @@ if __name__ == "__main__":
         sys.exit(-2)
 
     sig_conn = QtNetwork.QUdpSocket()
-    sig_conn.bind(udp_port)
+    sig_conn.bind(int(udp_port))
 
     if port == '/dev/test/':
         while True:
@@ -346,7 +358,7 @@ if __name__ == "__main__":
 
         for sig in _handleable_sigs:
             try:
-                signal.signal(sig, lambda signum, frame: _cleanup_handler(signum, frame, radio))
+                signal.signal(sig, lambda signum, frame: _cleanup_handler(signum, frame, radio, sig_conn))
             except (ValueError, OSError):
                 continue
 
