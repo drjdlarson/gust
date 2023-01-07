@@ -524,7 +524,7 @@ def get_drone_ids(distinct=True, active=True):
     return names
 
 def create_zed_table_name(name):
-    return "zed_data_{:s}".format(name.replace(" ", "").lower())
+    return "zed_data_{:s}".format(name.replace(" ", "_").lower())
 
 
 def add_zed(name, config):

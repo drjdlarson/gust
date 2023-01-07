@@ -37,7 +37,7 @@ mkdir ./src/main/resources/base/radio_manager
 
 pyinstaller --onefile --noconfirm --noupx --clean \
 	-n radio_manager \
-	-p ./radio_manager \
+	-p ./gust_packages/radio_manager \
 	--hidden-import lxml \
 	--hidden-import lxml.etree \
 	--hidden-import urllib2 \
@@ -45,6 +45,6 @@ pyinstaller --onefile --noconfirm --noupx --clean \
 	--collect-all pymavlink \
 	--collect-all dronekit \
 	--distpath ./src/main/resources/base/radio_manager \
-	--workpath ./radio_manager/build \
-	--specpath ./radio_manager \
-	radio_manager/src/radio_manager/cli.py
+	--workpath ./gust_packages/radio_manager/build \
+	--specpath ./gust_packages/radio_manager \
+	gust_packages/radio_manager/src/radio_manager/cli.py

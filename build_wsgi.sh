@@ -36,10 +36,10 @@ mkdir ./src/main/resources/base/wsgi_apps
 
 pyinstaller --onefile --noconfirm --noupx --clean \
 	-n wsgi_apps \
-	-p ./wsgi_apps \
+	-p ./gust_packages/wsgi_apps \
 	--hidden-import gunicorn.glogging \
 	--hidden-import gunicorn.workers.sync \
 	--distpath ./src/main/resources/base/wsgi_apps \
-	--workpath ./wsgi_apps/build \
-	--specpath ./wsgi_apps \
-	wsgi_apps/src/wsgi_apps/cli.py
+	--workpath ./gust_packages/wsgi_apps/build \
+	--specpath ./gust_packages/wsgi_apps \
+	gust_packages/wsgi_apps/src/wsgi_apps/cli.py

@@ -15,7 +15,6 @@ from PyQt5 import QtNetwork
 from utilities import ConnSettings as conn_settings
 import utilities.database as database
 from utilities import send_info_to_udp_server
-from gust.conn_manager.zed_handler import zedHandler
 
 logger = logging.getLogger("[conn-server]")
 
@@ -25,6 +24,7 @@ class ConnServer:
     available_udp_ports = []
     _radio_udp_port = {}
     _cmr_proc = None
+    _zeds = None
 
     @classmethod
     def start_conn_server(cls, ctx):
@@ -85,7 +85,8 @@ class ConnServer:
                     response = {'success': False, 'info': 'Radio connection not found in conn_server'}
 
             elif received_info['type'] == conn_settings.ZED_CONN:
-                response = zedHandler.connect(received_info)
+                succ, err = cls.connect_to_zed(received_info, ctx)
+                response = {"success": succ, "info": err}
 
             elif received_info['type'] == conn_settings.UPLOAD_WP:
                 succ, err = cls.upload_waypoints(received_info)
@@ -117,14 +118,46 @@ class ConnServer:
 
     @classmethod
     def kill(cls):
-        zedHandler.kill()
         cls.running = False
+
+        # killing the zed manager process
+        if cls._zeds is not None:
+            if 'windows' in platform.system().lower():
+                cls._zeds.kill()
+            else:
+                cls._zeds.terminate()
+                time.sleep(0.125)
+
+        # killing the radio manager process
         for p in cls._radios.values():
             if 'windows' in platform.system().lower():
                 p.kill()
             else:
                 p.terminate()
                 time.sleep(0.125)
+
+    @classmethod
+    def connect_to_zed(cls, received_info, ctx):
+        program = ctx.get_resource('zed_manager/zed_manager')
+        args = [received_info["name"], received_info["config"], str(received_info["hac_dist"]), str(received_info["update_rate"])]
+
+        if cls._zeds is not None:
+            succ = False
+            err = 'Zed process already running'
+        else:
+            cls._zeds = QProcess()
+            cls._zeds.setProcessChannelMode(QProcess.ProcessChannelMode.MergedChannels)
+            cls._zeds.setProcessEnvironment(QProcessEnvironment.systemEnvironment())
+            cls._zeds.start(program, args)
+
+            succ = cls._zeds.waitForStarted()
+            if not succ:
+                err = "Failed to start zed process"
+                logger.info(err)
+                return succ, err
+            err = None
+
+        return succ, err
 
     @classmethod
     def connect_to_radio(cls, received_info, ctx):

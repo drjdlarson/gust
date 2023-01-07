@@ -40,8 +40,9 @@ done
 ############################################################
 if [ "$skip" = false ] ; then
 	./build_wsgi.sh
-	./build_radiomanager.sh
-	./build_cmr_manager
+	./build_radio_manager.sh
+	./build_cmr_manager.sh
+	./build_zed_manager.sh
 fi
 
 
