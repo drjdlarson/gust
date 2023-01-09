@@ -9,12 +9,17 @@ from wsgi_apps.api.url_bases import BASE
 api = Api(prefix="/{:s}".format(BASE))
 
 
-def create_app():
+def create_app(logger_override=None):
     from wsgi_apps.api.resources.drone_namespace import DRONE_NS
     from wsgi_apps.api.resources.zed_namespace import ZED_NS
 
     app = Flask("rest_api")
     # app.config.from_object(env_config[config_name])
+
+    # see https://stackoverflow.com/questions/53548536/how-to-use-the-logging-module-in-python-with-gunicorn
+    if logger_override:
+        app.logger.handlers = logger_override.handlers
+        app.logger.setLevel(logger_override.level)
 
     api.init_app(app)
     api.add_namespace(ZED_NS)

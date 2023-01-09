@@ -13,11 +13,11 @@ import utilities.database as database
 from utilities import ConnSettings as conn_settings
 from argparse import ArgumentParser
 
+from radio_manager import logger
+
 d2r = np.pi / 100
 r2d = 1 / d2r
 
-
-logger = logging.getLogger('[radio-manager]')
 
 # %% Custom Functions
 
@@ -306,6 +306,13 @@ def define_parser():
         default=default
         )
 
+    parser.add_argument(
+        "-d",
+        "--debug",
+        action="store_true",
+        help="Run in debug mode",
+    )
+
     return parser
 
 
@@ -336,13 +343,29 @@ if __name__ == "__main__":
     baud = args.baud
     udp_port = args.udp_port
 
+    ch = logging.StreamHandler()
+
+    if args.debug:
+        logger.setLevel(logging.DEBUG)
+        ch.setLevel(logging.DEBUG)
+    else:
+        logger.setLevel(logging.INFO)
+        ch.setLevel(logging.INFO)
+
+    formatter = logging.Formatter('[radio-manager] %(levelname)s %(asctime)s - %(message)s')
+    ch.setFormatter(formatter)
+
+    logger.addHandler(ch)
+
     if not database.connect_db():
+        logger.critical("Failed to open database")
         sys.exit(-2)
 
     sig_conn = QtNetwork.QUdpSocket()
     sig_conn.bind(int(udp_port))
 
     if port == '/dev/test/':
+        logger.debug("Connected to test port")
         while True:
             check_for_signal(sig_conn)
             all_data = prepare_dummy_data()

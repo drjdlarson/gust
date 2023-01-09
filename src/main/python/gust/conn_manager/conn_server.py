@@ -1,10 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Created on Wed Aug 10 12:18:20 2022
-
-@author: lagerprocessor
-"""
 import json
 import platform
 import logging
@@ -16,7 +9,25 @@ from utilities import ConnSettings as conn_settings
 import utilities.database as database
 from utilities import send_info_to_udp_server
 
-logger = logging.getLogger("[conn-server]")
+
+class CustomAdapter(logging.LoggerAdapter):
+    """
+    This example adapter expects the passed in dict-like object to have a
+    'connid' key, whose value in brackets is prepended to the log message.
+    """
+    def process(self, msg, kwargs):
+        idx = msg.find("]")
+        if idx > 0:
+            return '[%s] %s' % (self.extra['name'], msg[idx+1:]), kwargs
+        else:
+            return '[%s] %s' % (self.extra['name'], msg), kwargs
+
+
+# logger = CustomAdapter(logging.getLogger(__name__), {'name': "[conn-server]"})
+logger = logging.getLogger(__name__)
+logger.propagate = False
+
+# logger = logging.getLogger("[conn-server]")
 
 class ConnServer:
     running = False
@@ -27,7 +38,7 @@ class ConnServer:
     _zeds = None
 
     @classmethod
-    def start_conn_server(cls, ctx):
+    def start_conn_server(cls, process_events, debug, ctx):
         """UDP Socket Server.
 
         Allow the connection server to start listening to socket connection and
@@ -36,6 +47,22 @@ class ConnServer:
         Receives dictionary from the client sockets and sends back dictionary.
         One of the keys in the dictionary is 'type'
         """
+        ch = logging.StreamHandler(stream=sys.stdout)
+        if debug:
+            logger.setLevel(logging.DEBUG)
+            ch.setLevel(logging.DEBUG)
+        else:
+            logger.setLevel(logging.INFO)
+            ch.setLevel(logging.INFO)
+
+        formatter = logging.Formatter('[conn-server] %(levelname)s %(asctime)s - %(message)s')
+
+        # add formatter to ch
+        ch.setFormatter(formatter)
+
+        # add ch to logger
+        logger.addHandler(ch)
+
         if cls.running:
             logger.warning("Already running!!")
             return
@@ -51,6 +78,7 @@ class ConnServer:
         logger.info(msg)
 
         while cls.running:
+            process_events()
 
             # Receiving message from client socket
             if not conn.hasPendingDatagrams():
@@ -129,12 +157,13 @@ class ConnServer:
                 time.sleep(0.125)
 
         # killing the radio manager process
-        for p in cls._radios.values():
+        for k, p in cls._radios.items():
             if 'windows' in platform.system().lower():
                 p.kill()
             else:
                 p.terminate()
-                time.sleep(0.125)
+            if not p.waitForFinished():
+                logger.critical("Failed to end radio process: %s", k)
 
     @classmethod
     def connect_to_zed(cls, received_info, ctx):

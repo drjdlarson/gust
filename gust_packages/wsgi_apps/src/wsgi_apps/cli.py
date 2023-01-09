@@ -1,6 +1,8 @@
+import logging
 import gunicorn.app.base
 from argparse import ArgumentParser
 
+from wsgi_apps import logger
 from wsgi_apps.api import app as api_app
 
 
@@ -50,15 +52,41 @@ def define_parser():
         default=default
     )
 
+    parser.add_argument(
+        "-d", "--debug",
+        action="store_true",
+        help="Run in debug mode",
+    )
+
     return parser
 
 
 if __name__ == '__main__':
     args = define_parser().parse_args()
 
+    ch = logging.StreamHandler()
+
+    if args.debug:
+        logger.setLevel(logging.DEBUG)
+        ch.setLevel(logging.DEBUG)
+    else:
+        logger.setLevel(logging.INFO)
+        ch.setLevel(logging.INFO)
+
+    formatter = logging.Formatter('[wsgi-app] %(levelname)s %(asctime)s - %(message)s')
+    ch.setFormatter(formatter)
+
+    logger.addHandler(ch)
+
+    # see https://stackoverflow.com/questions/53548536/how-to-use-the-logging-module-in-python-with-gunicorn
+    # and https://docs.gunicorn.org/en/stable/settings.html#logconfig for a cleaner way with config files that can be passed where we start the process
+    gunicorn_logger = logging.getLogger('gunicorn.glogging.Logger')
+    gunicorn_logger.handlers = logger.handlers
+    gunicorn_logger.setLevel(logger.level)
+
     options = {
         'bind': '%s:%s' % (args.ip, args.port),
         'workers': args.num_workers,
     }
 
-    StandaloneApplication(api_app.create_app(), options).run()
+    StandaloneApplication(api_app.create_app(logger_override=logger), options).run()

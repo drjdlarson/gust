@@ -1,11 +1,17 @@
 """GUST plugin for CMR Manager"""
 
 import sys, os, signal
+import logging
+
 from argparse import ArgumentParser
+from PyQt5 import QtNetwork
+
 import utilities.database as database
 from utilities import ConnSettings as conn_settings
 from utilities import send_info_to_udp_server
-from PyQt5 import QtNetwork
+
+from cmr_manager import logger
+
 
 def define_parser():
     parser = ArgumentParser(description="Process command line options for CMR Manager")
@@ -25,6 +31,12 @@ def define_parser():
         help="IP for CMR manager process. The default is {}".format(default),
         default=default,
         )
+
+    parser.add_argument(
+        "-d", "--debug",
+        action="store_true",
+        help="Run in debug mode",
+    )
 
     return parser
 
@@ -50,6 +62,19 @@ if __name__ == "__main__":
     sig_conn = QtNetwork.QUdpSocket()
     sig_conn.bind(int(cmr_port))
 
+    ch = logging.StreamHandler()
+
+    if args.debug:
+        logger.setLevel(logging.DEBUG)
+        ch.setLevel(logging.DEBUG)
+    else:
+        logger.setLevel(logging.INFO)
+        ch.setLevel(logging.INFO)
+
+    formatter = logging.Formatter('[CMR_manager] %(levelname)s %(asctime)s - %(message)s')
+    ch.setFormatter(formatter)
+
+    logger.addHandler(ch)
 
     if not database.connect_db():
         sys.exit(-2)
