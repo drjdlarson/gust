@@ -1,7 +1,6 @@
 """Handle database operations."""
 import os
 import logging
-from time import sleep
 import enum
 from PyQt5.QtSql import QSqlDatabase, QSqlQuery
 
@@ -12,6 +11,13 @@ import serial.tools.list_ports
 DB_FILE_KEY = "GUST_DB_FILE"
 DB_PATH_KEY = "GUST_DB_PATH"  # autoset by backend window on startup
 DB_DRIVER = "QSQLITE"
+
+_DB = None
+_main_table = "drone_collection"
+_connected_counter = 0
+_initialized_logger = False
+
+logger = logging.getLogger(__name__)
 
 
 def set_db_file(f):
@@ -28,13 +34,6 @@ def set_db_path(p):
 
 def DB_PATH():
     return os.environ.get(DB_PATH_KEY, "./")
-
-
-_DB = None
-_main_table = "drone_collection"
-_connected_counter = 0
-
-logger = logging.getLogger("[database]")
 
 
 @enum.unique
@@ -60,6 +59,26 @@ def db_name():
     return os.path.join(DB_PATH(), DB_FILE())
 
 
+def setup_logger():
+    global _initialized_logger
+
+    if not _initialized_logger:
+        ch = logging.StreamHandler()
+
+        # if args.debug:
+        #     logger.setLevel(logging.DEBUG)
+        #     ch.setLevel(logging.DEBUG)
+        # else:
+        logger.setLevel(logging.INFO)
+        ch.setLevel(logging.INFO)
+
+        formatter = logging.Formatter('[database] %(levelname)s %(asctime)s - %(message)s')
+        ch.setFormatter(formatter)
+
+        logger.addHandler(ch)
+
+        _initialized_logger = True
+
 def open_db():
     """Open the database by removing the old file and creating a new one.
 
@@ -70,6 +89,8 @@ def open_db():
     None.
     """
     global _DB
+
+    setup_logger()
 
     # dont do anything if the database is already open
     if _DB is not None:
@@ -129,8 +150,13 @@ def open_db():
 def connect_db():
     global _DB
 
+    setup_logger()
+
+    # logger.info("Connecting to database")
+
     # dont do anything if the database is already open
     if _DB is not None:
+        # logger.info("Database is already open")
         return True
 
     # create database
@@ -142,10 +168,10 @@ def connect_db():
         return False
 
     _DB.setDatabaseName(fpath)
-    _DB.open()
 
     if not _DB.open():
         logger.critical("Unable to open database")
+        return False
     return True
 
 
@@ -168,8 +194,10 @@ def _create_new_ids_table(p_name):
     query = _start_query()
 
     # create new table, not always required
-    cmd = "CREATE TABLE {:s}_ids ( id INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE );".format(
-        p_name
+    cmd = (
+        "CREATE TABLE {:s}_ids ( id INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE );".format(
+            p_name
+        )
     )
     logger.debug(cmd)
     res = query.exec_(cmd)
@@ -523,6 +551,7 @@ def get_drone_ids(distinct=True, active=True):
         names.append(query.value(0))
     return names
 
+
 def create_zed_table_name(name):
     return "zed_data_{:s}".format(name.replace(" ", "_").lower())
 
@@ -742,12 +771,12 @@ def change_connection_status_value(name, val):
     cmd = """
     UPDATE drone_collection
     SET connection = {} WHERE name IS '{}';
-    """.format(val, name)
+    """.format(
+        val, name
+    )
     res = query.exec_(cmd)
     logger.debug("Changing connection status of {} to {}".format(name, val))
     return res
-
-
 
 
 def add_values(vals, table_name):
@@ -777,6 +806,7 @@ def add_values(vals, table_name):
     # logger.debug(cmd)
 
     return res
+
 
 def write_values(flt_data, name):
     """
@@ -816,6 +846,7 @@ def get_drone_name(uid):
     query.last()
     return query.value(0)
 
+
 def get_drone_color(name):
     """Returns the color associated with the drone"""
     query = _start_query()
@@ -823,6 +854,7 @@ def get_drone_color(name):
     query.exec_(cmd)
     query.last()
     return query.value(0)
+
 
 def get_used_colors():
     """Returns a list of colors being used by active drones"""
@@ -835,6 +867,7 @@ def get_used_colors():
         colors.append(query.value(0))
     return colors
 
+
 def write_zed_obj(name, posix, obj):
     tab_name = create_zed_table_name(name)
     cmd = "INSERT INTO {:s} (posix, xpos, ypos, zpos) VALUES ({:f}, {:f}, {:f}, {:f});".format(
@@ -842,6 +875,26 @@ def write_zed_obj(name, posix, obj):
     )
     query = _start_query()
     res = query.exec_(cmd)
+    if not res:
+        logger.critical(query.lastError().text())
+    return res
+
+def write_zed_objs(name, posix, obj_lst):
+    logger.debug("Writing zed objects to database")
+
+    tab_name = create_zed_table_name(name)
+    cmd = "INSERT INTO {:s} (posix, xpos, ypos, zpos) VALUES".format(
+        tab_name
+    )
+    for ii, obj in enumerate(obj_lst):
+        if ii > 0:
+            cmd += ","
+        cmd += "\n\t({:f}, {:f}, {:f}, {:f})".format(posix, obj[0], obj[1], obj[2])
+    cmd += ";"
+
+    query = _start_query()
+    res = query.exec_(cmd)
+    logger.debug(cmd)
     if not res:
         logger.critical(query.lastError().text())
     return res
@@ -905,6 +958,7 @@ def get_zed_points(name, delay=None):
         cmd = "SELECT {}, {}, {} FROM {} WHERE posix >= {:.2f}".format(
             *list(ret_vals.keys()), tab_name, query.value(0) - 0.01 - delay
         )
+        logger.info(cmd)
         res = query.exec_(cmd)
         if not res:
             logger.critical(query.lastError().text())
@@ -932,14 +986,20 @@ def add_cmr_table():
         logger.warning("Unable to add CMR table")
     return res
 
+
 def add_cmr_vehicle(name, wp_color):
     query = _start_query()
     cmd = """INSERT INTO cmr_table (name, wp_color, next_wp,wp_reached) VALUES ("{}", "{}", 1, 0);
-    """.format(name, wp_color)
+    """.format(
+        name, wp_color
+    )
     res = query.exec_(cmd)
     if not res:
-        logger.warning("Unable to add {} with {} waypoints to cmr_table".format(name, wp_color))
+        logger.warning(
+            "Unable to add {} with {} waypoints to cmr_table".format(name, wp_color)
+        )
     return res
+
 
 if __name__ == "__main__":
     import random

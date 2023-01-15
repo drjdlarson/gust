@@ -32,6 +32,7 @@ done
 ############################################################
 echo "Building WSGI apps..."
 
+rm -r ./src/main/resources/base/wsgi_apps
 mkdir ./src/main/resources/base/wsgi_apps
 
 pyinstaller --onefile --noconfirm --noupx --clean \

@@ -33,6 +33,7 @@ done
 
 echo "Building zed manager app ..."
 
+rm -r ./src/main/resources/base/zed_manager
 mkdir ./src/main/resources/base/zed_manager
 
 pyinstaller --onefile --noconfirm --noupx --clean \

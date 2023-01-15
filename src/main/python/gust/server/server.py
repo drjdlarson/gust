@@ -66,13 +66,12 @@ def start_server(ctx, debug):
         SERVER_PROC.setProcessChannelMode(QProcess.MergedChannels)
         SERVER_PROC.setProcessEnvironment(QProcessEnvironment.systemEnvironment())
         SERVER_PROC.readyRead.connect(lambda: print(SERVER_PROC.readAllStandardOutput().data().decode().strip()))
-        SERVER_PROC.start(program, args)
         START_CMD = program + ' ' + ' '.join(args)
+        logger.info(START_CMD)
+        SERVER_PROC.start(program, args)
 
         success = _SERVER_RUNNING = SERVER_PROC.waitForStarted(1000)
-        if success:
-            logger.info(START_CMD)
-        else:
+        if not success:
             logger.critical("Failed to start server")
 
 

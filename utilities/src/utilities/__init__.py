@@ -25,6 +25,7 @@ class ConnSettings:
 
     # ZED message_type
     ZED_CONN = 'zed_connect'
+    ZED_DIS_CONN = 'zed_disconnect'
 
     @classmethod
     def ADDR(cls):

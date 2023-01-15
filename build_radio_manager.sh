@@ -33,6 +33,7 @@ done
 
 echo "Building radio manager app ..."
 
+rm -r ./src/main/resources/base/radio_manager
 mkdir ./src/main/resources/base/radio_manager
 
 pyinstaller --onefile --noconfirm --noupx --clean \

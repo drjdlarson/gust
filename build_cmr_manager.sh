@@ -33,6 +33,7 @@ done
 
 echo "Building CMR manager app ..."
 
+rm -r ./src/main/resources/base/cmr_manager
 mkdir ./src/main/resources/base/cmr_manager
 
 pyinstaller --onefile --noconfirm --noupx --clean \

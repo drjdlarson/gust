@@ -28,7 +28,6 @@ logger = logging.getLogger(__name__)
 class BackendWindow(QMainWindow, Ui_BackendWindow):
     """Main interface for the backend window."""
 
-    text_update = pyqtSignal(str)
     kill_conn_server_signal = pyqtSignal()
 
     def __init__(self, ctx, process_events, debug):
@@ -37,10 +36,6 @@ class BackendWindow(QMainWindow, Ui_BackendWindow):
 
         self.__process_events = process_events
         self._debug = debug
-
-        # setup redirect for stdout/stderr
-        self.text_update.connect(self.update_console_text)
-        sys.stdout = sys.stderr = self
 
         self.ctx = ctx
         self.lineEdit_port.setValidator(QIntValidator())
@@ -125,17 +120,6 @@ class BackendWindow(QMainWindow, Ui_BackendWindow):
         succ = self._stop_plug_mon() and succ
 
         return succ
-
-    # hacks for making the class behave like stdout and logging
-    def write(self, text):
-        """To pass stdout/err to the builtin console."""
-        self.text_update.emit(text)
-
-    def flush(self):
-        """To allow for stdout/err to function."""
-        pass
-
-    # end hacks
 
     def update_console_text(self, text):
         """Update the console text."""
