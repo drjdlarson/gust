@@ -80,10 +80,6 @@ class ConnServer:
             if not conn.hasPendingDatagrams():
                 continue
 
-            # TODO: is this needed?
-            # to handle cases where database connection might be closed.
-            # database.connect_db()
-
             data = conn.receiveDatagram(conn.pendingDatagramSize())
             received_info = json.loads(data.data().data().decode(conn_settings.FORMAT))
             addr = data.senderAddress()
@@ -92,7 +88,6 @@ class ConnServer:
                 addr.toString().split(":")[-1], received_info
             )
             logger.info(msg)
-
             if received_info["type"] == conn_settings.DRONE_CONN:
                 succ, err = cls.connect_to_radio(received_info, ctx)
                 response = {"success": succ, "info": err}
@@ -122,12 +117,19 @@ class ConnServer:
                 succ, err = cls.disconnect_zed(received_info)
                 response = {"success": succ, "info": err}
 
+            elif received_info["type"] == conn_settings.AUTO_CMD:
+                succ, err = cls.send_autopilot_commands(received_info)
+                response = {"success": succ, "info": err}
+
             elif received_info["type"] == conn_settings.UPLOAD_WP:
-                succ, err = cls.upload_waypoints(received_info)
+                wp_color = received_info['wp_color']
+                filename = ctx.get_resource('cmr_planning/{}_waypoints.txt'.format(wp_color))
+                received_info[filename] = filename
+                succ, err = cls.send_autopilot_commands(received_info)
                 response = {"success": succ, "info": err}
 
             elif received_info["type"] == conn_settings.GOTO_NEXT_WP:
-                succ, err = cls.upload_waypoints(received_info)
+                succ, err = cls.send_autopilot_commands(received_info)
                 response = {"success": succ, "info": err}
 
             elif received_info["type"] == conn_settings.START_CMR:
@@ -145,6 +147,7 @@ class ConnServer:
                         str(received_info)
                     ),
                 }
+
 
             # Sending message back to client socket
             f_response = json.dumps(response).encode(conn_settings.FORMAT)
@@ -294,6 +297,15 @@ class ConnServer:
 
             err = None
             cls.available_udp_ports.remove(cls._radio_udp_port[name])
+        return succ, err
+
+    @classmethod
+    def send_autopilot_commands(cls, received_info):
+        name = received_info["name"]
+        udp_port = cls._radio_udp_port[name]
+        succ, err = send_info_to_udp_server(
+            received_info, received_info["type"], conn_settings.RADIO_UDP_ADDR(udp_port)
+        )
         return succ, err
 
     @classmethod

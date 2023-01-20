@@ -23,6 +23,11 @@ uploadParse = DRONE_NS.parser()
 uploadParse.add_argument('name', default="", type=str)
 uploadParse.add_argument('wp_color', default="", type=str)
 
+cmdParse = DRONE_NS.parser()
+cmdParse.add_argument('name', default="", type=str)
+cmdParse.add_argument('cmd', default="", type=str)
+cmdParse.add_argument('param', default="", type=str)
+
 @DRONE_NS.route("/connect")
 class ConnInfo(Resource):
     @DRONE_NS.expect(conParse)
@@ -54,6 +59,23 @@ class ConnInfo(Resource):
             return {"success": False, "msg": "Invalid port"}
         elif len(name) == 0:
             return {"success": False, "msg": "Invalid name"}
+
+@DRONE_NS.route("/autopilot_cmd")
+class AutopilotCmd(Resource):
+
+    @DRONE_NS.expect(cmdParse)
+    def get(self):
+        args = uploadParse.parse_args()
+        name = args["name"]
+        cmd = args["cmd"]
+        param = args["param"]
+
+        cmd_info = {'name': name, 'cmd': cmd, 'param': param}
+        cmd_succ, info = send_info_to_udp_server(cmd_info, conn_settings.AUTO_CMD)
+        if cmd_succ:
+            return {'success': True, "msg": ""}
+        else:
+            return {'success': False, "msg": info}
 
 @DRONE_NS.route("/upload_wp")
 class UploadWP(Resource):

@@ -17,7 +17,7 @@ from PyQt5.QtCore import Qt, pyqtSlot, QModelIndex, pyqtSignal, QThreadPool, QTh
 from PyQt5.QtGui import QIntValidator, QTextCursor
 import requests
 from gust.gui.ui.gustClient import Ui_MainWindow_main
-from gust.gui import con_window, log_window, sensors_window, planning_selection_window
+from gust.gui import con_window, log_window, sensors_window, planning_selection_window, commands_window
 from gust.gui import engineoff_confirmation, disconnect_confirmation, rtl_confirmation, disarm_confirmation
 from gust.gui import rc_window, servo_window
 
@@ -40,7 +40,7 @@ class FrontendWindow(QMainWindow, Ui_MainWindow_main):
 
         self._conWindow = None
         self._sensorsWindow = None
-        self._rcWindow = None
+        self._cmdWindow = None
         self._servoWindow = None
         self._planningWindow = None
 
@@ -58,8 +58,7 @@ class FrontendWindow(QMainWindow, Ui_MainWindow_main):
         self.pushButton_disarm.clicked.connect(self.clicked_disarm)
 
         self.pushButton_sensors.clicked.connect(self.clicked_sensors)
-        # self.pushButton_rc.clicked.connect(self.clicked_rc)
-        # self.pushButton_servo.clicked.connect(self.clicked_servo)
+        self.pushButton_actions.clicked.connect(self.clicked_actions)
         self.pushButton_tune.clicked.connect(self.clicked_tune)
         self.pushButton_planning.clicked.connect(self.clicked_planning)
 
@@ -116,19 +115,6 @@ class FrontendWindow(QMainWindow, Ui_MainWindow_main):
             self.ctx)
         win.exec_()
 
-    @pyqtSlot()
-    def clicked_rc(self):
-        if self._rcWindow is None:
-            self._rcWindow = rc_window.RCWindow(
-                self.ctx)
-        self._rcWindow.show()
-
-    @pyqtSlot()
-    def clicked_servo(self):
-        if self._servoWindow is None:
-            self._servoWindow = servo_window.ServoWindow(
-                self.ctx)
-        self._servoWindow.show()
 
     @pyqtSlot()
     def clicked_tune(self):
@@ -143,14 +129,18 @@ class FrontendWindow(QMainWindow, Ui_MainWindow_main):
 
     @pyqtSlot()
     def clicked_planning(self):
-        print("clicked planning function")
-
         if self._planningWindow is None:
-            print("if statement inside clicked_planning")
             self._planningWindow = planning_selection_window.PlanningSelectionWindow(
                 self.ctx, parent=self)
         self._planningWindow.show()
         self._planningWindow = None
+
+    @pyqtSlot()
+    def clicked_actions(self):
+        if self._cmdWindow is None:
+            self._cmdWindow = commands_window.CommandsManager(self.ctx, parent=self)
+        self._cmdWindow.show()
+        self._cmdWindow = None
 
     # @pyqtSlot()
     def clicked_disconnect(self):

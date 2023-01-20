@@ -943,14 +943,14 @@ font: 12pt &quot;Umpush&quot;;</string>
            </widget>
           </item>
           <item row="1" column="1">
-           <widget class="QPushButton" name="pushButton_rc">
+           <widget class="QPushButton" name="pushButton_actions">
             <property name="styleSheet">
              <string notr="true">background-color: rgb(48,132,70);
 color: rgb(255, 255, 255);
 font: 12pt &quot;Umpush&quot;;</string>
             </property>
             <property name="text">
-             <string>Channels</string>
+             <string>Actions</string>
             </property>
            </widget>
           </item>
@@ -1092,6 +1092,30 @@ font: 14pt &quot;Umpush&quot;;</string>
           </property>
           <property name="text">
            <string>Add a Vehicle</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="pushButton_sitl">
+          <property name="minimumSize">
+           <size>
+            <width>150</width>
+            <height>0</height>
+           </size>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>16777215</width>
+            <height>30</height>
+           </size>
+          </property>
+          <property name="styleSheet">
+           <string notr="true">background-color: rgb(48,132,70);
+color: rgb(255, 255, 255);
+font: 14pt &quot;Umpush&quot;;</string>
+          </property>
+          <property name="text">
+           <string>SITL</string>
           </property>
          </widget>
         </item>

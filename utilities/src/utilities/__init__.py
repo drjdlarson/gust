@@ -10,13 +10,19 @@ class ConnSettings:
     MAX_CONNECTIONS = 10
     MAX_MSG_SIZE = 1500
     TIMEOUT = 10
+    RADIO_PORTS = [9820, 9825, 9830, 9835, 9840, 9850, 9855, 9860, 9865]
+
 
     # DRONE message_type
     DRONE_CONN = 'drone_connect'
     DRONE_DISC = 'drone_disconnect'
     UPLOAD_WP = 'upload_waypoints'
+    AUTO_CMD = "autopilot_command"
+
+    # Autopilot commands
     GOTO_NEXT_WP = 'goto_next_waypoint'
-    RADIO_PORTS = [9820, 9825, 9830, 9835, 9840, 9850, 9855, 9860, 9865]
+    TAKEOFF = 'takeoff'
+    SET_MODE = "set_mode"
 
     # CMR Process
     CMR_PORT = 9880

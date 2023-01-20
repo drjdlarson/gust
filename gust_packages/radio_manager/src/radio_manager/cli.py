@@ -10,6 +10,7 @@ import os
 import json
 from PyQt5 import QtNetwork
 import utilities.database as database
+import dronekit_functions
 from utilities import ConnSettings as conn_settings
 from argparse import ArgumentParser
 
@@ -20,6 +21,7 @@ r2d = 1 / d2r
 
 
 # %% Custom Functions
+
 
 def prepare_dummy_data():
     current_time = get_current_time()
@@ -113,7 +115,7 @@ def prepare_dummy_data():
         "vals": {
             "m_time": current_time,
             "armed": random.choice([0, 1]),
-            "flight_mode": random.choice(['STABILIZE', 'GUIDED', 'AUTO', 'RTL']),
+            "flight_mode": random.choice(["STABILIZE", "GUIDED", "AUTO", "RTL"]),
             "mav_type": 2,
             "autopilot": 1,
             "custom_mode": 0,
@@ -126,51 +128,51 @@ def prepare_dummy_data():
     all_data = rate1, rate2, rate3, rate4
     return all_data
 
+
 def prepare_data_from_mavlink(radio, name, port, rate1, rate2, rate3, rate4, data):
     current_time = get_current_time()
 
-    data['MAV'] = {}
-    data['ATTITUDE'] = {}
-    data['VFR_HUD'] = {}
+    data["MAV"] = {}
+    data["ATTITUDE"] = {}
+    data["VFR_HUD"] = {}
     # data['HEARTBEAT'] = {}
     # data['HOME'] = {}
-    data['LOCAL_POSITION_NED'] = {}
-    data['GLOBAL_POSITION_INT'] = {}
-    data['BATTERY_STATUS'] = {}
-    data['GPS_RAW_INT'] = {}
-
+    data["LOCAL_POSITION_NED"] = {}
+    data["GLOBAL_POSITION_INT"] = {}
+    data["BATTERY_STATUS"] = {}
+    data["GPS_RAW_INT"] = {}
 
     # populating data{} before writing rates for database
-    data['MAV']['armed'] = int(radio.armed)
-    data['MAV']['base_mode'] = radio.mode.name
-    data['MAV']['flight_mode'] = radio.mode.name
-    data['MAV']['mav_type'] = 0
-    data['vehicle_type'] = radio._vehicle_type
+    data["MAV"]["armed"] = int(radio.armed)
+    data["MAV"]["base_mode"] = radio.mode.name
+    data["MAV"]["flight_mode"] = radio.mode.name
+    data["MAV"]["mav_type"] = 0
+    data["vehicle_type"] = radio._vehicle_type
 
-    data['ATTITUDE']['roll'] = radio.attitude.roll * r2d
-    data['ATTITUDE']['pitch'] = radio.attitude.pitch * r2d
+    data["ATTITUDE"]["roll"] = radio.attitude.roll * r2d
+    data["ATTITUDE"]["pitch"] = radio.attitude.pitch * r2d
 
-    data['VFR_HUD']['yaw'] = radio.attitude.yaw * r2d
-    data['VFR_HUD']['airspeed'] = radio.airspeed
-    data['VFR_HUD']['groundspeed'] = radio.groundspeed
+    data["VFR_HUD"]["yaw"] = radio.attitude.yaw * r2d
+    data["VFR_HUD"]["airspeed"] = radio.airspeed
+    data["VFR_HUD"]["groundspeed"] = radio.groundspeed
 
-    data['GLOBAL_POSITION_INT']['lat'] = radio.location._lat
-    data['GLOBAL_POSITION_INT']['lon'] = radio.location._lon
-    data['GLOBAL_POSITION_INT']['relative_alt'] = radio.location._relative_alt
+    data["GLOBAL_POSITION_INT"]["lat"] = radio.location._lat
+    data["GLOBAL_POSITION_INT"]["lon"] = radio.location._lon
+    data["GLOBAL_POSITION_INT"]["relative_alt"] = radio.location._relative_alt
 
-    data['LOCAL_POSITION_NED']['vx'] = radio._vx
-    data['LOCAL_POSITION_NED']['vy'] = radio._vy
-    data['LOCAL_POSITION_NED']['heading'] = radio.heading
+    data["LOCAL_POSITION_NED"]["vx"] = radio._vx
+    data["LOCAL_POSITION_NED"]["vy"] = radio._vy
+    data["LOCAL_POSITION_NED"]["heading"] = radio.heading
 
-    data['BATTERY_STATUS']['voltage'] = radio.battery.voltage
-    data['BATTERY_STATUS']['current'] = radio.battery.current
+    data["BATTERY_STATUS"]["voltage"] = radio.battery.voltage
+    data["BATTERY_STATUS"]["current"] = radio.battery.current
 
-    data['GPS_RAW_INT']['fix_type'] = radio._fix_type
-    data['GPS_RAW_INT']['satellites_visible'] = radio._satellites_visible
+    data["GPS_RAW_INT"]["fix_type"] = radio._fix_type
+    data["GPS_RAW_INT"]["satellites_visible"] = radio._satellites_visible
 
     # putting zero for things confused from dronekit
-    data['VFR_HUD']['climb'] = 0
-    data['VFR_HUD']['throttle'] = 0
+    data["VFR_HUD"]["climb"] = 0
+    data["VFR_HUD"]["throttle"] = 0
 
     # populating rate dictionaries from mavlink data
     for rate in (rate1, rate2, rate3, rate4):
@@ -185,9 +187,8 @@ def prepare_data_from_mavlink(radio, name, port, rate1, rate2, rate3, rate4, dat
     rate4["vals"]["next_wp"] = 0
     rate4["vals"]["relay_sw"] = 0
     rate4["vals"]["engine_sw"] = 0
-    rate2['vals']['alpha'] =0
-    rate2['vals']['beta'] = 0
-
+    rate2["vals"]["alpha"] = 0
+    rate2["vals"]["beta"] = 0
 
     if "MAV" in data:
         rate4["vals"]["flight_mode"] = data["MAV"]["base_mode"]
@@ -195,38 +196,39 @@ def prepare_data_from_mavlink(radio, name, port, rate1, rate2, rate3, rate4, dat
         rate4["vals"]["armed"] = data["MAV"]["armed"]
 
     if "ATTITUDE" in data:
-        rate2['vals']['roll_angle'] = data['ATTITUDE']['roll']
-        rate2['vals']['pitch_angle'] = data['ATTITUDE']['pitch']
+        rate2["vals"]["roll_angle"] = data["ATTITUDE"]["roll"]
+        rate2["vals"]["pitch_angle"] = data["ATTITUDE"]["pitch"]
 
-    if 'VFR_HUD' in data:
-        rate2['vals']['airspeed'] = round(data['VFR_HUD']['airspeed'])
-        rate2['vals']['gndspeed'] = round(data['VFR_HUD']['groundspeed'], 1)
-        rate2['vals']['yaw'] = round(data['VFR_HUD']['yaw'])
-        rate2['vals']['vspeed'] = round(data['VFR_HUD']['climb'], 1)
-        rate2['vals']['throttle'] = round(data['VFR_HUD']['throttle'])
+    if "VFR_HUD" in data:
+        rate2["vals"]["airspeed"] = round(data["VFR_HUD"]["airspeed"])
+        rate2["vals"]["gndspeed"] = round(data["VFR_HUD"]["groundspeed"], 1)
+        rate2["vals"]["yaw"] = round(data["VFR_HUD"]["yaw"])
+        rate2["vals"]["vspeed"] = round(data["VFR_HUD"]["climb"], 1)
+        rate2["vals"]["throttle"] = round(data["VFR_HUD"]["throttle"])
 
-    if 'LOCAL_POSITION_NED' in data:
-        vx = data['LOCAL_POSITION_NED']['vx']
-        vy = data['LOCAL_POSITION_NED']['vy']
+    if "LOCAL_POSITION_NED" in data:
+        vx = data["LOCAL_POSITION_NED"]["vx"]
+        vy = data["LOCAL_POSITION_NED"]["vy"]
         # rate2['vals']['heading'] = round(math.degrees(math.atan2(vy, vx)))
-        rate2['vals']['heading'] = 0
+        rate2["vals"]["heading"] = 0
 
-    if 'GLOBAL_POSITION_INT' in data:
-        rate2['vals']['latitude'] = data['GLOBAL_POSITION_INT']['lat']
-        rate2['vals']['longitude'] = data['GLOBAL_POSITION_INT']['lon']
-        rate2['vals']['relative_alt'] = data['GLOBAL_POSITION_INT']['relative_alt']
+    if "GLOBAL_POSITION_INT" in data:
+        rate2["vals"]["latitude"] = data["GLOBAL_POSITION_INT"]["lat"]
+        rate2["vals"]["longitude"] = data["GLOBAL_POSITION_INT"]["lon"]
+        rate2["vals"]["relative_alt"] = data["GLOBAL_POSITION_INT"]["relative_alt"]
 
-    if 'BATTERY_STATUS' in data:
-        rate1['vals']['voltage'] = data['BATTERY_STATUS']['voltage']
+    if "BATTERY_STATUS" in data:
+        rate1["vals"]["voltage"] = data["BATTERY_STATUS"]["voltage"]
         # rate1['vals']['current'] = data['BATTERY_STATUS']['current']
-        rate1['vals']['current'] = 0
+        rate1["vals"]["current"] = 0
 
-    if 'GPS_RAW_INT' in data:
-        rate2['vals']['gnss_fix'] = data['GPS_RAW_INT']['fix_type']
-        rate2['vals']['satellites_visible'] = data['GPS_RAW_INT']['satellites_visible']
+    if "GPS_RAW_INT" in data:
+        rate2["vals"]["gnss_fix"] = data["GPS_RAW_INT"]["fix_type"]
+        rate2["vals"]["satellites_visible"] = data["GPS_RAW_INT"]["satellites_visible"]
     return rate1, rate2, rate3, rate4, data
 
-def check_for_signal(conn):
+
+def check_for_signal(conn, radio):
     if not conn.hasPendingDatagrams():
         return
 
@@ -235,76 +237,90 @@ def check_for_signal(conn):
     addr = data.senderAddress()
     port = data.senderPort()
 
-    if received_signal['type'] == conn_settings.UPLOAD_WP:
-        succ, err = upload_waypoints(received_signal)
-        response = {'success': succ, "info": err}
+    if received_signal["type"] == conn_settings.UPLOAD_WP:
+        succ, err = dronekit_functions.upload_waypoints(received_signal, radio)
+        response = {"success": succ, "info": err}
 
-    elif received_signal['type'] == conn_settings.GOTO_NEXT_WP:
-        succ, err = goto_next_wp(received_signal)
-        response = {'success': succ, "info": err}
+    elif received_signal["type"] == conn_settings.AUTO_CMD:
+        succ, err = get_autopilot_command(received_signal, radio)
+        response = {"success": succ, "info": err}
 
     else:
-        response = {'success': False, "info": "Signal not recognized by Radio manager.\n Received signal: {}".format(str(received_signal))}
+        response = {
+            "success": False,
+            "info": "Signal not recognized by Radio manager.\n Received signal: {}".format(
+                str(received_signal)
+            ),
+        }
 
     # Sending message back to client socket (Conn-server)
     f_response = json.dumps(response).encode(conn_settings.FORMAT)
     conn.writeDatagram(f_response, addr, port)
 
-def goto_next_wp(received_signal):
-    succ = True
-    err = "Next waypoint signal works. {} going to waypoint {}".format(received_signal['name'], received_signal['next_wp'])
+
+def get_autopilot_command(received_signal, radio):
+
+    # check the type of autopilot command
+    if received_signal['cmd'] == conn_settings.TAKEOFF:
+        succ, err = dronekit_functions.take_off(received_signal, radio)
+
+    elif received_signal['cmd'] == conn_settings.GOTO_NEXT_WP:
+        succ, err = dronekit_functions.goto_next_wp(received_signal, radio)
+
+    elif received_signal['cmd'] == conn_settings.SET_MODE:
+        succ, err = dronekit_functions.set_mode(received_signal, radio)
+
     return succ, err
 
-def upload_waypoints(received_signal):
-    succ = False
-    err = "Upload waypoints is working, you have reached the radio_manager"
-    return succ, err
 
 def get_current_time():
     return time.time()
 
+
 def define_parser():
-    parser = ArgumentParser(description="Process command line options for radio connection")
+    parser = ArgumentParser(
+        description="Process command line options for radio connection"
+    )
 
     default = "DroneX"
     parser.add_argument(
         "--name",
         type=str,
         help="Name of the vehicle. The default is {}".format(default),
-        default=default
-        )
+        default=default,
+    )
 
     default = "/dev/test/"
     parser.add_argument(
         "--port",
         type=str,
         help="Port of radio connection. The default is {}".format(default),
-        default=default
-        )
+        default=default,
+    )
 
     default = "red"
     parser.add_argument(
         "--color",
         type=str,
         help="Color for the vehicle's icons. The default is {}".format(default),
-        default=default
-        )
+        default=default,
+    )
 
     default = 38400
     parser.add_argument(
         "--baud",
         type=int,
         help="Baud rate for radio connection. The default is {}".format(default),
-        default=default
-        )
+        default=default,
+    )
 
     default = 9830
     parser.add_argument(
         "--udp_port",
         type=str,
         help="Port for UDP socket connection. The default is {}".format(default),
-        default=default
-        )
+        default=default,
+    )
 
     parser.add_argument(
         "-d",
@@ -332,7 +348,6 @@ _handleable_sigs = (
     signal.SIGSTOP,
 )
 
-
 # %% Main function
 if __name__ == "__main__":
 
@@ -352,7 +367,9 @@ if __name__ == "__main__":
         logger.setLevel(logging.INFO)
         ch.setLevel(logging.INFO)
 
-    formatter = logging.Formatter('[radio-manager] %(levelname)s %(asctime)s - %(message)s')
+    formatter = logging.Formatter(
+        "[radio-manager] %(levelname)s %(asctime)s - %(message)s"
+    )
     ch.setFormatter(formatter)
 
     logger.addHandler(ch)
@@ -364,24 +381,39 @@ if __name__ == "__main__":
     sig_conn = QtNetwork.QUdpSocket()
     sig_conn.bind(int(udp_port))
 
-    if port == '/dev/test/':
+    if port == "/dev/test/":
         logger.debug("Connected to test port")
         while True:
-            check_for_signal(sig_conn)
+            check_for_signal(sig_conn, None)
             all_data = prepare_dummy_data()
             res = database.write_values(all_data, name)
             time.sleep(0.2)
 
     else:
+
         # setting up the connection with mavlink
-        try:
-            radio = dronekit.connect(port, wait_ready=True, baud=baud)
-        except:
-            sys.exit(-1)
+        if port == "TCP":
+            tcp_ports = 5760
+            conn_string = "tcp:127.0.0.1:{}".format(tcp_ports)
+            try:
+                radio = dronekit.connect(conn_string, wait_ready=True)
+            except:
+                sys.exit(-1)
+
+        else:
+            try:
+                radio = dronekit.connect(port, wait_ready=True, baud=baud)
+            except:
+                sys.exit(-1)
 
         for sig in _handleable_sigs:
             try:
-                signal.signal(sig, lambda signum, frame: _cleanup_handler(signum, frame, radio, sig_conn))
+                signal.signal(
+                    sig,
+                    lambda signum, frame: _cleanup_handler(
+                        signum, frame, radio, sig_conn
+                    ),
+                )
             except (ValueError, OSError):
                 continue
 
@@ -392,10 +424,10 @@ if __name__ == "__main__":
         rate1, rate2, rate3, rate4 = [all_data[i] for i in range(len(all_data))]
 
         while True:
-            check_for_signal(sig_conn)
+            check_for_signal(sig_conn, radio)
             rate1, rate2, rate3, rate4, mav_data = prepare_data_from_mavlink(
                 radio, name, port, rate1, rate2, rate3, rate4, mav_data
-                )
+            )
             all_data = rate1, rate2, rate3, rate4
             res = database.write_values(all_data, name)
             time.sleep(0.075)

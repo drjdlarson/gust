@@ -236,59 +236,6 @@ class CmrWindow(QMainWindow, Ui_MainWindow):
         self.upload_mission(self.ctx.get_resource('cmr_planning/red_waypoints.txt'))
         print('uploaded the mission!')
 
-
-    def upload_mission(self, aFileName):
-        """Upload a mission from a file"""
-        missionList = self.readmission(aFileName)
-        print('Uploading waypoints from {}\n'.format(aFileName))
-        print('Clearing older mission\n')
-
-        cmds = self.v.commands
-        cmds.clear()
-        cmds.upload()
-
-        print('uploading new mission\n')
-        for command in missionList:
-            cmds.add(command)
-        print('Added all commands')
-        cmds.upload(timeout=20)
-        print("Uploaded the mission")
-
-    def readmission(self, aFileName):
-        """
-        Load a mission from a file into a list.
-
-        This function is used by upload_mission().
-        """
-        print("Reading mission from file: {}\n".format(aFileName))
-        cmds = self.v.commands
-        missionlist=[]
-        with open(aFileName) as f:
-            for i, line in enumerate(f):
-                if i==0:
-                    if not line.startswith('QGC WPL 110'):
-                        raise Exception('File is not supported WP version')
-                else:
-                    linearray=line.split('\t')
-                    ln_seq = int(linearray[0])
-                    ln_currentwp = int(linearray[1])
-                    ln_frame = int(linearray[2])
-                    ln_command = int(linearray[3])
-                    ln_param1 = float(linearray[4])
-                    ln_param2 = float(linearray[5])
-                    ln_param3 = float(linearray[6])
-                    ln_param4 = float(linearray[7])
-                    ln_x = float(linearray[8])
-                    ln_y = float(linearray[9])
-                    ln_z = float(linearray[10])
-                    ln_autocontinue = int(linearray[11])
-                    cmd = dronekit.Command(0, 0, 0, ln_frame, ln_command, 0, 0, ln_param1, ln_param2, ln_param3, ln_param4, ln_x, ln_y, ln_z)
-                    print("\n{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}".format(0, 0, 0, ln_frame, ln_command, 0, 0, ln_param1, ln_param2, ln_param3, ln_param4, ln_x, ln_y, ln_z))
-                    missionlist.append(cmd)
-        return missionlist
-
-
-
     def calculate_waypoints_frontback(self, direction):
         """
         Generate Waypoints for CMR for single survey line.

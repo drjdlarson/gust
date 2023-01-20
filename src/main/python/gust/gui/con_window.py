@@ -23,6 +23,8 @@ class ConWindow(QDialog, Ui_MainWindow):
 
         available_colors = [i for i in ALL_COLORS if i not in used_colors]
         self.comboBox_port.addItems(ports)
+        self.comboBox_port.addItem("TCP")
+
         self.comboBox_baud.addItems(BAUD)
         self.comboBox_color.addItems(available_colors)
 
