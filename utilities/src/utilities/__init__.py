@@ -18,6 +18,7 @@ class ConnSettings:
     DRONE_DISC = 'drone_disconnect'
     UPLOAD_WP = 'upload_waypoints'
     AUTO_CMD = "autopilot_command"
+    START_SIL = "start_sil"
 
     # Autopilot commands
     GOTO_NEXT_WP = 'goto_next_waypoint'

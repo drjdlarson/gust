@@ -122,8 +122,10 @@ class ConnServer:
                 response = {"success": succ, "info": err}
 
             elif received_info["type"] == conn_settings.UPLOAD_WP:
-                wp_color = received_info['wp_color']
-                filename = ctx.get_resource('cmr_planning/{}_waypoints.txt'.format(wp_color))
+                wp_color = received_info["wp_color"]
+                filename = ctx.get_resource(
+                    "cmr_planning/{}_waypoints.txt".format(wp_color)
+                )
                 received_info[filename] = filename
                 succ, err = cls.send_autopilot_commands(received_info)
                 response = {"success": succ, "info": err}
@@ -134,6 +136,10 @@ class ConnServer:
 
             elif received_info["type"] == conn_settings.START_CMR:
                 succ, err = cls.start_cmr_process(ctx)
+                response = {"success": succ, "info": err}
+
+            elif received_info["type"] == conn_settings.START_SIL:
+                succ, err = cls.start_sil(received_info, ctx)
                 response = {"success": succ, "info": err}
 
             elif received_info["type"] == conn_settings.STOP_CMR:
@@ -147,7 +153,6 @@ class ConnServer:
                         str(received_info)
                     ),
                 }
-
 
             # Sending message back to client socket
             f_response = json.dumps(response).encode(conn_settings.FORMAT)
@@ -299,8 +304,25 @@ class ConnServer:
             cls.available_udp_ports.remove(cls._radio_udp_port[name])
         return succ, err
 
+    def start_sil(cls, received_info, ctx):
+        program = ctx.get_resource("start_sil/start_sil")
+        args = ["--home", "33.154516,-87.1651321,0,180"]
+
+        cls._sil = QProcess()
+        cls._sil.setProcessChannelMode(QProcess.MergedChannels)
+        cls._sil.setProcessEnvironment(QProcessEnvironment.systemEnvironment())
+        cls._sil.readyRead.connect(
+            lambda: print(cls._sil.readAllStandardOutput().data().decode().strip())
+        )
+        cls._sil.start(program, args)
+        succ = True
+        err = ""
+        return succ, err
+
     @classmethod
     def send_autopilot_commands(cls, received_info):
+        logger.info("received autopilot commands")
+        logger.info(received_info)
         name = received_info["name"]
         udp_port = cls._radio_udp_port[name]
         succ, err = send_info_to_udp_server(
@@ -308,6 +330,7 @@ class ConnServer:
         )
         return succ, err
 
+    # dont need this here. replaced with send_autopilot_commands
     @classmethod
     def upload_waypoints(cls, received_info):
         name = received_info["name"]

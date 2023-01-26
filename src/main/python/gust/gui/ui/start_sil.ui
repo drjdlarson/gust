@@ -112,7 +112,7 @@ color: rgb(0, 0, 0);</string>
         </font>
        </property>
        <property name="text">
-        <string>SITL Framerate</string>
+        <string>SIL Framerate</string>
        </property>
       </widget>
      </item>

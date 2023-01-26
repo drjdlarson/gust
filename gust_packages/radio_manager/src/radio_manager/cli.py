@@ -10,10 +10,9 @@ import os
 import json
 from PyQt5 import QtNetwork
 import utilities.database as database
-import dronekit_functions
 from utilities import ConnSettings as conn_settings
 from argparse import ArgumentParser
-
+from radio_manager import dronekit_functions
 from radio_manager import logger
 
 d2r = np.pi / 100
@@ -261,14 +260,18 @@ def check_for_signal(conn, radio):
 def get_autopilot_command(received_signal, radio):
 
     # check the type of autopilot command
-    if received_signal['cmd'] == conn_settings.TAKEOFF:
+    if received_signal["cmd"] == conn_settings.TAKEOFF:
         succ, err = dronekit_functions.take_off(received_signal, radio)
 
-    elif received_signal['cmd'] == conn_settings.GOTO_NEXT_WP:
+    elif received_signal["cmd"] == conn_settings.GOTO_NEXT_WP:
         succ, err = dronekit_functions.goto_next_wp(received_signal, radio)
 
-    elif received_signal['cmd'] == conn_settings.SET_MODE:
-        succ, err = dronekit_functions.set_mode(received_signal, radio)
+    elif received_signal["cmd"] == conn_settings.SET_MODE:
+        mode = received_signal["param"]
+        logger.info("Setting vehicle mode to {}".format(mode))
+        radio.mode = dronekit.VehicleMode(mode)
+        succ = True, ""
+        # succ, err = dronekit_functions.set_mode(received_signal, radio)
 
     return succ, err
 

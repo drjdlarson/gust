@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'src/main/python/gust/gui/ui/start_sitl.ui'
+# Form implementation generated from reading ui file 'src/main/python/gust/gui/ui/start_sil.ui'
 #
 # Created by: PyQt5 UI code generator 5.15.7
 #
@@ -98,7 +98,7 @@ class Ui_MainWindow(object):
         self.label_nameinput.setText(_translate("MainWindow", "Enter Vehicle\'s Type"))
         self.label_home_lat.setText(_translate("MainWindow", "Home Latitude"))
         self.label_home_lon.setText(_translate("MainWindow", "Home Longitude"))
-        self.label_framerate.setText(_translate("MainWindow", "SITL Framerate"))
+        self.label_framerate.setText(_translate("MainWindow", "SIL Framerate"))
         self.label_instance.setText(_translate("MainWindow", "Instance (N)"))
         self.pushButton_start.setText(_translate("MainWindow", "START"))
         self.pushButton_cancel.setText(_translate("MainWindow", "Cancel"))

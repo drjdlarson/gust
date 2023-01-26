@@ -43,23 +43,23 @@ class ConWindow(QDialog, Ui_MainWindow):
         url = "{}connect".format(DRONE_BASE)
 
         if len(port_name) > 0 or len(self.name) > 0:
-            url += '?'
+            url += "?"
             added_data = False
 
             if len(port_name) > 0:
-                url += "port=" + port_name.replace('/', '%2F')
+                url += "port=" + port_name.replace("/", "%2F")
                 added_data = True
 
             if len(self.name) > 0:
                 if added_data:
                     url += "&"
-                url += "name=" + self.name.replace(' ', '_')
+                url += "name=" + self.name.replace(" ", "_")
                 added_data = True
 
             if len(self.color_id) > 0:
                 if added_data:
                     url += "&"
-                url += "color=" + self.color_id.replace(' ', '_')
+                url += "color=" + self.color_id.replace(" ", "_")
                 added_data = True
 
             if added_data:
@@ -71,7 +71,7 @@ class ConWindow(QDialog, Ui_MainWindow):
 
         msgBox = QMessageBox()
 
-        if conn['success']:
+        if conn["success"]:
             msgBox.setIcon(QMessageBox.Information)
             msgBox.setWindowTitle("Information")
             msgBox.setText("Connected to vehicle: {}".format(self.name))
@@ -81,7 +81,7 @@ class ConWindow(QDialog, Ui_MainWindow):
         else:
             msgBox.setIcon(QMessageBox.Warning)
             msgBox.setWindowTitle("Warning")
-            msgBox.setText("Failed connection: <<{:s}>>".format(conn['msg']))
+            msgBox.setText("Failed connection: <<{:s}>>".format(conn["msg"]))
             msgBox.exec()
 
     def setupUi(self, mainWindow):

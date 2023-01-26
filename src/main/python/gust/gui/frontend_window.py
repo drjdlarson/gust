@@ -12,15 +12,39 @@ import time
 from datetime import timedelta
 from functools import partial
 from PyQt5 import QtCore, QtGui, QtWidgets
-from PyQt5. QtWidgets import QMainWindow, QMessageBox, QHeaderView, QTableWidgetItem, QPushButton
-from PyQt5.QtCore import Qt, pyqtSlot, QModelIndex, pyqtSignal, QThreadPool, QThread, QTimer
+from PyQt5.QtWidgets import (
+    QMainWindow,
+    QMessageBox,
+    QHeaderView,
+    QTableWidgetItem,
+    QPushButton,
+)
+from PyQt5.QtCore import (
+    Qt,
+    pyqtSlot,
+    QModelIndex,
+    pyqtSignal,
+    QThreadPool,
+    QThread,
+    QTimer,
+)
 from PyQt5.QtGui import QIntValidator, QTextCursor
 import requests
 from gust.gui.ui.gustClient import Ui_MainWindow_main
-from gust.gui import con_window, log_window, sensors_window, planning_selection_window, commands_window
-from gust.gui import engineoff_confirmation, disconnect_confirmation, rtl_confirmation, disarm_confirmation
-from gust.gui import rc_window, servo_window
-
+from gust.gui import (
+    con_window,
+    log_window,
+    sensors_window,
+    planning_selection_window,
+    commands_window,
+    start_sil_window,
+)
+from gust.gui import (
+    engineoff_confirmation,
+    disconnect_confirmation,
+    rtl_confirmation,
+    disarm_confirmation,
+)
 from gust.gui.ui.map_widget import MapWidget
 from gust.gui.ui.attitude_ind_widget import pyG5AIWidget
 from gust.gui.msg_decoder import MessageDecoder as msg_decoder
@@ -30,6 +54,7 @@ from wsgi_apps.api.url_bases import BASE, DRONE
 URL_BASE = "http://localhost:8000/{}/".format(BASE)
 DRONE_BASE = "{}{}/".format(URL_BASE, DRONE)
 FILES = ["home", "pos", "spos", "rtl_pos"]
+
 
 class FrontendWindow(QMainWindow, Ui_MainWindow_main):
     """Main interface for the frontend window."""
@@ -43,13 +68,13 @@ class FrontendWindow(QMainWindow, Ui_MainWindow_main):
         self._cmdWindow = None
         self._servoWindow = None
         self._planningWindow = None
+        self._sil_window = None
 
         self._continue_updating_data = False
 
         self.manager = DataManager()
         self.ctx = ctx
         self.setupUi(self)
-
 
         # Pushbuttons
         self.pushButton_addvehicle.clicked.connect(self.clicked_addvehicle)
@@ -58,8 +83,9 @@ class FrontendWindow(QMainWindow, Ui_MainWindow_main):
         self.pushButton_disarm.clicked.connect(self.clicked_disarm)
 
         self.pushButton_sensors.clicked.connect(self.clicked_sensors)
-        self.pushButton_actions.clicked.connect(self.clicked_actions)
+        self.pushButton_commands.clicked.connect(self.clicked_commands)
         self.pushButton_tune.clicked.connect(self.clicked_tune)
+        self.pushButton_sensors.clicked.connect(self.clicked_sil)
         self.pushButton_planning.clicked.connect(self.clicked_planning)
 
         self.once_clicked = False
@@ -70,7 +96,6 @@ class FrontendWindow(QMainWindow, Ui_MainWindow_main):
         super().setupUi(mainWindow)
         self.widget_map.setup_qml(self.ctx)
         self.widget_hud.setup_hud_ui(self.ctx)
-
 
     @pyqtSlot()
     def clicked_addvehicle(self):
@@ -83,7 +108,8 @@ class FrontendWindow(QMainWindow, Ui_MainWindow_main):
 
         if self._conWindow is None:
             self._conWindow = con_window.ConWindow(
-                self.ctx, ports['ports'], used_colors['used_colors'])
+                self.ctx, ports["ports"], used_colors["used_colors"]
+            )
 
         if self._conWindow.exec_():
             time.sleep(1.0)
@@ -97,24 +123,18 @@ class FrontendWindow(QMainWindow, Ui_MainWindow_main):
 
     @pyqtSlot()
     def clicked_engineOff(self):
-        win = engineoff_confirmation.EngineOffConfirmation(
-            self.ctx)
+        win = engineoff_confirmation.EngineOffConfirmation(self.ctx)
         win.exec_()
-
 
     @pyqtSlot()
     def clicked_RTL(self):
-        win = rtl_confirmation.RTLConfirmation(
-            self.ctx)
+        win = rtl_confirmation.RTLConfirmation(self.ctx)
         win.exec_()
-
 
     @pyqtSlot()
     def clicked_disarm(self):
-        win = disarm_confirmation.DisarmConfirmation(
-            self.ctx)
+        win = disarm_confirmation.DisarmConfirmation(self.ctx)
         win.exec_()
-
 
     @pyqtSlot()
     def clicked_tune(self):
@@ -123,24 +143,28 @@ class FrontendWindow(QMainWindow, Ui_MainWindow_main):
     @pyqtSlot()
     def clicked_sensors(self):
         if self._sensorsWindow is None:
-            self._sensorsWindow = sensors_window.SensorsWindow(
-                self.ctx, parent=self)
+            self._sensorsWindow = sensors_window.SensorsWindow(self.ctx, parent=self)
         self._sensorsWindow.show()
+
+    def clicked_sil(self):
+        if self._sil_window is None:
+            self._sil_window = start_sil_window.StartSILWindow(self.ctx, parent=self)
+        self._sil_window.show()
 
     @pyqtSlot()
     def clicked_planning(self):
         if self._planningWindow is None:
             self._planningWindow = planning_selection_window.PlanningSelectionWindow(
-                self.ctx, parent=self)
+                self.ctx, parent=self
+            )
         self._planningWindow.show()
         self._planningWindow = None
 
     @pyqtSlot()
-    def clicked_actions(self):
+    def clicked_commands(self):
         if self._cmdWindow is None:
             self._cmdWindow = commands_window.CommandsManager(self.ctx, parent=self)
         self._cmdWindow.show()
-        self._cmdWindow = None
 
     # @pyqtSlot()
     def clicked_disconnect(self):
@@ -148,8 +172,7 @@ class FrontendWindow(QMainWindow, Ui_MainWindow_main):
         if button:
             sel_row = self.tableWidget.indexAt(button.pos()).row()
             name = self.tableWidget.item(sel_row, 1).text()
-            win = disconnect_confirmation.DisconnectConfirmation(
-                name, self.ctx)
+            win = disconnect_confirmation.DisconnectConfirmation(name, self.ctx)
             res = win.exec_()
             if res:
                 self.tableWidget.removeRow(sel_row)
@@ -177,51 +200,51 @@ class FrontendWindow(QMainWindow, Ui_MainWindow_main):
             # rowPos = int(key)
 
             item = QTableWidgetItem()
-            color = self.flight_params[key]['color']
+            color = self.flight_params[key]["color"]
             item.setBackground(QtGui.QColor(color))
             self.tableWidget.setItem(rowPos, 0, item)
 
-            item = self.flight_params[key]['name']
+            item = self.flight_params[key]["name"]
             item = QTableWidgetItem(item)
             item.setTextAlignment(QtCore.Qt.AlignCenter)
             self.tableWidget.setItem(rowPos, 1, item)
 
-            item = self.flight_params[key]['flight_mode']
+            item = self.flight_params[key]["flight_mode"]
             item = QTableWidgetItem(str(item))
             item.setTextAlignment(QtCore.Qt.AlignCenter)
             self.tableWidget.setItem(rowPos, 2, item)
 
-            item = self.flight_params[key]['next_wp']
+            item = self.flight_params[key]["next_wp"]
             item = QTableWidgetItem("Waypoint " + str(item))
             item.setTextAlignment(QtCore.Qt.AlignCenter)
             self.tableWidget.setItem(rowPos, 3, item)
 
-            item = int(self.flight_params[key]['tof'])
+            item = int(self.flight_params[key]["tof"])
             item = QTableWidgetItem(str(timedelta(seconds=item)))
             item.setTextAlignment(QtCore.Qt.AlignCenter)
             self.tableWidget.setItem(rowPos, 4, item)
 
-            item = self.flight_params[key]['relative_alt']
+            item = self.flight_params[key]["relative_alt"]
             item = QTableWidgetItem(str(item) + " m")
             item.setTextAlignment(QtCore.Qt.AlignCenter)
             self.tableWidget.setItem(rowPos, 5, item)
 
-            item = self.flight_params[key]['voltage']
+            item = self.flight_params[key]["voltage"]
             item = QTableWidgetItem(str(item) + " V")
             item.setTextAlignment(QtCore.Qt.AlignCenter)
             self.tableWidget.setItem(rowPos, 6, item)
 
-            item = self.flight_params[key]['current']
+            item = self.flight_params[key]["current"]
             item = QTableWidgetItem(str(item) + " A")
             item.setTextAlignment(QtCore.Qt.AlignCenter)
             self.tableWidget.setItem(rowPos, 7, item)
 
-            item = self.flight_params[key]['relay_sw']
+            item = self.flight_params[key]["relay_sw"]
             item = QTableWidgetItem(str(item))
             item.setTextAlignment(QtCore.Qt.AlignCenter)
             self.tableWidget.setItem(rowPos, 8, item)
 
-            item = self.flight_params[key]['engine_sw']
+            item = self.flight_params[key]["engine_sw"]
             item = QTableWidgetItem(str(item))
             item.setTextAlignment(QtCore.Qt.AlignCenter)
             self.tableWidget.setItem(rowPos, 9, item)
@@ -232,16 +255,16 @@ class FrontendWindow(QMainWindow, Ui_MainWindow_main):
             self.tableWidget.setCellWidget(rowPos, 10, self.disconnect_button)
 
             self.widget_map.add_drone(
-                self.flight_params[key]['name'],
-                self.flight_params[key]['color'],
-                self.flight_params[key]['home_lat'],
-                self.flight_params[key]['home_lon'],
-                self.flight_params[key]['latitude'],
-                self.flight_params[key]['longitude'],
-                self.flight_params[key]['yaw'],
-                self.flight_params[key]['heading'],
-                self.flight_params[key]['flight_mode'],
-                )
+                self.flight_params[key]["name"],
+                self.flight_params[key]["color"],
+                self.flight_params[key]["home_lat"],
+                self.flight_params[key]["home_lon"],
+                self.flight_params[key]["latitude"],
+                self.flight_params[key]["longitude"],
+                self.flight_params[key]["yaw"],
+                self.flight_params[key]["heading"],
+                self.flight_params[key]["flight_mode"],
+            )
 
         if self.once_clicked:
             self.vehicle_selected()
@@ -257,28 +280,28 @@ class FrontendWindow(QMainWindow, Ui_MainWindow_main):
         key_pos = str(key_val)
 
         # Updating the lcd display
-        self.label_seluav.setText(str(self.flight_params[key_pos]['name']))
-        self.lcdNumber_altitude.display(self.flight_params[key_pos]['relative_alt'])
-        self.lcdNumber_vspeed.display(self.flight_params[key_pos]['vspeed'])
-        self.lcdNumber_airspeed.display(self.flight_params[key_pos]['airspeed'])
-        self.lcdNumber_gndspeed.display(self.flight_params[key_pos]['gndspeed'])
-        self.lcdNumber_voltage.display(self.flight_params[key_pos]['voltage'])
-        self.lcdNumber_current.display(self.flight_params[key_pos]['current'])
+        self.label_seluav.setText(str(self.flight_params[key_pos]["name"]))
+        self.lcdNumber_altitude.display(self.flight_params[key_pos]["relative_alt"])
+        self.lcdNumber_vspeed.display(self.flight_params[key_pos]["vspeed"])
+        self.lcdNumber_airspeed.display(self.flight_params[key_pos]["airspeed"])
+        self.lcdNumber_gndspeed.display(self.flight_params[key_pos]["gndspeed"])
+        self.lcdNumber_voltage.display(self.flight_params[key_pos]["voltage"])
+        self.lcdNumber_current.display(self.flight_params[key_pos]["current"])
 
         # Updating the Attitude Indicator
-        self.widget_hud.roll_angle = self.flight_params[key_pos]['roll_angle']
-        self.widget_hud.pitch_angle = self.flight_params[key_pos]['pitch_angle']
-        self.widget_hud.gndspeed = self.flight_params[key_pos]['gndspeed']
-        self.widget_hud.airspeed = self.flight_params[key_pos]['airspeed']
-        self.widget_hud.altitude = self.flight_params[key_pos]['relative_alt']
-        self.widget_hud.vspeed = self.flight_params[key_pos]['vspeed']
-        self.widget_hud.yaw = self.flight_params[key_pos]['yaw']
-        self.widget_hud.arm = self.flight_params[key_pos]['armed']
-        self.widget_hud.gnss_fix = self.flight_params[key_pos]['gnss_fix']
-        self.widget_hud.mode = self.flight_params[key_pos]['flight_mode']
-        self.widget_hud.alpha = self.flight_params[key_pos]['alpha']
-        self.widget_hud.beta = self.flight_params[key_pos]['beta']
-        self.widget_hud.sat_count = self.flight_params[key_pos]['satellites_visible']
+        self.widget_hud.roll_angle = self.flight_params[key_pos]["roll_angle"]
+        self.widget_hud.pitch_angle = self.flight_params[key_pos]["pitch_angle"]
+        self.widget_hud.gndspeed = self.flight_params[key_pos]["gndspeed"]
+        self.widget_hud.airspeed = self.flight_params[key_pos]["airspeed"]
+        self.widget_hud.altitude = self.flight_params[key_pos]["relative_alt"]
+        self.widget_hud.vspeed = self.flight_params[key_pos]["vspeed"]
+        self.widget_hud.yaw = self.flight_params[key_pos]["yaw"]
+        self.widget_hud.arm = self.flight_params[key_pos]["armed"]
+        self.widget_hud.gnss_fix = self.flight_params[key_pos]["gnss_fix"]
+        self.widget_hud.mode = self.flight_params[key_pos]["flight_mode"]
+        self.widget_hud.alpha = self.flight_params[key_pos]["alpha"]
+        self.widget_hud.beta = self.flight_params[key_pos]["beta"]
+        self.widget_hud.sat_count = self.flight_params[key_pos]["satellites_visible"]
         self.widget_hud.repaint()
 
     def clean_hud_and_lcd(self):

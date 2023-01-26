@@ -13,10 +13,16 @@ def goto_next_wp(received_signal, radio):
 
 
 def set_mode(received_signal, radio):
-    mode = received_signal["param"]
-    logger.info("Setting vehicle mode to {}".format(mode))
-    radio.mode = dronekit.VehicleMode(mode)
-    return True, ""
+    if radio is None:
+        succ = False
+        err = "Not Connected to radio"
+    else:
+        mode = received_signal["param"]
+        logger.info("Setting vehicle mode to {}".format(mode))
+        radio.mode = dronekit.VehicleMode(mode)
+        succ = True
+        err = ""
+    return succ, err
 
 
 def take_off(received_signal, radio):
@@ -24,6 +30,7 @@ def take_off(received_signal, radio):
         succ = False
         err = "Not Connected to radio"
     else:
+
         logger.info("Basic pre-arm checks")
         while not radio.is_armable:
             logger.info("waiting for vehicle to initialize")
@@ -64,7 +71,7 @@ def upload_waypoints(received_signal, radio):
     logger.info("Uploaded the mission")
 
     succ = True
-    err = ''
+    err = ""
     return succ, err
 
 
