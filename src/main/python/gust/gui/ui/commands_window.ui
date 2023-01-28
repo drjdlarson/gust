@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>480</width>
-    <height>737</height>
+    <width>849</width>
+    <height>731</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -217,7 +217,7 @@
        </widget>
       </item>
       <item row="5" column="1">
-       <widget class="QPushButton" name="pushButton">
+       <widget class="QPushButton" name="pushButton_takeoff">
         <property name="font">
          <font>
           <pointsize>13</pointsize>
@@ -237,19 +237,33 @@
      </layout>
     </item>
     <item>
-     <widget class="QPushButton" name="pushButton_arm_dis">
-      <property name="font">
-       <font>
-        <pointsize>13</pointsize>
-       </font>
-      </property>
-      <property name="styleSheet">
-       <string notr="true">background-color: rgb(138, 226, 52);</string>
-      </property>
-      <property name="text">
-       <string>Arm/Disarm</string>
-      </property>
-     </widget>
+     <layout class="QHBoxLayout" name="horizontalLayout">
+      <item>
+       <widget class="QPushButton" name="pushButton_arm">
+        <property name="font">
+         <font>
+          <pointsize>13</pointsize>
+         </font>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">background-color: rgb(138, 226, 52);</string>
+        </property>
+        <property name="text">
+         <string>ARM</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="pushButton_disarm">
+        <property name="styleSheet">
+         <string notr="true">background-color: rgb(138, 226, 52);</string>
+        </property>
+        <property name="text">
+         <string>DISARM</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
     </item>
     <item>
      <widget class="QPushButton" name="pushButton_goto_next">

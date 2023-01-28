@@ -27,6 +27,10 @@ class CommandsManager(QMainWindow, Ui_MainWindow):
         self.pushButton_refresh.clicked.connect(self.clicked_refresh)
         self.pushButton_select.clicked.connect(self.clicked_select)
         self.pushButton_mode.clicked.connect(self.clicked_set_mode)
+        self.pushButton_arm.clicked.connect(self.clicked_arm)
+        self.pushButton_disarm.clicked.connect(self.clicked_disarm)
+        self.pushButton_takeoff.clicked.connect(self.clicked_takeoff)
+        self.pushButton_rtl.clicked.connect(self.clicked_rtl)
         self.comboBox_mode.addItems(FLIGHT_MODES)
 
     def clicked_refresh(self):
@@ -44,16 +48,44 @@ class CommandsManager(QMainWindow, Ui_MainWindow):
     def clicked_set_wp(self):
         pass
 
-    def clicked_set_mode(self):
+    def clicked_arm(self):
         if self.selected_name is not None:
-            sel_mode = self.comboBox_mode.currentText()
+            self.send_arm_disarm_request(1)
+        else:
+            self.show_message_box(False, "Vehicle not selected")
+
+    def clicked_disarm(self):
+        if self.selected_name is not None:
+            self.send_arm_disarm_request(0)
+        else:
+            self.show_message_box(False, "Vehicle not selected")
+
+    def send_arm_disarm_request(self, param):
+        if self.selected_name is not None:
+            url = "{}autopilot_cmd".format(DRONE_BASE)
+            url += "?name=" + self.selected_name.replace(" ", "_")
+            url += "&cmd=" + conn_settings.ARM_DISARM
+            url += "&param=" + str(param)
+            arm = requests.get(url).json()
+            self.show_message_box(arm["success"], arm["msg"])
+        else:
+            self.show_message_box(False, "Vehicle not selected")
+
+    def clicked_set_mode(self):
+        self.set_flight_mode(self.comboBox_mode.currentText())
+
+    def clicked_rtl(self):
+        self.set_flight_mode("RTL")
+
+    def set_flight_mode(self, mode):
+        if self.selected_name is not None:
             url = "{}autopilot_cmd".format(DRONE_BASE)
             url += "?name=" + self.selected_name.replace(" ", "_")
             url += "&cmd=" + conn_settings.SET_MODE
-            url += "&param=" + sel_mode
+            url += "&param=" + mode
             print(url)
             set_mode = requests.get(url).json()
-            self.show_message_box(set_mode['success'], set_mode['msg'])
+            self.show_message_box(set_mode["success"], set_mode["msg"])
         else:
             self.show_message_box(False, "Vehicle not selected")
 
@@ -63,17 +95,16 @@ class CommandsManager(QMainWindow, Ui_MainWindow):
     def clicked_set_altitude(self):
         pass
 
-    def clicked_arm_disarm(self):
-        pass
-
     def clicked_takeoff(self):
-        url = "{}autopilot_cmd".format(DRONE_BASE)
-        url += "?name=" + self.selected_name.replace(" ", "_")
-        url += "&cmd=" + conn_settings.TAKEOFF
-        url += "&param=" + "10"
-        takeoff = requests.get(url).json()
-
-        self.show_message_box(takeoff['success'], takeoff['msg'])
+        if self.selected_name is not None:
+            url = "{}autopilot_cmd".format(DRONE_BASE)
+            url += "?name=" + self.selected_name.replace(" ", "_")
+            url += "&cmd=" + conn_settings.TAKEOFF
+            url += "&param=" + self.lineEdit_takeoff_alt.text()
+            takeoff = requests.get(url).json()
+            self.show_message_box(takeoff["success"], takeoff["msg"])
+        else:
+            self.show_message_box(False, "Vehicle not selected")
 
     def clicked_goto_next(self):
         pass

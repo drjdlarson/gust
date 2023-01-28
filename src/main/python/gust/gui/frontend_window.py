@@ -82,6 +82,9 @@ class FrontendWindow(QMainWindow, Ui_MainWindow_main):
         self.pushButton_RTL.clicked.connect(self.clicked_RTL)
         self.pushButton_disarm.clicked.connect(self.clicked_disarm)
 
+        self.pushButton_refresh_map.clicked.connect(
+            self.clicked_refresh_map
+        )
         self.pushButton_sensors.clicked.connect(self.clicked_sensors)
         self.pushButton_commands.clicked.connect(self.clicked_commands)
         self.pushButton_tune.clicked.connect(self.clicked_tune)
@@ -143,19 +146,25 @@ class FrontendWindow(QMainWindow, Ui_MainWindow_main):
     @pyqtSlot()
     def clicked_sensors(self):
         if self._sensorsWindow is None:
-            self._sensorsWindow = sensors_window.SensorsWindow(self.ctx, parent=self)
+            self._sensorsWindow = sensors_window.SensorsWindow(
+                self.ctx, parent=self
+            )
         self._sensorsWindow.show()
 
     def clicked_sil(self):
         if self._sil_window is None:
-            self._sil_window = start_sil_window.StartSILWindow(self.ctx, parent=self)
+            self._sil_window = start_sil_window.StartSILWindow(
+                self.ctx, parent=self
+            )
         self._sil_window.show()
 
     @pyqtSlot()
     def clicked_planning(self):
         if self._planningWindow is None:
-            self._planningWindow = planning_selection_window.PlanningSelectionWindow(
-                self.ctx, parent=self
+            self._planningWindow = (
+                planning_selection_window.PlanningSelectionWindow(
+                    self.ctx, parent=self
+                )
             )
         self._planningWindow.show()
         self._planningWindow = None
@@ -163,7 +172,9 @@ class FrontendWindow(QMainWindow, Ui_MainWindow_main):
     @pyqtSlot()
     def clicked_commands(self):
         if self._cmdWindow is None:
-            self._cmdWindow = commands_window.CommandsManager(self.ctx, parent=self)
+            self._cmdWindow = commands_window.CommandsManager(
+                self.ctx, parent=self
+            )
         self._cmdWindow.show()
 
     # @pyqtSlot()
@@ -172,11 +183,15 @@ class FrontendWindow(QMainWindow, Ui_MainWindow_main):
         if button:
             sel_row = self.tableWidget.indexAt(button.pos()).row()
             name = self.tableWidget.item(sel_row, 1).text()
-            win = disconnect_confirmation.DisconnectConfirmation(name, self.ctx)
+            win = disconnect_confirmation.DisconnectConfirmation(
+                name, self.ctx
+            )
             res = win.exec_()
             if res:
                 self.tableWidget.removeRow(sel_row)
-                self._continue_updating_data = self.tableWidget.rowCount() > 0
+                self._continue_updating_data = (
+                    self.tableWidget.rowCount() > 0
+                )
                 self.clean_hud_and_lcd()
                 self.widget_map.remove_vehicle_from_map(name)
 
@@ -252,7 +267,9 @@ class FrontendWindow(QMainWindow, Ui_MainWindow_main):
             # self.con_status will be 1 or 0.
             self.disconnect_button = QPushButton("Disconnect")
             self.disconnect_button.clicked.connect(self.clicked_disconnect)
-            self.tableWidget.setCellWidget(rowPos, 10, self.disconnect_button)
+            self.tableWidget.setCellWidget(
+                rowPos, 10, self.disconnect_button
+            )
 
             self.widget_map.add_drone(
                 self.flight_params[key]["name"],
@@ -281,19 +298,37 @@ class FrontendWindow(QMainWindow, Ui_MainWindow_main):
 
         # Updating the lcd display
         self.label_seluav.setText(str(self.flight_params[key_pos]["name"]))
-        self.lcdNumber_altitude.display(self.flight_params[key_pos]["relative_alt"])
-        self.lcdNumber_vspeed.display(self.flight_params[key_pos]["vspeed"])
-        self.lcdNumber_airspeed.display(self.flight_params[key_pos]["airspeed"])
-        self.lcdNumber_gndspeed.display(self.flight_params[key_pos]["gndspeed"])
-        self.lcdNumber_voltage.display(self.flight_params[key_pos]["voltage"])
-        self.lcdNumber_current.display(self.flight_params[key_pos]["current"])
+        self.lcdNumber_altitude.display(
+            self.flight_params[key_pos]["relative_alt"]
+        )
+        self.lcdNumber_vspeed.display(
+            self.flight_params[key_pos]["vspeed"]
+        )
+        self.lcdNumber_airspeed.display(
+            self.flight_params[key_pos]["airspeed"]
+        )
+        self.lcdNumber_gndspeed.display(
+            self.flight_params[key_pos]["gndspeed"]
+        )
+        self.lcdNumber_voltage.display(
+            self.flight_params[key_pos]["voltage"]
+        )
+        self.lcdNumber_current.display(
+            self.flight_params[key_pos]["current"]
+        )
 
         # Updating the Attitude Indicator
-        self.widget_hud.roll_angle = self.flight_params[key_pos]["roll_angle"]
-        self.widget_hud.pitch_angle = self.flight_params[key_pos]["pitch_angle"]
+        self.widget_hud.roll_angle = self.flight_params[key_pos][
+            "roll_angle"
+        ]
+        self.widget_hud.pitch_angle = self.flight_params[key_pos][
+            "pitch_angle"
+        ]
         self.widget_hud.gndspeed = self.flight_params[key_pos]["gndspeed"]
         self.widget_hud.airspeed = self.flight_params[key_pos]["airspeed"]
-        self.widget_hud.altitude = self.flight_params[key_pos]["relative_alt"]
+        self.widget_hud.altitude = self.flight_params[key_pos][
+            "relative_alt"
+        ]
         self.widget_hud.vspeed = self.flight_params[key_pos]["vspeed"]
         self.widget_hud.yaw = self.flight_params[key_pos]["yaw"]
         self.widget_hud.arm = self.flight_params[key_pos]["armed"]
@@ -301,11 +336,15 @@ class FrontendWindow(QMainWindow, Ui_MainWindow_main):
         self.widget_hud.mode = self.flight_params[key_pos]["flight_mode"]
         self.widget_hud.alpha = self.flight_params[key_pos]["alpha"]
         self.widget_hud.beta = self.flight_params[key_pos]["beta"]
-        self.widget_hud.sat_count = self.flight_params[key_pos]["satellites_visible"]
+        self.widget_hud.sat_count = self.flight_params[key_pos][
+            "satellites_visible"
+        ]
         self.widget_hud.repaint()
 
-    def clean_hud_and_lcd(self):
+    def clicked_refresh_map(self):
+        pass
 
+    def clean_hud_and_lcd(self):
         # Cleaning the LCD display
         self.label_seluav.setText("Current Vehicle Name")
         self.lcdNumber_altitude.display(0)

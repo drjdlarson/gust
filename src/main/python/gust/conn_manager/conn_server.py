@@ -66,12 +66,16 @@ class ConnServer:
         conn = QtNetwork.QUdpSocket()
         conn.bind(conn_settings.PORT)
 
-        msg = "Listening at {}:{}".format(conn_settings.IP, conn_settings.PORT)
+        msg = "Listening at {}:{}".format(
+            conn_settings.IP, conn_settings.PORT
+        )
         logger.info(msg)
 
         if not database.connect_db():
             cls.running = False
-            logger.critical("Failed to connect to database, stopping conn_server")
+            logger.critical(
+                "Failed to connect to database, stopping conn_server"
+            )
 
         while cls.running:
             process_events()
@@ -81,7 +85,9 @@ class ConnServer:
                 continue
 
             data = conn.receiveDatagram(conn.pendingDatagramSize())
-            received_info = json.loads(data.data().data().decode(conn_settings.FORMAT))
+            received_info = json.loads(
+                data.data().data().decode(conn_settings.FORMAT)
+            )
             addr = data.senderAddress()
             port = data.senderPort()
             msg = "Message from {} -> {}".format(
@@ -122,12 +128,11 @@ class ConnServer:
                 response = {"success": succ, "info": err}
 
             elif received_info["type"] == conn_settings.UPLOAD_WP:
-                wp_color = received_info["wp_color"]
-                filename = ctx.get_resource(
-                    "cmr_planning/{}_waypoints.txt".format(wp_color)
-                )
-                received_info[filename] = filename
                 succ, err = cls.send_autopilot_commands(received_info)
+                response = {"success": succ, "info": err}
+
+            elif received_info["type"] == conn_settings.DOWNLOAD_WP:
+                succ, err = cls.download_and_save_mission(received_info)
                 response = {"success": succ, "info": err}
 
             elif received_info["type"] == conn_settings.GOTO_NEXT_WP:
@@ -212,10 +217,19 @@ class ConnServer:
             err = "Zed process already running"
         else:
             cls._zeds = QProcess()
-            cls._zeds.setProcessChannelMode(QProcess.ProcessChannelMode.MergedChannels)
-            cls._zeds.setProcessEnvironment(QProcessEnvironment.systemEnvironment())
+            cls._zeds.setProcessChannelMode(
+                QProcess.ProcessChannelMode.MergedChannels
+            )
+            cls._zeds.setProcessEnvironment(
+                QProcessEnvironment.systemEnvironment()
+            )
             cls._zeds.readyRead.connect(
-                lambda: print(cls._zeds.readAllStandardOutput().data().decode().strip())
+                lambda: print(
+                    cls._zeds.readAllStandardOutput()
+                    .data()
+                    .decode()
+                    .strip()
+                )
             )
             cls._zeds.start(program, args)
 
@@ -289,7 +303,11 @@ class ConnServer:
             )
             cls._radios[name].readyRead.connect(
                 lambda: print(
-                    cls._radios[name].readAllStandardOutput().data().decode().strip()
+                    cls._radios[name]
+                    .readAllStandardOutput()
+                    .data()
+                    .decode()
+                    .strip()
                 )
             )
             cls._radios[name].start(program, args)
@@ -310,9 +328,13 @@ class ConnServer:
 
         cls._sil = QProcess()
         cls._sil.setProcessChannelMode(QProcess.MergedChannels)
-        cls._sil.setProcessEnvironment(QProcessEnvironment.systemEnvironment())
+        cls._sil.setProcessEnvironment(
+            QProcessEnvironment.systemEnvironment()
+        )
         cls._sil.readyRead.connect(
-            lambda: print(cls._sil.readAllStandardOutput().data().decode().strip())
+            lambda: print(
+                cls._sil.readAllStandardOutput().data().decode().strip()
+            )
         )
         cls._sil.start(program, args)
         succ = True
@@ -326,18 +348,8 @@ class ConnServer:
         name = received_info["name"]
         udp_port = cls._radio_udp_port[name]
         succ, err = send_info_to_udp_server(
-            received_info, received_info["type"], conn_settings.RADIO_UDP_ADDR(udp_port)
-        )
-        return succ, err
-
-    # dont need this here. replaced with send_autopilot_commands
-    @classmethod
-    def upload_waypoints(cls, received_info):
-        name = received_info["name"]
-        udp_port = cls._radio_udp_port[name]
-        succ, err = send_info_to_udp_server(
             received_info,
-            conn_settings.UPLOAD_WP,
+            received_info["type"],
             conn_settings.RADIO_UDP_ADDR(udp_port),
         )
         return succ, err
@@ -352,9 +364,23 @@ class ConnServer:
             conn_settings.RADIO_UDP_ADDR(udp_port),
         )
         logger.info(
-            "This is what is received from the radio_manager-->> {}".format(err)
+            "This is what is received from the radio_manager-->> {}".format(
+                err
+            )
         )
         return succ, err
+
+    @classmethod
+    def download_and_save_mission(cls, received_info):
+        for udp_port in cls._radio_udp_port.values():
+            succ, err = send_info_to_udp_server(
+                {},
+                conn_settings.DOWNLOAD_WP,
+                conn_settings.RADIO_UDP_ADDR(udp_port),
+            )
+
+        # dummy return values for now
+        return True, " "
 
     @classmethod
     def start_cmr_process(cls, ctx):
@@ -370,10 +396,15 @@ class ConnServer:
 
             cls._cmr_proc = QProcess()
             cls._cmr_proc.setProcessChannelMode(QProcess.MergedChannels)
-            cls._cmr_proc.setProcessEnvironment(QProcessEnvironment.systemEnvironment())
+            cls._cmr_proc.setProcessEnvironment(
+                QProcessEnvironment.systemEnvironment()
+            )
             cls._cmr_proc.readyRead.connect(
                 lambda: print(
-                    cls._cmr_proc.readAllStandardOutput().data().decode().strip()
+                    cls._cmr_proc.readAllStandardOutput()
+                    .data()
+                    .decode()
+                    .strip()
                 )
             )
             cls._cmr_proc.start(program, args)

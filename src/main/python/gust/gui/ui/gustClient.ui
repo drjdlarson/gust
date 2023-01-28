@@ -1120,6 +1120,25 @@ font: 14pt &quot;Umpush&quot;;</string>
          </widget>
         </item>
         <item>
+         <widget class="QPushButton" name="pushButton_refresh_map">
+          <property name="minimumSize">
+           <size>
+            <width>150</width>
+            <height>0</height>
+           </size>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>16777215</width>
+            <height>30</height>
+           </size>
+          </property>
+          <property name="text">
+           <string>Refresh map</string>
+          </property>
+         </widget>
+        </item>
+        <item>
          <spacer name="horizontalSpacer">
           <property name="font">
            <font>

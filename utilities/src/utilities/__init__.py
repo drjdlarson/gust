@@ -6,33 +6,37 @@ import json
 class ConnSettings:
     IP = "127.0.0.1"
     PORT = 9810
-    FORMAT = 'utf-8'
+    FORMAT = "utf-8"
     MAX_CONNECTIONS = 10
     MAX_MSG_SIZE = 1500
     TIMEOUT = 10
     RADIO_PORTS = [9820, 9825, 9830, 9835, 9840, 9850, 9855, 9860, 9865]
 
-
     # DRONE message_type
-    DRONE_CONN = 'drone_connect'
-    DRONE_DISC = 'drone_disconnect'
-    UPLOAD_WP = 'upload_waypoints'
+    DRONE_CONN = "drone_connect"
+    DRONE_DISC = "drone_disconnect"
+    UPLOAD_WP = "upload_waypoints"
+    DOWNLOAD_WP = "download_waypoints"
     AUTO_CMD = "autopilot_command"
     START_SIL = "start_sil"
 
     # Autopilot commands
-    GOTO_NEXT_WP = 'goto_next_waypoint'
-    TAKEOFF = 'takeoff'
+    ARM_DISARM = "arm_disarm"
+    GOTO_NEXT_WP = "goto_next_waypoint"
+    TAKEOFF = "takeoff"
     SET_MODE = "set_mode"
+
+    # Mission Plan Type
+    CMR = "cmr_planning"
 
     # CMR Process
     CMR_PORT = 9880
-    START_CMR = 'start_cmr_process'
-    STOP_CMR = 'stop_cmr_process'
+    START_CMR = "start_cmr_process"
+    STOP_CMR = "stop_cmr_process"
 
     # ZED message_type
-    ZED_CONN = 'zed_connect'
-    ZED_DIS_CONN = 'zed_disconnect'
+    ZED_CONN = "zed_connect"
+    ZED_DIS_CONN = "zed_disconnect"
 
     @classmethod
     def ADDR(cls):
@@ -42,7 +46,10 @@ class ConnSettings:
     def RADIO_UDP_ADDR(cls, port):
         return cls.IP, port
 
-def send_info_to_udp_server(info_dict, msg_type, server_addr=ConnSettings.ADDR()):
+
+def send_info_to_udp_server(
+    info_dict, msg_type, server_addr=ConnSettings.ADDR()
+):
     """Packages and sends information to UDP servers as a UDP socket client.
 
     Parameters

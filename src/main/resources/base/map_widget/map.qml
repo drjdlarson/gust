@@ -139,12 +139,21 @@ Item {
         }
 
         MapItemView{
+            model: flight_line
+            remove: myTrans
+            delegate: MapPolyline {
+                id: flight_line
+                line.width: 3
+                line.color: flight_line_color
+                path: flight_line_path
+            }
+        }
+
+        MapItemView{
             model: markermodel
             remove: myTrans
             delegate: MapQuickItem {
                 coordinate: position_marker
-                // coordinate: {33.2098, -87.5692}
-                //coordinate: QtPositioning.coordinate(33.21534, -87.54355)
                 anchorPoint.x: image.width/2
                 anchorPoint.y: image.height/2
                 autoFadeIn: false
@@ -162,6 +171,26 @@ Item {
                         }
             }
         }
+
+        MapItemView{
+            model: waypointmodel
+            remove: myTrans
+            delegate: MapQuickItem {
+                coordinate: waypoint_marker
+                anchorPoint.x: image.width/2
+                anchorPoint.y: image.height/2
+                autoFadeIn: false
+                sourceItem:
+                    Image {
+                        id: image
+                        source: source_waypoint
+                        sourceSize.width: 30
+                        sourceSize.height: 30
+                        width: 30
+                        height: 30
+                        }
+                }
+            }
 
         MapItemView{
             model: homemodel

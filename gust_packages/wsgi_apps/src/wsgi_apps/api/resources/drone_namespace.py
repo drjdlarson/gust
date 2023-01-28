@@ -21,6 +21,8 @@ conParse.add_argument("baud", default=-1, type=int)
 
 uploadParse = DRONE_NS.parser()
 uploadParse.add_argument("name", default="", type=str)
+uploadParse.add_argument("filename", default="", type=str)
+uploadParse.add_argument("mission_type", default="", type=str)
 uploadParse.add_argument("wp_color", default="", type=str)
 
 cmdParse = DRONE_NS.parser()
@@ -39,11 +41,20 @@ class ConnInfo(Resource):
         color = args["color"]
         baud = args["baud"]
 
-        vehicle_info = {"name": name, "port": port, "color": color, "baud": baud}
+        vehicle_info = {
+            "name": name,
+            "port": port,
+            "color": color,
+            "baud": baud,
+        }
+        logger.info(vehicle_info)
 
         if len(port) > 0 and len(name) > 0:
             if not database.connect_db():
-                return {"success": False, "msg": "Failed to connect to database"}
+                return {
+                    "success": False,
+                    "msg": "Failed to connect to database",
+                }
 
             res = database.add_vehicle(name, port, color)
             if res:
@@ -55,7 +66,10 @@ class ConnInfo(Resource):
                 elif not conn_succ:
                     return {"success": False, "msg": info}
             else:
-                return {"success": False, "msg": "Unable to add vehicle to database"}
+                return {
+                    "success": False,
+                    "msg": "Unable to add vehicle to database",
+                }
         elif len(port) == 0:
             return {"success": False, "msg": "Invalid port"}
         elif len(name) == 0:
@@ -74,11 +88,28 @@ class AutopilotCmd(Resource):
         cmd_info = {"name": name, "cmd": cmd, "param": param}
         logger.info(cmd_info)
 
-        cmd_succ, info = send_info_to_udp_server(cmd_info, conn_settings.AUTO_CMD)
+        cmd_succ, info = send_info_to_udp_server(
+            cmd_info, conn_settings.AUTO_CMD
+        )
         if cmd_succ:
             return {"success": True, "msg": ""}
         else:
             return {"success": False, "msg": info}
+
+
+@DRONE_NS.rout("/download_wp")
+class DownloadWP(Resource):
+    def get(self):
+        all_waypoints = {}
+
+        download_succ, info = send_info_to_udp_server(
+            {}, conn_settings.DOWNLOAD_WP
+        )
+
+        if not download_succ:
+            logger.info("Unable to get latest waypoints")
+
+        return all_waypoints
 
 
 @DRONE_NS.route("/upload_wp")
@@ -89,31 +120,48 @@ class UploadWP(Resource):
     def get(self):
         args = uploadParse.parse_args()
         name = args["name"]
+        filename = args["filename"]
+        mission_type = args["mission_type"]
+
+        # optional
         wp_color = args["wp_color"]
 
-        upload_info = {"name": name, "wp_color": wp_color}
+        upload_info = {"name": name, "filename": filename}
+        logger.info(upload_info)
 
         if not database.connect_db():
-            return {"success": False, "msg": "Failed to connect to database"}
-
-        if not self.cmr_started:
-            res = database.add_cmr_table()
-
-        res = database.add_cmr_vehicle(name, wp_color)
-        if res:
-            self.cmr_started = True
-            upload_succ, info = send_info_to_udp_server(
-                upload_info, conn_settings.UPLOAD_WP
-            )
-            if upload_succ:
-                return {"success": True, "msg": ""}
-            elif not upload_succ:
-                return {"success": False, "msg": info}
-        else:
             return {
                 "success": False,
-                "msg": "Unable to add waypoint info to the database",
+                "msg": "Failed to connect to database",
             }
+
+        if mission_type == conn_settings.CMR:
+            if not self.cmr_started:
+                res = database.add_cmr_table()
+
+            res = database.add_cmr_vehicle(name, wp_color)
+            if res:
+                self.cmr_started = True
+                return self.send_upload_msg(upload_info)
+            else:
+                return {
+                    "success": False,
+                    "msg": "Unable to add waypoint info to the database",
+                }
+
+        # put other mission types here
+
+        else:
+            return {"success": False, "msg": "Invalid Mission Type"}
+
+    def send_upload_msg(self, upload_info):
+        upload_succ, info = send_info_to_udp_server(
+            upload_info, conn_settings.UPLOAD_WP
+        )
+        if upload_succ:
+            return {"success": True, "msg": ""}
+        elif not upload_succ:
+            return {"success": False, "msg": info}
 
 
 @DRONE_NS.route("/disconnect")
@@ -172,15 +220,19 @@ class ColorsData(Resource):
         used_colors = database.get_used_colors()
         return {"used_colors": used_colors}
 
+
 @DRONE_NS.route("/start_sil")
 class StartSIL(Resource):
     def get(self):
         start_sil = {}
-        sil_succ, info = send_info_to_udp_server(start_sil, conn_settings.START_SIL)
+        sil_succ, info = send_info_to_udp_server(
+            start_sil, conn_settings.START_SIL
+        )
         if sil_succ:
             return {"success": True, "msg": ""}
         else:
             return {"success": False, "msg": info}
+
 
 @DRONE_NS.route("/sys_data")
 class SysData(Resource):
@@ -221,7 +273,9 @@ class AttitudeData(Resource):
                 name, database.DroneRates.RATE2
             )
             key = index + 1
-            attitude_data[key] = database.get_params(table_name, AttitudeData.params)
+            attitude_data[key] = database.get_params(
+                table_name, AttitudeData.params
+            )
         return attitude_data
 
 
@@ -330,5 +384,7 @@ class ChannelsData(Resource):
                 name, database.DroneRates.RATE3
             )
             key = index + 1
-            channels_info[key] = database.get_params(table_name, ChannelsData.params)
+            channels_info[key] = database.get_params(
+                table_name, ChannelsData.params
+            )
         return channels_info
