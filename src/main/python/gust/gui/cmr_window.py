@@ -17,7 +17,8 @@ from PyQt5.QtCore import (
     QProcessEnvironment,
 )
 import math
-import os, platform
+import os
+import platform
 import logging
 import pathlib
 import requests
@@ -68,13 +69,6 @@ class CmrWindow(QMainWindow, Ui_MainWindow):
             self.clicked_stop_cmr_operation
         )
 
-        # Test pushbuttons
-        self.pushButton_test_upload_waypoints.clicked.connect(
-            self.clicked_test_upload_waypoints
-        )
-        self.pushButton_test_goto_next.clicked.connect(
-            self.clicked_test_goto_next
-        )
 
     def clicked_start_cmr_operation(self):
         global _CMR_RUNNING
@@ -84,8 +78,7 @@ class CmrWindow(QMainWindow, Ui_MainWindow):
             error = "CMR process already running"
 
         else:
-            # if len(self.cmr_vehicles) >= 2:
-            if 1:
+            if len(self.cmr_vehicles) >= 2:
                 url = "{}start_cmr_proc".format(DRONE_BASE)
                 cmr_start = requests.get(url).json()
                 succ = cmr_start["success"]
@@ -269,21 +262,40 @@ class CmrWindow(QMainWindow, Ui_MainWindow):
                 # manually writing the first line.
                 f.write("0\t1\t0\t16\t0\t0\t0.0\t0.0\t1.0\t1.0\t0.0\t1\n")
                 for index, tup in enumerate(list_of_waypoints):
-                    seq = index + 1
+                    seq = 2 * index + 1
                     frame = 3
-                    command = 16
-                    param1 = 1.0
+                    ltr_unlm_cmd = 17
+                    cond_yaw_cmd = 115
+                    param1 = 0.0
                     param2 = 0.0
                     param3 = 0.0
                     param4 = 0.0
                     x = tup[0]
                     y = tup[1]
                     z = self.H
+
+                    # writing the conditional yaw
                     f.write(
                         "{}\t0\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t1\n".format(
                             seq,
                             frame,
-                            command,
+                            cond_yaw_cmd,
+                            self.line_bearing,
+                            param2,
+                            param3,
+                            param4,
+                            0,
+                            0,
+                            0,
+                        )
+                    )
+
+                    # writing the coordinate
+                    f.write(
+                        "{}\t0\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t1\n".format(
+                            seq + 1,
+                            frame,
+                            ltr_unlm_cmd,
                             param1,
                             param2,
                             param3,
@@ -319,7 +331,7 @@ class CmrWindow(QMainWindow, Ui_MainWindow):
         waypoints = []
 
         # Bearing of the Grid line
-        line_bearing = self.get_bearing(
+        self.line_bearing = self.get_bearing(
             self.start_lat, self.start_lon, self.end_lat, self.end_lon
         )
         line_length = self.get_distance(
@@ -334,7 +346,7 @@ class CmrWindow(QMainWindow, Ui_MainWindow):
             self.start_lat,
             self.start_lon,
             m,
-            line_bearing + direction * 90,
+            self.line_bearing + direction * 90,
         )
         waypoints.append(wp1)
 
@@ -343,7 +355,7 @@ class CmrWindow(QMainWindow, Ui_MainWindow):
             self.start_lat,
             self.start_lon,
             n,
-            line_bearing + direction * 90,
+            self.line_bearing + direction * 90,
         )
         waypoints.append(wp)
 
@@ -360,13 +372,13 @@ class CmrWindow(QMainWindow, Ui_MainWindow):
                 new_stopping_wp[0],
                 new_stopping_wp[1],
                 self.s,
-                line_bearing,
+                self.line_bearing,
             )
             waypoints.append(wp_new)
 
             # towards the survey line
             wp = self.get_new_coordinates(
-                wp_new[0], wp_new[1], k, line_bearing - direction * 90
+                wp_new[0], wp_new[1], k, self.line_bearing - direction * 90
             )
             waypoints.append(wp)
 
@@ -397,7 +409,7 @@ class CmrWindow(QMainWindow, Ui_MainWindow):
         waypoints = []
 
         # Bearing of the Grid line
-        line_bearing = self.get_bearing(
+        self.line_bearing = self.get_bearing(
             self.start_lat, self.start_lon, self.end_lat, self.end_lon
         )
         line_length = self.get_distance(
@@ -412,7 +424,7 @@ class CmrWindow(QMainWindow, Ui_MainWindow):
             self.start_lat,
             self.start_lon,
             m,
-            line_bearing + direction * 90,
+            self.line_bearing + direction * 90,
         )
         waypoints.append(wp1)
 
@@ -421,7 +433,7 @@ class CmrWindow(QMainWindow, Ui_MainWindow):
             self.start_lat,
             self.start_lon,
             n,
-            line_bearing + direction * 90,
+            self.line_bearing + direction * 90,
         )
         waypoints.append(wp)
 
@@ -438,25 +450,25 @@ class CmrWindow(QMainWindow, Ui_MainWindow):
                 new_stopping_wp[0],
                 new_stopping_wp[1],
                 self.s,
-                line_bearing,
+                self.line_bearing,
             )
             waypoints.append(wp)
 
             # towards the survey line
             wp = self.get_new_coordinates(
-                wp[0], wp[1], k, line_bearing - direction * 90
+                wp[0], wp[1], k, self.line_bearing - direction * 90
             )
             waypoints.append(wp)
 
             # to a new point
             wp = self.get_new_coordinates(
-                wp[0], wp[1], self.s, line_bearing
+                wp[0], wp[1], self.s, self.line_bearing
             )
             waypoints.append(wp)
 
             # away from the survey line
             wp = self.get_new_coordinates(
-                wp[0], wp[1], k, line_bearing + direction * 90
+                wp[0], wp[1], k, self.line_bearing + direction * 90
             )
             waypoints.append(wp)
 
@@ -586,7 +598,6 @@ class CmrWindow(QMainWindow, Ui_MainWindow):
 
         """
         grid_points = []
-        self.grid_spacing = float(self.lineEdit_grid_spacing.text())
         self.start_lat = float(self.lineEdit_start_lat.text())
         self.start_lon = float(self.lineEdit_start_lon.text())
         self.end_lat = float(self.lineEdit_end_lat.text())
@@ -625,12 +636,11 @@ class CmrWindow(QMainWindow, Ui_MainWindow):
         self.set_default_values()
 
     def set_default_values(self):
-        self.lineEdit_grid_spacing.setText(str(100))
-        self.lineEdit_start_lat.setText(str(33.21496))
-        self.lineEdit_start_lon.setText(str(-87.54508))
-        self.lineEdit_end_lat.setText(str(33.21502))
-        self.lineEdit_end_lon.setText(str(-87.54220))
-        self.lineEdit_rel_height.setText(str(75))
+        self.lineEdit_start_lat.setText(str(33.19389))
+        self.lineEdit_start_lon.setText(str(-87.48133))
+        self.lineEdit_end_lat.setText(str(33.19165))
+        self.lineEdit_end_lon.setText(str(-87.48089))
+        self.lineEdit_rel_height.setText(str(30))
         self.lineEdit_spacing.setText(str(45))
         self.lineEdit_theta_max.setText(str(60))
         self.lineEdit_theta_min.setText(str(15))

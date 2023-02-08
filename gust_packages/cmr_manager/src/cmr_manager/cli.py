@@ -80,6 +80,8 @@ if __name__ == "__main__":
         sys.exit(-2)
     names = database.get_drone_ids()
 
+
+
     # just verifying next waypoint signal
     next_wp_info = {'name': names[0], 'next_wp': 4, 'extra': 'random msg from cmr backend'}
     succ, info = send_info_to_udp_server(next_wp_info, conn_settings.GOTO_NEXT_WP)

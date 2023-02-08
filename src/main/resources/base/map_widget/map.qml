@@ -12,8 +12,8 @@ Item {
     Location {
         id: mapCenter
         coordinate {
-            latitude: 33.21456
-            longitude: -87.54322
+            latitude: 33.19424
+            longitude: -87.48138
         }
     }
 

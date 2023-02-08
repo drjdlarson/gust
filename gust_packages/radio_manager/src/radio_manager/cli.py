@@ -1,7 +1,8 @@
 """GUST plugin for Radio Manager."""
-import argparse
+import argparse, math
 import dronekit
-import random, time
+import random
+import time
 import numpy as np
 import logging
 import sys
@@ -12,7 +13,6 @@ from PyQt5 import QtNetwork
 import utilities.database as database
 from utilities import ConnSettings as conn_settings
 from argparse import ArgumentParser
-from radio_manager import dronekit_functions
 from radio_manager import logger
 
 d2r = np.pi / 100
@@ -20,6 +20,176 @@ r2d = 1 / d2r
 
 
 # %% Custom Functions
+
+def get_distance_metres(aLocation1, aLocation2):
+    """
+    Returns the ground distance in metres between two `LocationGlobal` or `LocationGlobalRelative` objects.
+
+    This method is an approximation, and will not be accurate over large distances and close to the
+    earth's poles. It comes from the ArduPilot test code:
+    https://github.com/diydrones/ardupilot/blob/master/Tools/autotest/common.py
+    """
+    dlat = aLocation2.lat - aLocation1.lat
+    dlong = aLocation2.lon - aLocation1.lon
+    return math.sqrt((dlat*dlat) + (dlong*dlong)) * 1.113195e5
+
+def distance_to_current_waypoint(radio):
+    """
+    Gets distance in metres to the current waypoint.
+    It returns None for the first waypoint (Home location).
+    """
+    nextwaypoint = radio.commands.next
+    if nextwaypoint ==0:
+        return None
+    missionitem = radio.commands[nextwaypoint-1] #commands are zero indexed
+    lat = missionitem.x
+    lon = missionitem.y
+    alt = missionitem.z
+    targetWaypointLocation = dronekit.LocationGlobalRelative(lat,lon,alt)
+    distancetopoint = get_distance_metres(radio.location.global_frame, targetWaypointLocation)
+    return distancetopoint
+
+def goto_next_wp(received_signal, radio):
+    radio.commands.next = radio.commands.next + 1
+    succ = True
+    err = "Going to wp: {}".format(radio.commands.next)
+    return succ, err
+
+
+def set_mode(mode, radio):
+    if radio is None:
+        succ = False
+        err = "Not Connected to radio"
+    else:
+        radio.mode = dronekit.VehicleMode(mode)
+        succ = True
+        err = ""
+    return succ, err
+
+
+def take_off(take_off_alt, radio):
+    if radio is None:
+        succ = False
+        err = "Not Connected to radio"
+    else:
+        logger.info("Basic pre-arm checks")
+        while not radio.is_armable:
+            logger.info("waiting for vehicle to initialize")
+            time.sleep(1)
+
+        logger.info("arming motors")
+        radio.mode = dronekit.VehicleMode("GUIDED")
+        radio.armed = True
+
+        while not radio.armed:
+            logger.info("waiting for arming...")
+            time.sleep(1)
+
+        logger.info("Taking off...")
+        radio.simple_takeoff(take_off_alt)
+        succ = True
+        err = ""
+    return succ, err
+
+
+def arm_disarm(bool_val, radio):
+    if radio.armed is not bool_val:
+        radio.armed = bool_val
+        succ = True
+        err = " "
+    else:
+        succ = False
+        err = "Armed state is already {}".format(bool_val)
+
+
+def upload_waypoints(received_signal, radio):
+    """Upload a mission from a file"""
+    filename = received_signal["filename"]
+
+    missionList = readmission(filename, radio)
+    logger.info("Uploading waypoints from {}\n".format(filename))
+    logger.info("Clearing older mission\n")
+
+    cmds = radio.commands
+    cmds.clear()
+    cmds.upload()
+
+    logger.info("uploading new mission\n")
+    for command in missionList:
+        cmds.add(command)
+    logger.info("Added all commands")
+    cmds.upload(timeout=20)
+    logger.info("Uploaded the mission")
+
+    succ = True
+    err = ""
+    return succ, err
+
+
+def readmission(filename, radio):
+    """
+    Load a mission from a file into a list.
+
+    This function is used by upload_mission().
+    """
+    print("Reading mission from file: {}\n".format(filename))
+    cmds = radio.commands
+    missionlist = []
+    with open(filename) as f:
+        for i, line in enumerate(f):
+            if i == 0:
+                if not line.startswith("QGC WPL 110"):
+                    raise Exception("File is not supported WP version")
+            else:
+                linearray = line.split("\t")
+                ln_seq = int(linearray[0])
+                ln_currentwp = int(linearray[1])
+                ln_frame = int(linearray[2])
+                ln_command = int(linearray[3])
+                ln_param1 = float(linearray[4])
+                ln_param2 = float(linearray[5])
+                ln_param3 = float(linearray[6])
+                ln_param4 = float(linearray[7])
+                ln_x = float(linearray[8])
+                ln_y = float(linearray[9])
+                ln_z = float(linearray[10])
+                ln_autocontinue = int(linearray[11])
+                cmd = dronekit.Command(
+                    0,
+                    0,
+                    0,
+                    ln_frame,
+                    ln_command,
+                    0,
+                    0,
+                    ln_param1,
+                    ln_param2,
+                    ln_param3,
+                    ln_param4,
+                    ln_x,
+                    ln_y,
+                    ln_z,
+                )
+                logger.info(
+                    "\n{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}".format(
+                        0,
+                        0,
+                        0,
+                        ln_frame,
+                        ln_command,
+                        0,
+                        0,
+                        ln_param1,
+                        ln_param2,
+                        ln_param3,
+                        ln_param4,
+                        ln_x,
+                        ln_y,
+                        ln_z,
+                    )
+                )
+                missionlist.append(cmd)
+    return missionlist
 
 
 def prepare_dummy_data():
@@ -78,7 +248,7 @@ def prepare_dummy_data():
             "chan4_raw": randf22,
             "chan5_raw": randf22,
             "chan6_raw": randf22,
-            "chan7_raw": randf22,
+            "chan7_rachange the curw": randf22,
             "chan8_raw": randf22,
             "chan9_raw": randf22,
             "chan10_raw": randf22,
@@ -150,6 +320,7 @@ def prepare_data_from_mavlink(
     data["MAV"]["base_mode"] = radio.mode.name
     data["MAV"]["flight_mode"] = radio.mode.name
     data["MAV"]["mav_type"] = 0
+    data["MAV"]["next_wp"] = radio.commands.next
     data["vehicle_type"] = radio._vehicle_type
 
     data["ATTITUDE"]["roll"] = radio.attitude.roll * r2d
@@ -189,7 +360,6 @@ def prepare_data_from_mavlink(
     rate1["vals"]["home_alt"] = 0
 
     rate4["vals"]["tof"] = 0
-    rate4["vals"]["next_wp"] = 0
     rate4["vals"]["relay_sw"] = 0
     rate4["vals"]["engine_sw"] = 0
     rate2["vals"]["alpha"] = 0
@@ -199,7 +369,8 @@ def prepare_data_from_mavlink(
         rate4["vals"]["flight_mode"] = data["MAV"]["base_mode"]
         rate4["vals"]["mav_type"] = data["MAV"]["mav_type"]
         rate4["vals"]["armed"] = data["MAV"]["armed"]
-
+        rate4["vals"]["next_wp"] = data["MAV"]["next_wp"]
+        
     if "ATTITUDE" in data:
         rate2["vals"]["roll_angle"] = data["ATTITUDE"]["roll"]
         rate2["vals"]["pitch_angle"] = data["ATTITUDE"]["pitch"]
@@ -251,7 +422,7 @@ def check_for_signal(conn, radio):
     port = data.senderPort()
 
     if received_signal["type"] == conn_settings.UPLOAD_WP:
-        succ, err = dronekit_functions.upload_waypoints(
+        succ, err = upload_waypoints(
             received_signal, radio
         )
         response = {"success": succ, "info": err}
@@ -291,22 +462,23 @@ def get_autopilot_command(received_signal, radio):
     if received_signal["cmd"] == conn_settings.TAKEOFF:
         take_off_alt = int(received_signal["param"])
         logger.info("Taking off to {}m".format(take_off_alt))
-        succ, err = dronekit_functions.take_off(take_off_alt, radio)
+        succ, err = take_off(take_off_alt, radio)
 
     elif received_signal["cmd"] == conn_settings.GOTO_NEXT_WP:
-        succ, err = dronekit_functions.goto_next_wp(received_signal, radio)
+        logger.info("Going to the next waypoint")
+        succ, err = goto_next_wp(received_signal, radio)
 
     elif received_signal["cmd"] == conn_settings.SET_MODE:
         mode = received_signal["param"]
         logger.info("Setting vehicle mode to {}".format(mode))
         radio.mode = dronekit.VehicleMode(mode)
         succ = True, ""
-        succ, err = dronekit_functions.set_mode(mode, radio)
+        succ, err = set_mode(mode, radio)
 
     elif received_signal["cmd"] == conn_settings.ARM_DISARM:
         new_state = bool(int(received_signal["param"]))
         logger.info("Setting armed state to {}".format(new_state))
-        succ, err = dronekit_functions.arm_disarm(new_state, radio)
+        succ, err = arm_disarm(new_state, radio)
 
     return succ, err
 
@@ -435,20 +607,10 @@ if __name__ == "__main__":
 
     else:
 
-        # setting up the connection with mavlink
-        if port == "TCP":
-            tcp_ports = 5760
-            conn_string = "tcp:127.0.0.1:{}".format(tcp_ports)
-            try:
-                radio = dronekit.connect(conn_string, wait_ready=True)
-            except:
-                sys.exit(-1)
-
-        else:
-            try:
-                radio = dronekit.connect(port, wait_ready=True, baud=baud)
-            except:
-                sys.exit(-1)
+        try:
+            radio = dronekit.connect(port, wait_ready=True)
+        except:
+            sys.exit(-1)
 
         for sig in _handleable_sigs:
             try:

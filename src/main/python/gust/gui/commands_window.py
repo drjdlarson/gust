@@ -30,6 +30,7 @@ class CommandsManager(QMainWindow, Ui_MainWindow):
         self.pushButton_arm.clicked.connect(self.clicked_arm)
         self.pushButton_disarm.clicked.connect(self.clicked_disarm)
         self.pushButton_takeoff.clicked.connect(self.clicked_takeoff)
+        self.pushButton_goto_next.clicked.connect(self.clicked_goto_next)
         self.pushButton_rtl.clicked.connect(self.clicked_rtl)
         self.comboBox_mode.addItems(FLIGHT_MODES)
 
@@ -107,7 +108,23 @@ class CommandsManager(QMainWindow, Ui_MainWindow):
             self.show_message_box(False, "Vehicle not selected")
 
     def clicked_goto_next(self):
-        pass
+        for name in self.vehicles.keys():
+            url = "{}autopilot_cmd".format(DRONE_BASE)
+            url += "?name=" + name.replace(" ", "_")
+            url += "&cmd=" + conn_settings.GOTO_NEXT_WP
+            url += "&param=" + "0"
+            goto_next = requests.get(url).json()
+            
+        
+        # if self.selected_name is not None:
+        #     url = "{}autopilot_cmd".format(DRONE_BASE)
+        #     url += "?name=" + self.selected_name.replace(" ", "_")
+        #     url += "&cmd=" + conn_settings.GOTO_NEXT_WP
+        #     url += "&param=" + "0"
+        #     goto_next = requests.get(url).json()
+        #     self.show_message_box(goto_next["success"], goto_next["msg"])
+        # else:
+        #     self.show_message_box(goto_next["success"], goto_next["msg"])
 
     def clicked_restart_mission(self):
         pass

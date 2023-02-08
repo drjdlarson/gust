@@ -24,7 +24,7 @@ while getopts ":hawrcz" option; do
 			./build_wsgi.sh
 			./build_radio_manager.sh
 			./build_cmr_manager.sh
-			./build_zed_manager.sh
+			# ./build_zed_manager.sh
 			;;
 		w) # build wsgi app
 			./build_wsgi.sh

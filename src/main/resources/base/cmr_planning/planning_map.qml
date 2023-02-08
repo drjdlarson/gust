@@ -12,22 +12,23 @@ Item {
     Location {
         id: mapCenter
         coordinate {
-            latitude: 33.21456
-            longitude: -87.54322
+            latitude: 33.19424
+            longitude: -87.48138
         }
     }
 
+    Keys.onSpacePressed: {
+        mapBase.center = mapCenter.coordinate
+        mapBase.zoomLevel = 16
+        // mapBase.fitViewportToVisibleMapItems()
+        // var point = mapBase.fromCoordinate(locationTC, false)
+        // mapBase.toCoordinate(point, false)
+    }
 
 
-// FOR TESTING WITH OPENSTREETMAP
-/*
     Plugin {
         id: osmPlugin
         name: "osm" //"googlemaps"
-            PluginParameter {
-            name: "osm.mapping.custom.host"
-            value: "https://server.arcgisonline.com/arcgis/rest/services/World_Imagery/MapServer/tile/4/7/4"
-        }
     }
 
     Map {
@@ -40,17 +41,8 @@ Item {
         copyrightsVisible: false
         // activeMapType: MapType.CustomMap
     }
-*/
 
-    Keys.onSpacePressed: {
-        mapBase.center = mapCenter.coordinate
-        mapBase.zoomLevel = 16
-        // mapBase.fitViewportToVisibleMapItems()
-        // var point = mapBase.fromCoordinate(locationTC, false)
-        // mapBase.toCoordinate(point, false)
-    }
-
-
+/*
      Map {
         id: mapBase
         anchors.fill: parent
@@ -60,9 +52,9 @@ Item {
         activeMapType: mapBase.supportedMapTypes[supportedMapTypes.length - 1]
         // activeMapType: mapBase.supportedMapTypes[1]
         copyrightsVisible: false
+        
         plugin: Plugin {
             name: 'osm'
-
             PluginParameter {
                 name: 'osm.mapping.custom.host'
                 value: 'file:MAP_FilledByMapWidget'
@@ -78,14 +70,13 @@ Item {
                 value: 0
             }
 
-/*
             PluginParameter {
                 name: "osm.mapping.cache.directory"
                 value: "CACHE_FilledByMapWidget"
             }
-*/
         }
     }
+*/
 
     Transition {
         id: myTrans

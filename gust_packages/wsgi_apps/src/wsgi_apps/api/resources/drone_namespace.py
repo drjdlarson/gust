@@ -97,7 +97,7 @@ class AutopilotCmd(Resource):
             return {"success": False, "msg": info}
 
 
-@DRONE_NS.rout("/download_wp")
+@DRONE_NS.route("/download_wp")
 class DownloadWP(Resource):
     def get(self):
         all_waypoints = {}

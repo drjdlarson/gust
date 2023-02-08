@@ -12,7 +12,7 @@ api = Api(prefix="/{:s}".format(BASE))
 
 def create_app():
     from wsgi_apps.api.resources.drone_namespace import DRONE_NS
-    from wsgi_apps.api.resources.zed_namespace import ZED_NS
+    # from wsgi_apps.api.resources.zed_namespace import ZED_NS
 
     app = Flask("rest_api")
     # app.config.from_object(env_config[config_name])
@@ -26,7 +26,7 @@ def create_app():
     app.logger.setLevel(gunicorn_logger.level)
 
     api.init_app(app)
-    api.add_namespace(ZED_NS)
+    # api.add_namespace(ZED_NS)
     api.add_namespace(DRONE_NS)
 
     return app

@@ -165,7 +165,7 @@
       <item>
        <widget class="QLabel" name="label_grid_planning">
         <property name="text">
-         <string>Grid Planning</string>
+         <string>Survey Planning</string>
         </property>
         <property name="alignment">
          <set>Qt::AlignCenter</set>
@@ -175,30 +175,16 @@
       <item>
        <layout class="QFormLayout" name="formLayout_grid_planning">
         <item row="0" column="0">
-         <widget class="QLineEdit" name="lineEdit_grid_spacing">
-          <property name="readOnly">
-           <bool>false</bool>
-          </property>
-         </widget>
+         <widget class="QLineEdit" name="lineEdit_start_lat"/>
         </item>
         <item row="0" column="1">
-         <widget class="QLabel" name="label_grid_spacing">
+         <widget class="QLabel" name="label">
           <property name="text">
-           <string>Grid Spacing (m)</string>
+           <string>Start Latitude</string>
           </property>
          </widget>
         </item>
         <item row="1" column="0">
-         <widget class="QLabel" name="label_3">
-          <property name="text">
-           <string>FOR SINGLE LINE::</string>
-          </property>
-         </widget>
-        </item>
-        <item row="2" column="0">
-         <widget class="QLineEdit" name="lineEdit_start_lat"/>
-        </item>
-        <item row="3" column="0">
          <widget class="QLineEdit" name="lineEdit_start_lon">
           <property name="sizePolicy">
            <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
@@ -208,10 +194,24 @@
           </property>
          </widget>
         </item>
-        <item row="4" column="0">
+        <item row="1" column="1">
+         <widget class="QLabel" name="label_2">
+          <property name="text">
+           <string>Start Longitude</string>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="0">
          <widget class="QLineEdit" name="lineEdit_end_lat"/>
         </item>
-        <item row="5" column="0">
+        <item row="2" column="1">
+         <widget class="QLabel" name="label_4">
+          <property name="text">
+           <string>End Latitude</string>
+          </property>
+         </widget>
+        </item>
+        <item row="3" column="0">
          <widget class="QLineEdit" name="lineEdit_end_lon">
           <property name="sizePolicy">
            <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
@@ -221,28 +221,7 @@
           </property>
          </widget>
         </item>
-        <item row="2" column="1">
-         <widget class="QLabel" name="label">
-          <property name="text">
-           <string>Start Latitude</string>
-          </property>
-         </widget>
-        </item>
         <item row="3" column="1">
-         <widget class="QLabel" name="label_2">
-          <property name="text">
-           <string>Start Longitude</string>
-          </property>
-         </widget>
-        </item>
-        <item row="4" column="1">
-         <widget class="QLabel" name="label_4">
-          <property name="text">
-           <string>End Latitude</string>
-          </property>
-         </widget>
-        </item>
-        <item row="5" column="1">
          <widget class="QLabel" name="label_5">
           <property name="text">
            <string>End Longitude</string>
