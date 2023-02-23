@@ -71,7 +71,7 @@ class BackendWindow(QMainWindow, Ui_BackendWindow):
         database.set_db_path(
             os.path.dirname(self.ctx.get_resource("resources_base_placeholder"))
         )
-        database.open_db()
+        database.open_db(self.ctx.get_resource("locations.txt"))
 
         self.sel_plug_model = QSqlTableModel(self)
         self._update_sel_plug_model()

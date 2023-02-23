@@ -322,9 +322,13 @@ class ConnServer:
             cls.available_udp_ports.remove(cls._radio_udp_port[name])
         return succ, err
 
+    @classmethod
     def start_sil(cls, received_info, ctx):
-        program = ctx.get_resource("start_sil/start_sil")
-        args = ["--home", "33.154516,-87.1651321,0,180"]
+        program = ctx.get_resource("sil_manager/arducopter")
+        # args = ["--home", "33.154516,-87.1651321,0,180"]
+        param_filepath = ctx.get_resource("sil_manager/copter.parm")
+
+        args = ["-S", "--model", "+", "--speedup", "1", "--slave", "0", "--defaults", param_filepath, "--sim-address=127.0.0.1", "-I0", "--home", "33.2148432,-87.5428132,0.0,270.0"]
 
         cls._sil = QProcess()
         cls._sil.setProcessChannelMode(QProcess.MergedChannels)

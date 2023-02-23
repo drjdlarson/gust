@@ -1,33 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>MainWindow</class>
- <widget class="QDialog" name="MainWindow">
+ <class>Dialog</class>
+ <widget class="QDialog" name="Dialog">
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>540</width>
-    <height>260</height>
+    <width>589</width>
+    <height>307</height>
    </rect>
   </property>
-  <property name="minimumSize">
-   <size>
-    <width>340</width>
-    <height>190</height>
-   </size>
-  </property>
-  <property name="maximumSize">
-   <size>
-    <width>540</width>
-    <height>260</height>
-   </size>
-  </property>
   <property name="windowTitle">
-   <string>MainWindow</string>
-  </property>
-  <property name="styleSheet">
-   <string notr="true">background-color: rgb(211, 215, 207);
-color: rgb(0, 0, 0);</string>
+   <string>Dialog</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
@@ -60,27 +44,7 @@ color: rgb(0, 0, 0);</string>
        </property>
       </widget>
      </item>
-     <item row="2" column="1">
-      <widget class="QLineEdit" name="lineEdit_home_lon">
-       <property name="maximumSize">
-        <size>
-         <width>200</width>
-         <height>16777215</height>
-        </size>
-       </property>
-      </widget>
-     </item>
-     <item row="1" column="1">
-      <widget class="QLineEdit" name="lineEdit_home_lat">
-       <property name="maximumSize">
-        <size>
-         <width>200</width>
-         <height>16777215</height>
-        </size>
-       </property>
-      </widget>
-     </item>
-     <item row="1" column="0">
+     <item row="2" column="0">
       <widget class="QLabel" name="label_home_lat">
        <property name="font">
         <font>
@@ -92,7 +56,17 @@ color: rgb(0, 0, 0);</string>
        </property>
       </widget>
      </item>
-     <item row="2" column="0">
+     <item row="2" column="1">
+      <widget class="QLineEdit" name="lineEdit_home_lat">
+       <property name="maximumSize">
+        <size>
+         <width>200</width>
+         <height>16777215</height>
+        </size>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="0">
       <widget class="QLabel" name="label_home_lon">
        <property name="font">
         <font>
@@ -104,8 +78,21 @@ color: rgb(0, 0, 0);</string>
        </property>
       </widget>
      </item>
-     <item row="3" column="0">
+     <item row="3" column="1">
+      <widget class="QLineEdit" name="lineEdit_home_lon">
+       <property name="maximumSize">
+        <size>
+         <width>200</width>
+         <height>16777215</height>
+        </size>
+       </property>
+      </widget>
+     </item>
+     <item row="6" column="0">
       <widget class="QLabel" name="label_framerate">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
        <property name="font">
         <font>
          <pointsize>13</pointsize>
@@ -116,20 +103,11 @@ color: rgb(0, 0, 0);</string>
        </property>
       </widget>
      </item>
-     <item row="4" column="0">
-      <widget class="QLabel" name="label_instance">
-       <property name="font">
-        <font>
-         <pointsize>13</pointsize>
-        </font>
-       </property>
-       <property name="text">
-        <string>Instance (N)</string>
-       </property>
-      </widget>
-     </item>
-     <item row="3" column="1">
+     <item row="6" column="1">
       <widget class="QLineEdit" name="lineEdit_framerate">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
        <property name="maximumSize">
         <size>
          <width>100</width>
@@ -138,12 +116,68 @@ color: rgb(0, 0, 0);</string>
        </property>
       </widget>
      </item>
+     <item row="4" column="0">
+      <widget class="QLabel" name="label_start_heading">
+       <property name="font">
+        <font>
+         <pointsize>13</pointsize>
+        </font>
+       </property>
+       <property name="text">
+        <string>Start Heading</string>
+       </property>
+      </widget>
+     </item>
      <item row="4" column="1">
-      <widget class="QLineEdit" name="lineEdit_instance">
+      <widget class="QLineEdit" name="lineEdit_start_heading">
        <property name="maximumSize">
         <size>
-         <width>100</width>
+         <width>200</width>
          <height>16777215</height>
+        </size>
+       </property>
+      </widget>
+     </item>
+     <item row="5" column="0">
+      <widget class="QLabel" name="label_start_altitude">
+       <property name="font">
+        <font>
+         <pointsize>13</pointsize>
+        </font>
+       </property>
+       <property name="text">
+        <string>Start Altitude (m)</string>
+       </property>
+      </widget>
+     </item>
+     <item row="5" column="1">
+      <widget class="QLineEdit" name="lineEdit_start_altitude">
+       <property name="maximumSize">
+        <size>
+         <width>200</width>
+         <height>16777215</height>
+        </size>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="0">
+      <widget class="QLabel" name="label_select_home">
+       <property name="font">
+        <font>
+         <pointsize>13</pointsize>
+        </font>
+       </property>
+       <property name="text">
+        <string>Select Home</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="1">
+      <widget class="QComboBox" name="comboBox_select_home">
+       <property name="minimumSize">
+        <size>
+         <width>130</width>
+         <height>0</height>
         </size>
        </property>
       </widget>

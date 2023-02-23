@@ -1,11 +1,11 @@
-#!/bin/bash
+#!/bin/bash -x
 
 ############################################################
 # Help                                                     #
 ############################################################
 Help()
 {
-        echo "Build SIL Manager, must be run from gust environment."
+        echo "Build Ardupilot SIL and prepare resources, must be run from gust environment."
         echo
         echo "Syntax build_sil_manager.sh [-h]"
         echo "-h        Print the help text."
@@ -31,20 +31,30 @@ done
 # Main program                                             #
 ############################################################
 
-echo "Building SIL manager app ..."
+echo "Building Ardupilot SIL and copying files to resources"
 
 rm -r ./src/main/resources/base/sil_manager
 mkdir ./src/main/resources/base/sil_manager
 
-pyinstaller --onefile --noconfirm --noupx --clean \
-	-n sil_manager \
-	--hidden-import lxml \
-	--hidden-import lxml.etree \
-	--hidden-import urllib2 \
-	--hidden-import urlparse \
-	--collect-all pymavlink \
-	--collect-all dronekit \
-	--distpath ./src/main/resources/base/sil_manager \
-	--workpath ./gust_packages/sil_manager/build \
-	--specpath ./gust_packages/sil_manager \
-	dronekit-sitl
+session=build_sil
+
+tmux new-session -d -s ${session}
+tmux send-keys -t ${session} 'conda activate gust_dev' C-m
+tmux send-keys -t ${session} 'python /home/lagerprocessor/Projects/ardupilot/Tools/autotest/sim_vehicle.py --no-mavproxy --vehicle=ArduCopter --location=SHELBY' C-m
+
+sleep 10
+
+tmux kill-session -t ${session}
+
+
+#python /home/lagerprocessor/Projects/ardupilot/Tools/autotest/sim_vehicle.py --no-mavproxy --vehicle=ArduCopter --location=SHELBY &
+#sleep 10
+
+# kill -SIGINT $!
+#kill -SIGINT $(ps -o pid= --ppid $$) 
+
+cp /home/lagerprocessor/Projects/ardupilot/build/sitl/bin/arducopter ./src/main/resources/base/sil_manager 
+cp /home/lagerprocessor/Projects/ardupilot/Tools/autotest/default_params/copter.parm ./src/main/resources/base/sil_manager 
+
+
+

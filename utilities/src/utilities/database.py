@@ -79,7 +79,7 @@ def setup_logger():
 
         _initialized_logger = True
 
-def open_db():
+def open_db(location_file):
     """Open the database by removing the old file and creating a new one.
 
     This must be called once before any database operations occur.
@@ -89,23 +89,27 @@ def open_db():
     None.
     """
     global _DB
+    if _DB is not None:
+        print("Database has already been opened it is: {}".format(repr(_DB)))
+        logger.critical("Database has already been opened it is: {}".format(repr(_DB)))
 
     setup_logger()
 
     # dont do anything if the database is already open
     if _DB is not None:
+        logger.critical("Database has already been opened")
         return
 
     # create database
     _DB = QSqlDatabase.addDatabase(DB_DRIVER)
     fpath = db_name()
+    logger.info("logger: {}".format(fpath))
 
     if os.path.exists(fpath):
         logger.info("Removing existing database {}".format(fpath))
         os.remove(fpath)
 
     _DB.setDatabaseName(fpath)
-    _DB.open()
 
     if not _DB.open():
         logger.critical("Unable to open database")
@@ -143,9 +147,36 @@ def open_db():
     logger.debug(cmd)
     res3 = query.exec_(cmd)
 
-    if res1 and res2 and res3:
-        logger.info("Database is now open")
+    cmd = """CREATE TABLE IF NOT EXISTS locations (
+        uid INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE,
+        name TEXT NOT NULL,
+        coords TEXT NOT NULL
+        );
+        """
+    logger.debug(cmd)
+    res4 = query.exec_(cmd)
 
+    if res4:
+        with open(location_file, "r") as fin:
+            for ii, line in enumerate(fin):
+                if ii == 0:
+                    continue
+                tokens = line.strip().split("=")
+                if len(tokens) != 2:
+                    continue
+                name = tokens[0]
+
+                if "#" in tokens[1]:
+                    ind = tokens[1].find("#")
+                    coords = tokens[1][:ind]
+                else:
+                    coords = tokens[1]
+                cmd = "INSERT into locations (name, coords) VALUES ('{}', '{}');".format(name, coords)
+                logger.debug(cmd)
+                query.exec_(cmd)
+
+    if res1 and res2 and res3 and res4:
+        logger.info("Database is now open")
 
 def connect_db():
     global _DB

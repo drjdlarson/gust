@@ -91,9 +91,12 @@ if __name__ == "__main__":
     else:
         database.add_vehicle("Doesnt work", '/dev/ttysfas', 'black')
 
+    for sig in _handleable_sigs:
+        try:
+            signal.signal(sig, lambda signum, frame: _cleanup_handler(signum, frame))
+        except (ValueError, OSError):
+            continue
+
     while True:
-        for sig in _handleable_sigs:
-            try:
-                signal.signal(sig, lambda signum, frame: _cleanup_handler(signum, frame))
-            except (ValueError, OSError):
-                continue
+        # put all the stuff here
+        pass

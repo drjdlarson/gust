@@ -606,7 +606,6 @@ if __name__ == "__main__":
             time.sleep(0.2)
 
     else:
-
         try:
             radio = dronekit.connect(port, wait_ready=True)
         except:

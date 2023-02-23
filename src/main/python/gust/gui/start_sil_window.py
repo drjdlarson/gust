@@ -3,14 +3,14 @@ import requests
 from PyQt5.QtWidgets import QMessageBox, QDialog
 from PyQt5.QtWidgets import QMainWindow
 from wsgi_apps.api.url_bases import BASE, DRONE
-from gust.gui.ui.start_sil import Ui_MainWindow
+from gust.gui.ui.start_sil import Ui_Dialog
 
 URL_BASE = "http://localhost:8000/{}/".format(BASE)
 DRONE_BASE = "{}{}/".format(URL_BASE, DRONE)
 
 
-class StartSILWindow(QMainWindow, Ui_MainWindow):
-    def __init__(self, cts, parent=None):
+class StartSILWindow(QDialog, Ui_Dialog):
+    def __init__(self, ctx, parent=None):
         super().__init__(parent=parent)
 
         self.ctx = ctx
@@ -24,7 +24,7 @@ class StartSILWindow(QMainWindow, Ui_MainWindow):
         # home_lon = -87.161241651
 
         url = "{}start_sil".format(DRONE_BASE)
-        start_sil = requests.geturl(url).json()
+        start_sil = requests.get(url).json()
 
         msgBox = QMessageBox()
 

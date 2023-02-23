@@ -78,6 +78,8 @@ class FrontendWindow(QMainWindow, Ui_MainWindow_main):
 
         # Pushbuttons
         self.pushButton_addvehicle.clicked.connect(self.clicked_addvehicle)
+        self.pushButton_sil.clicked.connect(self.clicked_sil)
+
         self.pushButton_engineOff.clicked.connect(self.clicked_engineOff)
         self.pushButton_RTL.clicked.connect(self.clicked_RTL)
         self.pushButton_disarm.clicked.connect(self.clicked_disarm)
