@@ -72,12 +72,15 @@ def setup_logger():
         logger.setLevel(logging.INFO)
         ch.setLevel(logging.INFO)
 
-        formatter = logging.Formatter('[database] %(levelname)s %(asctime)s - %(message)s')
+        formatter = logging.Formatter(
+            "[database] %(levelname)s %(asctime)s - %(message)s"
+        )
         ch.setFormatter(formatter)
 
         logger.addHandler(ch)
 
         _initialized_logger = True
+
 
 def open_db(location_file):
     """Open the database by removing the old file and creating a new one.
@@ -171,12 +174,17 @@ def open_db(location_file):
                     coords = tokens[1][:ind]
                 else:
                     coords = tokens[1]
-                cmd = "INSERT into locations (name, coords) VALUES ('{}', '{}');".format(name, coords)
+                cmd = (
+                    "INSERT into locations (name, coords) VALUES ('{}', '{}');".format(
+                        name, coords
+                    )
+                )
                 logger.debug(cmd)
                 query.exec_(cmd)
 
     if res1 and res2 and res3 and res4:
         logger.info("Database is now open")
+
 
 def connect_db():
     global _DB
@@ -726,9 +734,29 @@ def add_vehicle(name, port, color):
     )
     res5 = query.exec_(cmd)
 
-    if res1 and res2 and res3 and res4 and res5:
+    table_name = name + "_mission"
+    cmd = """CREATE TABLE IF NOT EXISTS {:s} (
+    seq int,
+    current int,
+    frame int,
+    command int,
+    param1 float,
+    param2 float,
+    param3 float,
+    param4 float,
+    x float,
+    y float,
+    z float,
+    autocontinue int
+    );""".format(
+        table_name
+    )
+    res6 = query.exec_(cmd)
+
+    res = res1 and res2 and res3 and res4 and res5 and res6
+    if res:
         _connected_counter += 1
-    return res1 and res2 and res3 and res4 and res5
+    return res
 
 
 def remove_vehicle(name):
@@ -776,6 +804,17 @@ def get_params(table_name, params):
     for param in params:
         val[param] = query.value(param)
     return val
+
+
+def get_mission_items(vehicle_name):
+    query = _start_query()
+    table_name = vehicle_name + "_mission"
+    cmd = "SELECT x, y FROM {}".format(table_name)
+    coords = []
+    result = query.exec_(cmd)
+    while result and query.next():
+        coords.append((query.value("x"), query.value("y")))
+    return coords
 
 
 def create_drone_rate_table_name(name, rate):
@@ -910,13 +949,12 @@ def write_zed_obj(name, posix, obj):
         logger.critical(query.lastError().text())
     return res
 
+
 def write_zed_objs(name, posix, obj_lst):
     logger.debug("Writing zed objects to database")
 
     tab_name = create_zed_table_name(name)
-    cmd = "INSERT INTO {:s} (posix, xpos, ypos, zpos) VALUES".format(
-        tab_name
-    )
+    cmd = "INSERT INTO {:s} (posix, xpos, ypos, zpos) VALUES".format(tab_name)
     for ii, obj in enumerate(obj_lst):
         if ii > 0:
             cmd += ","

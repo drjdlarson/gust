@@ -21,17 +21,22 @@ r2d = 1 / d2r
 
 # %% Custom Functions
 
+
 def get_distance_metres(aLocation1, aLocation2):
     """
     Returns the ground distance in metres between two `LocationGlobal` or `LocationGlobalRelative` objects.
 
-    This method is an approximation, and will not be accurate over large distances and close to the
-    earth's poles. It comes from the ArduPilot test code:
-    https://github.com/diydrones/ardupilot/blob/master/Tools/autotest/common.py
+    Based on Haversine equations
     """
-    dlat = aLocation2.lat - aLocation1.lat
-    dlong = aLocation2.lon - aLocation1.lon
-    return math.sqrt((dlat*dlat) + (dlong*dlong)) * 1.113195e5
+    del_lat = aLocation2.lat - aLocation1.lat
+    del_lon = aLocation2.lon - aLocation1.lon
+    a = (math.sin(del_lat / 2)) ** 2 + math.cos(aLocation1.lat) * math.cos(
+        aLocation2.lat
+    ) * (math.sin(del_lon / 2)) ** 2
+    c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
+    d = 6378100 * c
+    return d
+
 
 def distance_to_current_waypoint(radio):
     """
@@ -39,15 +44,18 @@ def distance_to_current_waypoint(radio):
     It returns None for the first waypoint (Home location).
     """
     nextwaypoint = radio.commands.next
-    if nextwaypoint ==0:
+    if nextwaypoint == 0:
         return None
-    missionitem = radio.commands[nextwaypoint-1] #commands are zero indexed
+    missionitem = radio.commands[nextwaypoint - 1]  # commands are zero indexed
     lat = missionitem.x
     lon = missionitem.y
     alt = missionitem.z
-    targetWaypointLocation = dronekit.LocationGlobalRelative(lat,lon,alt)
-    distancetopoint = get_distance_metres(radio.location.global_frame, targetWaypointLocation)
+    targetWaypointLocation = dronekit.LocationGlobalRelative(lat, lon, alt)
+    distancetopoint = get_distance_metres(
+        radio.location.global_frame, targetWaypointLocation
+    )
     return distancetopoint
+
 
 def goto_next_wp(received_signal, radio):
     radio.commands.next = radio.commands.next + 1
@@ -284,9 +292,7 @@ def prepare_dummy_data():
         "vals": {
             "m_time": current_time,
             "armed": random.choice([0, 1]),
-            "flight_mode": random.choice(
-                ["STABILIZE", "GUIDED", "AUTO", "RTL"]
-            ),
+            "flight_mode": random.choice(["STABILIZE", "GUIDED", "AUTO", "RTL"]),
             "mav_type": 2,
             "autopilot": 1,
             "custom_mode": 0,
@@ -300,9 +306,7 @@ def prepare_dummy_data():
     return all_data
 
 
-def prepare_data_from_mavlink(
-    radio, name, port, rate1, rate2, rate3, rate4, data
-):
+def prepare_data_from_mavlink(radio, name, port, rate1, rate2, rate3, rate4, data):
     current_time = get_current_time()
 
     data["MAV"] = {}
@@ -332,9 +336,7 @@ def prepare_data_from_mavlink(
 
     data["GLOBAL_POSITION_INT"]["lat"] = radio.location._lat
     data["GLOBAL_POSITION_INT"]["lon"] = radio.location._lon
-    data["GLOBAL_POSITION_INT"][
-        "relative_alt"
-    ] = radio.location._relative_alt
+    data["GLOBAL_POSITION_INT"]["relative_alt"] = radio.location._relative_alt
 
     data["LOCAL_POSITION_NED"]["vx"] = radio._vx
     data["LOCAL_POSITION_NED"]["vy"] = radio._vy
@@ -370,16 +372,14 @@ def prepare_data_from_mavlink(
         rate4["vals"]["mav_type"] = data["MAV"]["mav_type"]
         rate4["vals"]["armed"] = data["MAV"]["armed"]
         rate4["vals"]["next_wp"] = data["MAV"]["next_wp"]
-        
+
     if "ATTITUDE" in data:
         rate2["vals"]["roll_angle"] = data["ATTITUDE"]["roll"]
         rate2["vals"]["pitch_angle"] = data["ATTITUDE"]["pitch"]
 
     if "VFR_HUD" in data:
         rate2["vals"]["airspeed"] = round(data["VFR_HUD"]["airspeed"])
-        rate2["vals"]["gndspeed"] = round(
-            data["VFR_HUD"]["groundspeed"], 1
-        )
+        rate2["vals"]["gndspeed"] = round(data["VFR_HUD"]["groundspeed"], 1)
         rate2["vals"]["yaw"] = round(data["VFR_HUD"]["yaw"])
         rate2["vals"]["vspeed"] = round(data["VFR_HUD"]["climb"], 1)
         rate2["vals"]["throttle"] = round(data["VFR_HUD"]["throttle"])
@@ -393,9 +393,7 @@ def prepare_data_from_mavlink(
     if "GLOBAL_POSITION_INT" in data:
         rate2["vals"]["latitude"] = data["GLOBAL_POSITION_INT"]["lat"]
         rate2["vals"]["longitude"] = data["GLOBAL_POSITION_INT"]["lon"]
-        rate2["vals"]["relative_alt"] = data["GLOBAL_POSITION_INT"][
-            "relative_alt"
-        ]
+        rate2["vals"]["relative_alt"] = data["GLOBAL_POSITION_INT"]["relative_alt"]
 
     if "BATTERY_STATUS" in data:
         rate1["vals"]["voltage"] = data["BATTERY_STATUS"]["voltage"]
@@ -404,9 +402,7 @@ def prepare_data_from_mavlink(
 
     if "GPS_RAW_INT" in data:
         rate2["vals"]["gnss_fix"] = data["GPS_RAW_INT"]["fix_type"]
-        rate2["vals"]["satellites_visible"] = data["GPS_RAW_INT"][
-            "satellites_visible"
-        ]
+        rate2["vals"]["satellites_visible"] = data["GPS_RAW_INT"]["satellites_visible"]
     return rate1, rate2, rate3, rate4, data
 
 
@@ -415,16 +411,12 @@ def check_for_signal(conn, radio):
         return
 
     data = conn.receiveDatagram(conn.pendingDatagramSize())
-    received_signal = json.loads(
-        data.data().data().decode(conn_settings.FORMAT)
-    )
+    received_signal = json.loads(data.data().data().decode(conn_settings.FORMAT))
     addr = data.senderAddress()
     port = data.senderPort()
 
     if received_signal["type"] == conn_settings.UPLOAD_WP:
-        succ, err = upload_waypoints(
-            received_signal, radio
-        )
+        succ, err = upload_waypoints(received_signal, radio)
         response = {"success": succ, "info": err}
 
     elif received_signal["type"] == conn_settings.AUTO_CMD:
@@ -448,9 +440,40 @@ def check_for_signal(conn, radio):
     conn.writeDatagram(f_response, addr, port)
 
 
-def download_and_save_mission(received_signal, radio):
+def download_mission():
+    missionlist = []
+    cmds = radio.commands
+    cmds.download()
+    cmds.wait_ready()
+    for cmd in cmds:
+        missionlist.append(cmd)
+    return missionlist
 
-    return True, " "
+
+def download_and_save_mission(received_signal, radio):
+    err = ""
+    missions = download_mission()
+    for cmd in missions:
+        cmd_vals = {
+            "seq": cmd.seq,
+            "current": cmd.current,
+            "frame": cmd.frame,
+            "command": cmd.command,
+            "param1": cmd.param1,
+            "param2": cmd.param2,
+            "param3": cmd.param3,
+            "param4": cmd.param4,
+            "x": cmd.x,
+            "y": cmd.y,
+            "z": cmd.z,
+            "autocontinue": cmd.autocontinue,
+        }
+        table_name = name + "_mission"
+        res = database.add_values(cmd_vals, table_name)
+        if not res:
+            err = "Unable to write waypoint #{} to the database".format(cmd.seq)
+
+    return True, err
 
 
 def get_autopilot_command(received_signal, radio):
@@ -512,9 +535,7 @@ def define_parser():
     parser.add_argument(
         "--color",
         type=str,
-        help="Color for the vehicle's icons. The default is {}".format(
-            default
-        ),
+        help="Color for the vehicle's icons. The default is {}".format(default),
         default=default,
     )
 
@@ -522,9 +543,7 @@ def define_parser():
     parser.add_argument(
         "--baud",
         type=int,
-        help="Baud rate for radio connection. The default is {}".format(
-            default
-        ),
+        help="Baud rate for radio connection. The default is {}".format(default),
         default=default,
     )
 
@@ -532,9 +551,7 @@ def define_parser():
     parser.add_argument(
         "--udp_port",
         type=str,
-        help="Port for UDP socket connection. The default is {}".format(
-            default
-        ),
+        help="Port for UDP socket connection. The default is {}".format(default),
         default=default,
     )
 
@@ -626,19 +643,11 @@ if __name__ == "__main__":
         all_data = prepare_dummy_data()
         res = database.write_values(all_data, name)
 
-        rate1, rate2, rate3, rate4 = [
-            all_data[i] for i in range(len(all_data))
-        ]
+        rate1, rate2, rate3, rate4 = [all_data[i] for i in range(len(all_data))]
 
         while True:
             check_for_signal(sig_conn, radio)
-            (
-                rate1,
-                rate2,
-                rate3,
-                rate4,
-                mav_data,
-            ) = prepare_data_from_mavlink(
+            (rate1, rate2, rate3, rate4, mav_data,) = prepare_data_from_mavlink(
                 radio, name, port, rate1, rate2, rate3, rate4, mav_data
             )
             all_data = rate1, rate2, rate3, rate4

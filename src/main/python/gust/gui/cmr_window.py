@@ -200,6 +200,7 @@ class CmrWindow(QMainWindow, Ui_MainWindow):
     def clicked_test_goto_next(self):
         pass
 
+    # FOR TESTING
     def clicked_load_waypoints(self):
         pass
 

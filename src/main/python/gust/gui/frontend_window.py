@@ -9,6 +9,7 @@ Created on Fri Jun 10 10:02:36 2022
 import sys
 import os
 import time
+import pathlib
 from datetime import timedelta
 from functools import partial
 from PyQt5 import QtCore, QtGui, QtWidgets
@@ -45,6 +46,7 @@ from gust.gui import (
     rtl_confirmation,
     disarm_confirmation,
 )
+from utilities import ConnSettings as conn_settings
 from gust.gui.ui.map_widget import MapWidget
 from gust.gui.ui.attitude_ind_widget import pyG5AIWidget
 from gust.gui.msg_decoder import MessageDecoder as msg_decoder
@@ -179,7 +181,7 @@ class FrontendWindow(QMainWindow, Ui_MainWindow_main):
             )
         self._cmdWindow.show()
 
-    # @pyqtSlot()
+    @pyqtSlot()
     def clicked_disconnect(self):
         button = self.sender()
         if button:
@@ -343,8 +345,51 @@ class FrontendWindow(QMainWindow, Ui_MainWindow_main):
         ]
         self.widget_hud.repaint()
 
+    def test_uploading_waypoints(self):
+        url = "{}upload_wp".format(DRONE_BASE)
+        url += "?name=sim"
+
+        name = "blue_waypoints.txt"
+        rsrc_file = self.ctx.get_resource("cmr_planning/README")
+        rsrc_path = str(pathlib.Path(rsrc_file).parent.resolve())
+        filename = rsrc_path + "/" + name
+
+        url += "&filename=" + filename
+        url += "&mission_type=" + conn_settings.CMR
+        url += "&wp_color=" + "blue"
+
+        upload = requests.get(url).json()
+
+        msgBox = QMessageBox()
+
+        if upload["success"]:
+            msgBox.setIcon(QMessageBox.Information)
+            msgBox.setText(
+                "Uploaded blue waypoints to sim"
+            )
+            msgBox.exec()
+
+        else:
+            msgBox.setIcon(QMessageBox.Warning)
+            msgBox.setText(
+                "Uploaded blue waypoints to sim"            )
+            msgBox.exec()
+
     def clicked_refresh_map(self):
-        pass
+
+        # self.test_uploading_waypoints()
+
+        url = "{}download_wp".format(DRONE_BASE)
+        all_waypoints = requests.get(url).json()
+        print(all_waypoints)
+
+        # all_waypoints = {'sim': [
+        #     (33.21589373771255, -87.56986696619138),
+        #     (33.19992239477393, -87.54676703331124),
+        #     (33.218759762150036, -87.512328099724),
+        # ]}
+        self.widget_map.display_missions(all_waypoints)
+
 
     def clean_hud_and_lcd(self):
         # Cleaning the LCD display

@@ -28,6 +28,8 @@ class MapWidget(QtQuickWidgets.QQuickWidget):
             resizeMode=QtQuickWidgets.QQuickWidget.SizeRootObjectToView,
         )
         self._vehicles = {}
+        self._vehicles_mission = {}
+        self._vehicle_color = {}
 
     def setup_qml(self, ctx):
         self.ctx = ctx
@@ -58,9 +60,28 @@ class MapWidget(QtQuickWidgets.QQuickWidget):
             # QFile.copy(temp_path + "/temp_map.qml", resource_path + "/from_temp_qml")
 
         self.engine().clearComponentCache()
-        self.setSource(
-            QtCore.QUrl.fromLocalFile(temp_path + "/temp_map.qml")
+        self.setSource(QtCore.QUrl.fromLocalFile(temp_path + "/temp_map.qml"))
+
+        self.marker_model = MarkerModel(self)
+        self.rootContext().setContextProperty("markermodel", self.marker_model)
+
+        self.heading_line_model = HeadingLineModel(self)
+        self.rootContext().setContextProperty(
+            "heading_line", self.heading_line_model
         )
+
+        self.yaw_line_model = YawLineModel(self)
+        self.rootContext().setContextProperty("yaw_line", self.yaw_line_model)
+
+        self.home_model = HomeModel()
+        self.rootContext().setContextProperty("homemodel", self.home_model)
+
+        self.flight_path_model = FlightLineModel(self)
+        self.rootContext().setContextProperty("flight_line", self.flight_path_model)
+
+        self.waypoint_model = WaypointModel()
+        self.rootContext().setContextProperty("waypointmodel", self.waypoint_model)
+
 
     def add_drone(
         self,
@@ -74,26 +95,6 @@ class MapWidget(QtQuickWidgets.QQuickWidget):
         heading,
         mode,
     ):
-        if not self._vehicles:
-            self.marker_model = MarkerModel(self)
-            self.rootContext().setContextProperty(
-                "markermodel", self.marker_model
-            )
-
-            self.heading_line_model = HeadingLineModel(self)
-            self.rootContext().setContextProperty(
-                "heading_line", self.heading_line_model
-            )
-
-            self.yaw_line_model = YawLineModel(self)
-            self.rootContext().setContextProperty(
-                "yaw_line", self.yaw_line_model
-            )
-
-            self.home_model = HomeModel()
-            self.rootContext().setContextProperty(
-                "homemodel", self.home_model
-            )
 
         if name not in self._vehicles:
             self._vehicles[name] = MapHelper(
@@ -112,6 +113,7 @@ class MapWidget(QtQuickWidgets.QQuickWidget):
                 mode,
                 self.ctx,
             )
+            self._vehicle_color[name] = color
             self._vehicles[name].add_objects_in_map()
         else:
             self._vehicles[name].home_lat = home_lat
@@ -123,22 +125,77 @@ class MapWidget(QtQuickWidgets.QQuickWidget):
             self._vehicles[name].mode = mode
             self._vehicles[name].update_objects_in_map()
 
+    def display_missions(self, all_waypoints):
+        for name, waypoints in all_waypoints.items():
+            if name not in self._vehicles_mission.keys():
+                self._vehicles_mission[name] = FlightPlanHelper(
+                    name,
+                    self._vehicle_color[name],
+                    self.waypoint_model,
+                    self.flight_path_model,
+                    self.ctx
+                )
+                self._vehicles_mission[name].display_new_mission(waypoints)
+            else:
+                self._vehicles_mission[name].display_updated_mission(waypoints)
+
     def remove_vehicle_from_map(self, name):
         if name in self._vehicles:
+
+            # removing the Position, Yaw, Heading, Home Models
             self._vehicles[name].remove_all_models()
             del self._vehicles[name]
 
+            # removing the Waypoints and Flight Path models
+            self._vehicles_mission[name].remove_waypoints_and_lines()
+            del self._vehicles_mission[name]
+
 
 class FlightPlanHelper:
-    def __init__(
-        self, name, color, waypoint_model, flight_path_model, ctx
-    ):
+    def __init__(self, name, color, waypoint_model, flight_path_model, ctx):
         self.name = name
         self.color = color
         self.waypoint_model = waypoint_model
         self.flight_path_model = flight_path_model
         self.ctx = ctx
 
+    def remove_waypoints_and_lines(self):
+        self.flight_path_model.removePathLine(self.name)
+        self.waypoint_model.remove_all_waypoint_markers()
+
+    def display_new_mission(self, waypoints):
+        flight_lines, coords = self.prepare_flight_lines_object(waypoints)
+        self.flight_path_model.addPathLine(self.name, flight_lines)
+
+        for wp_coord in coords:
+            wp_marker = self.prepare_waypoint_marker_object(wp_coord)
+            self.waypoint_model.addWaypoint(self.name, wp_marker)
+
+    def display_updated_mission(self, new_waypoints):
+
+        # For flight lines, we can just update the lines
+        new_flight_lines, coords = self.prepare_flight_lines_object(new_waypoints)
+        self.flight_path_model.updatePathLine(self.name, new_flight_lines)
+
+        # For waypoint markers, we have to remove the waypoint markers and redraw them
+        self.waypoint_model.remove_all_waypoint_markers()
+        for wp_coord in coords:
+            wp_marker = self.prepare_waypoint_marker_object(wp_coord)
+            self.waypoint_model.addWaypoint(self.name, wp_marker)
+
+    def prepare_waypoint_marker_object(self, wp_coord):
+        wp_marker = Marker()
+        file = "map_widget/colored_icons/" + self.color + "_waypoint.png"
+        icon_type = self.ctx.get_resource(file)
+        wp_marker.setSource(icon_type)
+        wp_marker.setPosition(wp_coord)
+        return wp_marker
+    def prepare_flight_lines_object(self, waypoints):
+        flight_lines = Line()
+        flight_lines.setColor(self.color)
+        qcoordinates = [QtPositioning.QGeoCoordinate(*ii) for ii in waypoints]
+        flight_lines.setPath(qcoordinates)
+        return flight_lines, qcoordinates
 
 class MapHelper:
     def __init__(
@@ -180,9 +237,7 @@ class MapHelper:
         self.home_model.removeHome(self.name)
 
     def add_objects_in_map(self):
-        self.marker_model.addMarker(
-            self.name, self.prepare_marker_object()
-        )
+        self.marker_model.addMarker(self.name, self.prepare_marker_object())
         self.yaw_model.addYawLine(
             self.name, self.prepare_line_object("white", self.yaw)
         )
@@ -192,9 +247,7 @@ class MapHelper:
         self.home_model.addHome(self.name, self.prepare_home_object())
 
     def update_objects_in_map(self):
-        self.marker_model.updateMarker(
-            self.name, self.prepare_marker_object()
-        )
+        self.marker_model.updateMarker(self.name, self.prepare_marker_object())
         self.yaw_model.updateYawLine(
             self.name, self.prepare_line_object("white", self.yaw)
         )
@@ -210,9 +263,7 @@ class MapHelper:
             (self.latitude, self.longitude),
             self.get_points(angle),
         ]
-        qcoordinates = [
-            QtPositioning.QGeoCoordinate(*ii) for ii in coordinates
-        ]
+        qcoordinates = [QtPositioning.QGeoCoordinate(*ii) for ii in coordinates]
         line.setPath(qcoordinates)
         return line
 
@@ -257,9 +308,7 @@ class MapHelper:
             file = "map_widget/colored_icons/" + self.color + "_pos.png"
             icon_type = self.ctx.get_resource(file)
         elif self == "auto".upper():
-            file = (
-                "map_widget/colored_icons/" + self.color + "_rtl_pos.png"
-            )
+            file = "map_widget/colored_icons/" + self.color + "_rtl_pos.png"
             icon_type = self.ctx.get_resource(file)
         else:
             file = "map_widget/colored_icons/" + self.color + "_spos.png"
@@ -316,9 +365,7 @@ class MarkerModel(QAbstractListModel):
         return QAbstractListModel.setData(self, index, value, role)
 
     def addMarker(self, name, marker):
-        self.beginInsertRows(
-            QModelIndex(), self.rowCount(), self.rowCount()
-        )
+        self.beginInsertRows(QModelIndex(), self.rowCount(), self.rowCount())
         self._markers.append(marker)
         self.endInsertRows()
         self.vehicle_names.append(name)
@@ -331,15 +378,9 @@ class MarkerModel(QAbstractListModel):
     def updateMarker(self, name, new_marker):
         if name in self.vehicle_names:
             ind = self.index(self.vehicle_names.index(name), 0)
-            self.setData(
-                ind, new_marker.position_val(), MarkerModel.PositionRole
-            )
-            self.setData(
-                ind, new_marker.source_val(), MarkerModel.SourceRole
-            )
-            self.setData(
-                ind, new_marker.rotation_val(), MarkerModel.RotationRole
-            )
+            self.setData(ind, new_marker.position_val(), MarkerModel.PositionRole)
+            self.setData(ind, new_marker.source_val(), MarkerModel.SourceRole)
+            self.setData(ind, new_marker.rotation_val(), MarkerModel.RotationRole)
 
     def removeMarker(self, name):
         row_index = self.vehicle_names.index(name)
@@ -393,9 +434,7 @@ class WaypointModel(QAbstractListModel):
         return QAbstractListModel.setData(self, index, value, role)
 
     def addWaypoint(self, name, waypoint):
-        self.beginInsertRows(
-            QModelIndex(), self.rowCount(), self.rowCount()
-        )
+        self.beginInsertRows(QModelIndex(), self.rowCount(), self.rowCount())
         self._waypoints.append(waypoint)
         self.endInsertRows()
         self.vehicle_names.append(name)
@@ -405,6 +444,11 @@ class WaypointModel(QAbstractListModel):
             return Qt.ItemIsEnabled
         return QAbstractListModel.flags(index) | Qt.ItemIsEditable
 
+    def remove_all_waypoint_markers(self):
+        self.beginRemoveRows(QModelIndex(), self.rowCount(), self.rowCount())
+        self._waypoints = []
+        self.endRemoveRows()
+        self.vehicle_names.clear()
 
 class FlightLineModel(QAbstractListModel):
     PathRole = Qt.UserRole + 1
@@ -448,10 +492,8 @@ class FlightLineModel(QAbstractListModel):
             return True
         return QAbstractListModel.setData(self, index, value, role)
 
-    def addPathline(self, name, line):
-        self.beginInsertRows(
-            QModelIndex(), self.rowCount(), self.rowCount()
-        )
+    def addPathLine(self, name, line):
+        self.beginInsertRows(QModelIndex(), self.rowCount(), self.rowCount())
         self._pathlines.append(line)
         self.endInsertRows()
         self.vehicle_names.append(name)
@@ -464,12 +506,8 @@ class FlightLineModel(QAbstractListModel):
     def updatePathLine(self, name, new_line):
         if name in self.vehicle_names:
             ind = self.index(self.vehicle_names.index(name), 0)
-            self.setData(
-                ind, new_line.path_val(), FlightLineModel.PathRole
-            )
-            self.setData(
-                ind, new_line.color_val(), FlightLineModel.ColorRole
-            )
+            self.setData(ind, new_line.path_val(), FlightLineModel.PathRole)
+            self.setData(ind, new_line.color_val(), FlightLineModel.ColorRole)
 
     def removePathLine(self, name):
         row_index = self.vehicle_names.index(name)
@@ -522,9 +560,7 @@ class YawLineModel(QAbstractListModel):
         return QAbstractListModel.setData(self, index, value, role)
 
     def addYawLine(self, name, line):
-        self.beginInsertRows(
-            QModelIndex(), self.rowCount(), self.rowCount()
-        )
+        self.beginInsertRows(QModelIndex(), self.rowCount(), self.rowCount())
         self._yawlines.append(line)
         self.endInsertRows()
         self.vehicle_names.append(name)
@@ -591,9 +627,7 @@ class HeadingLineModel(QAbstractListModel):
         return QAbstractListModel.setData(self, index, value, role)
 
     def addHeadingLine(self, name, line):
-        self.beginInsertRows(
-            QModelIndex(), self.rowCount(), self.rowCount()
-        )
+        self.beginInsertRows(QModelIndex(), self.rowCount(), self.rowCount())
         self._headinglines.append(line)
         self.endInsertRows()
         self.vehicle_names.append(name)
@@ -606,12 +640,8 @@ class HeadingLineModel(QAbstractListModel):
     def updateHeadingLine(self, name, new_line):
         if name in self.vehicle_names:
             ind = self.index(self.vehicle_names.index(name), 0)
-            self.setData(
-                ind, new_line.path_val(), HeadingLineModel.PathRole
-            )
-            self.setData(
-                ind, new_line.color_val(), HeadingLineModel.ColorRole
-            )
+            self.setData(ind, new_line.path_val(), HeadingLineModel.PathRole)
+            self.setData(ind, new_line.color_val(), HeadingLineModel.ColorRole)
 
     def removeHeadingLine(self, name):
         row_index = self.vehicle_names.index(name)
@@ -664,9 +694,7 @@ class HomeModel(QAbstractListModel):
         return QAbstractListModel.setData(self, index, value, role)
 
     def addHome(self, name, home):
-        self.beginInsertRows(
-            QModelIndex(), self.rowCount(), self.rowCount()
-        )
+        self.beginInsertRows(QModelIndex(), self.rowCount(), self.rowCount())
         self._homes.append(home)
         self.endInsertRows()
         self.vehicle_names.append(name)
@@ -679,9 +707,7 @@ class HomeModel(QAbstractListModel):
     def updateHome(self, name, new_home):
         if name in self.vehicle_names:
             ind = self.index(self.vehicle_names.index(name), 0)
-            self.setData(
-                ind, new_home.position_val(), HomeModel.PositionRole
-            )
+            self.setData(ind, new_home.position_val(), HomeModel.PositionRole)
             self.setData(ind, new_home.source_val(), HomeModel.SourceRole)
 
     def removeHome(self, name):

@@ -100,14 +100,33 @@ class AutopilotCmd(Resource):
 @DRONE_NS.route("/download_wp")
 class DownloadWP(Resource):
     def get(self):
+        # to send any specific command to the radio
+        download_info = {}
+
+        # once the download is successful, read all_waypoints from database
         all_waypoints = {}
 
+        if not database.connect_db():
+            return {
+                "success": False,
+                "msg": "Failed to connect to database",
+            }
+
         download_succ, info = send_info_to_udp_server(
-            {}, conn_settings.DOWNLOAD_WP
+            download_info, conn_settings.DOWNLOAD_WP
         )
 
-        if not download_succ:
+        if download_succ:
+            database.connect_db()
+            names = database.get_drone_ids()
+            for name in names:
+                wp_list = database.get_mission_items(name)
+                all_waypoints[name] = [s for s in wp_list if s != (0.0, 0.0)]
+                logger.info("WSGI FILTERING THE WAYPOINTS-----------")
+
+        else:
             logger.info("Unable to get latest waypoints")
+            return {}
 
         return all_waypoints
 
@@ -128,12 +147,6 @@ class UploadWP(Resource):
 
         upload_info = {"name": name, "filename": filename}
         logger.info(upload_info)
-
-        if not database.connect_db():
-            return {
-                "success": False,
-                "msg": "Failed to connect to database",
-            }
 
         if mission_type == conn_settings.CMR:
             if not self.cmr_started:
@@ -207,7 +220,7 @@ class DroneAndColor(Resource):
 class PortsData(Resource):
     def get(self):
         ports = list(serial.tools.list_ports.comports())
-        available_ports = ["/dev/test/"]
+        available_ports = []
         for port in sorted(ports):
             available_ports.append(port.device)
         return {"ports": available_ports}

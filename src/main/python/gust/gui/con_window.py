@@ -7,6 +7,7 @@ import utilities.icon_generator as icon_generator
 
 URL_BASE = "http://localhost:8000/{}/".format(BASE)
 DRONE_BASE = "{}{}/".format(URL_BASE, DRONE)
+CONN_TYPES = ["Radio", "Ardupilot SIL", "Test"]
 BAUD = ["9600", "38400", "56700", "115200"]
 
 ALL_COLORS = icon_generator.COLORS
@@ -19,28 +20,54 @@ class ConWindow(QDialog, Ui_MainWindow):
         super().__init__()
 
         self.ctx = ctx
+        self.radio_ports = ports
+        self.TCP = False
         self.setupUi(self)
 
         available_colors = [i for i in ALL_COLORS if i not in used_colors]
-        self.comboBox_port.addItems(ports)
-        self.comboBox_port.addItems(
-            ["tcp:127.0.0.1:5760", "tcp:127.0.0.1:5770", "tcp:127.0.0.1:5780", "tcp:127.0.0.1:5790"])
 
-        self.comboBox_baud.addItems(BAUD)
+        self.comboBox_conn_type.addItems(CONN_TYPES)
         self.comboBox_color.addItems(available_colors)
+        self.comboBox_port.setEnabled(False)
+        self.comboBox_baud.setEnabled(False)
+        self.comboBox_baud.addItems(BAUD)
 
         self.pushButton_connect.clicked.connect(self.clicked_connect)
         self.pushButton_cancel.clicked.connect(self.clicked_cancel)
+        self.comboBox_conn_type.currentTextChanged.connect(self.check_conn_type)
 
     def clicked_cancel(self):
         self.reject()
 
+    def check_conn_type(self):
+        conn_type = self.comboBox_conn_type.currentText()
+
+        if conn_type == "Radio":
+            self.prepare_elements_dynamically(False, self.radio_ports, True)
+
+        elif conn_type == "Ardupilot SIL":
+            self.prepare_elements_dynamically(True, ["tcp:127.0.0.1:"], False)
+
+        elif conn_type == "Test":
+            self.prepare_elements_dynamically(False, ["/dev/test/"], False)
+
+    def prepare_elements_dynamically(self, tcp_bool, port_items, baud_bool):
+        self.TCP = tcp_bool
+        self.comboBox_port.clear()
+        self.comboBox_port.addItems(port_items)
+        self.lineEdit_extra_tcp.setEnabled(tcp_bool)
+        self.comboBox_baud.setEnabled(baud_bool)
+
     def clicked_connect(self):
 
         port_name = self.comboBox_port.currentText()
+        if self.TCP:
+            port_name += str(self.lineEdit_extra_tcp.text())
+
         self.color_id = self.comboBox_color.currentText()
         self.baud = int(self.comboBox_baud.currentText())
         self.name = self.lineEdit_nameinput.text()
+
         url = "{}connect".format(DRONE_BASE)
 
         if len(port_name) > 0 or len(self.name) > 0:

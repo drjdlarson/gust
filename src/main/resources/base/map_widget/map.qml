@@ -184,10 +184,10 @@ Item {
                     Image {
                         id: image
                         source: source_waypoint
-                        sourceSize.width: 30
-                        sourceSize.height: 30
-                        width: 30
-                        height: 30
+                        sourceSize.width: 15
+                        sourceSize.height: 15
+                        width: 15
+                        height: 15
                         }
                 }
             }
