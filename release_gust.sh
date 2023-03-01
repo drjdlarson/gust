@@ -9,7 +9,7 @@ Help()
         echo
         echo "Syntax release_gust.sh [-h|-s]"
         echo "-h	Print the help text."
-	echo "-s	Skip building the dependencies (e.g. WGSI apps, radio manager etc.)"
+        echo "-s	Skip building the dependencies (e.g. WGSI apps, radio manager etc.)"
         echo
 }
 

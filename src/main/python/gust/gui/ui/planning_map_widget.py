@@ -4,7 +4,6 @@ import time
 import random
 import math
 import pathlib
-import matplotlib.image as mpimg
 from functools import partial
 from PyQt5 import QtCore, QtWidgets, QtQuickWidgets, QtPositioning, QtQuickWidgets
 from PyQt5.QtCore import QTimer, QTemporaryDir, QFile, QAbstractListModel, Qt, QByteArray, QModelIndex, QVariant
