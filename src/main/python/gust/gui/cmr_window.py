@@ -213,12 +213,6 @@ class CmrWindow(QMainWindow, Ui_MainWindow):
         self.waypoints = {}
         self.wp_colors = ["red", "blue"]
 
-        wp1 = [
-            (33.21589373771255, -87.56986696619138),
-            (33.19992239477393, -87.54676703331124),
-            (33.218759762150036, -87.512328099724),
-        ]
-
         # one side of the survey line
         wp1 = self.calculate_waypoints_S(1)
 

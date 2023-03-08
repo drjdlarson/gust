@@ -93,7 +93,6 @@ def open_db(location_file):
     """
     global _DB
     if _DB is not None:
-        print("Database has already been opened it is: {}".format(repr(_DB)))
         logger.critical("Database has already been opened it is: {}".format(repr(_DB)))
 
     setup_logger()
@@ -578,7 +577,6 @@ def get_drone_ids(distinct=True, active=True):
 
     query = _start_query()
     if _main_table not in _DB.tables():
-        print("_main_table is not in the database")
         logger.critical("Unable to find {} in database".format(_main_table))
 
     cmd = "SELECT {} name FROM {} {}".format(extra1, _main_table, extra2)
@@ -815,6 +813,13 @@ def get_mission_items(vehicle_name):
     while result and query.next():
         coords.append((query.value("x"), query.value("y")))
     return coords
+
+
+def remove_older_mission_items(vehicle_name):
+    query = _start_query()
+    table_name = vehicle_name + "_mission"
+    cmd = "DELETE FROM {}".format(table_name)
+    query.exec_(cmd)
 
 
 def create_drone_rate_table_name(name, rate):
@@ -1068,6 +1073,15 @@ def add_cmr_vehicle(name, wp_color):
             "Unable to add {} with {} waypoints to cmr_table".format(name, wp_color)
         )
     return res
+
+def get_saved_locations():
+    query = _start_query()
+    cmd = "SELECT name, coords FROM locations"
+    val = {}
+    result = query.exec_(cmd)
+    while result and query.next():
+        val[query.value("name")] = query.value("coords")
+    return val
 
 
 if __name__ == "__main__":

@@ -212,7 +212,12 @@ class BackendWindow(QMainWindow, Ui_BackendWindow):
         #     proc.readyReadStandardOutput.connect(partial(self._print_plug_msg, ii))
 
         # starting a thread to run the conn_server
-        worker = Worker(conn_server.ConnServer.start_conn_server, self.__process_events, self._debug, self.ctx)
+        worker = Worker(
+            conn_server.ConnServer.start_conn_server,
+            self.__process_events,
+            self._debug,
+            self.ctx,
+        )
         # worker = Worker(conn_server.ConnServer.start_conn_server, self.ctx)
         self.threadpool.start(worker)
 

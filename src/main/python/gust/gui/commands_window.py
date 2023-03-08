@@ -35,6 +35,7 @@ class CommandsManager(QMainWindow, Ui_MainWindow):
         self.comboBox_mode.addItems(FLIGHT_MODES)
 
     def clicked_refresh(self):
+        self.comboBox_names.clear()
         url = "{}get_connected_drones_with_color".format(DRONE_BASE)
         self.vehicles = requests.get(url).json()
         self.comboBox_names.addItems(self.vehicles.keys())
@@ -84,7 +85,6 @@ class CommandsManager(QMainWindow, Ui_MainWindow):
             url += "?name=" + self.selected_name.replace(" ", "_")
             url += "&cmd=" + conn_settings.SET_MODE
             url += "&param=" + mode
-            print(url)
             set_mode = requests.get(url).json()
             self.show_message_box(set_mode["success"], set_mode["msg"])
         else:
@@ -114,8 +114,8 @@ class CommandsManager(QMainWindow, Ui_MainWindow):
             url += "&cmd=" + conn_settings.GOTO_NEXT_WP
             url += "&param=" + "0"
             goto_next = requests.get(url).json()
-            
-        
+
+
         # if self.selected_name is not None:
         #     url = "{}autopilot_cmd".format(DRONE_BASE)
         #     url += "?name=" + self.selected_name.replace(" ", "_")

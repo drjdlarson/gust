@@ -20,10 +20,10 @@ class PlanningMapWidget(QtQuickWidgets.QQuickWidget):
     def setup_qml(self, ctx):
         self.ctx = ctx
         qml_file = self.ctx.get_resource("cmr_planning/planning_map.qml")
-        resource_file = self.ctx.get_resource('cmr_planning/README')
+        resource_file = self.ctx.get_resource('map_widget/README')
         resource_path = str(pathlib.Path(resource_file).parent.resolve())
 
-        self.temp_dir = QTemporaryDir();
+        self.temp_dir = QTemporaryDir()
 
         if self.temp_dir.isValid():
             temp_path = self.temp_dir.path()

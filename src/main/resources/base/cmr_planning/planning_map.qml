@@ -25,24 +25,11 @@ Item {
         // mapBase.toCoordinate(point, false)
     }
 
-
     Plugin {
         id: osmPlugin
         name: "osm" //"googlemaps"
     }
 
-    Map {
-        id: mapBase
-        anchors.fill: parent
-        plugin: osmPlugin
-        // anchors.centerIn: parent
-        center: mapCenter.coordinate
-        zoomLevel: 13
-        copyrightsVisible: false
-        // activeMapType: MapType.CustomMap
-    }
-
-/*
      Map {
         id: mapBase
         anchors.fill: parent
@@ -76,7 +63,6 @@ Item {
             }
         }
     }
-*/
 
     Transition {
         id: myTrans
@@ -105,13 +91,7 @@ Item {
         bearing: mapBase.bearing
         fieldOfView: mapBase.fieldOfView
         z: mapBase.z + 1
-/*
-        MapPolyline {
-            line.width: 3
-            line.color: line_item.color
-            path: line_item.path
-        }
-*/
+
         MapItemView{
             model: line_model
             remove: myTrans

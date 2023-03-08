@@ -11,6 +11,7 @@ class ConnSettings:
     MAX_MSG_SIZE = 1500
     TIMEOUT = 10
     RADIO_PORTS = [9820, 9825, 9830, 9835, 9840, 9850, 9855, 9860, 9865]
+    TCP_PORTS = [5760, 5770, 5780, 5790, 5800, 5810, 5820, 5830, 5840]
 
     # DRONE message_type
     DRONE_CONN = "drone_connect"
@@ -47,9 +48,7 @@ class ConnSettings:
         return cls.IP, port
 
 
-def send_info_to_udp_server(
-    info_dict, msg_type, server_addr=ConnSettings.ADDR()
-):
+def send_info_to_udp_server(info_dict, msg_type, server_addr=ConnSettings.ADDR()):
     """Packages and sends information to UDP servers as a UDP socket client.
 
     Parameters

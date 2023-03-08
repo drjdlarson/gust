@@ -3,7 +3,8 @@ from PyQt5.QtCore import pyqtSlot
 from gust.gui.ui.planning_module import Ui_MainWindow
 from gust.gui import cmr_window
 
-PLANNING_TYPES = ['General Planning', 'CMR Planning']
+PLANNING_TYPES = ["General Planning", "CMR Planning"]
+
 
 class PlanningSelectionWindow(QMainWindow, Ui_MainWindow):
     """Main interface for the planning selection window"""
@@ -27,10 +28,9 @@ class PlanningSelectionWindow(QMainWindow, Ui_MainWindow):
     def clicked_open(self):
 
         sel_type = self.comboBox_planning_types.currentText()
-        if sel_type == 'CMR Planning':
+        if sel_type == "CMR Planning":
             if self._cmrWindow is None:
-                self._cmrWindow = cmr_window.CmrWindow(
-                    self.ctx, parent=self)
+                self._cmrWindow = cmr_window.CmrWindow(self.ctx, parent=self)
             self._cmrWindow.show()
 
     def setupUi(self, mainWindow):

@@ -380,7 +380,7 @@ def prepare_data_from_mavlink(radio, name, port, rate1, rate2, rate3, rate4, dat
     if "VFR_HUD" in data:
         rate2["vals"]["airspeed"] = round(data["VFR_HUD"]["airspeed"])
         rate2["vals"]["gndspeed"] = round(data["VFR_HUD"]["groundspeed"], 1)
-        rate2["vals"]["yaw"] = round(data["VFR_HUD"]["yaw"])
+        rate2["vals"]["yaw"] = data["LOCAL_POSITION_NED"]["heading"]
         rate2["vals"]["vspeed"] = round(data["VFR_HUD"]["climb"], 1)
         rate2["vals"]["throttle"] = round(data["VFR_HUD"]["throttle"])
 

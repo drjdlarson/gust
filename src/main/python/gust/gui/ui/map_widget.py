@@ -62,13 +62,14 @@ class MapWidget(QtQuickWidgets.QQuickWidget):
         self.engine().clearComponentCache()
         self.setSource(QtCore.QUrl.fromLocalFile(temp_path + "/temp_map.qml"))
 
+        # TODO: figure out the qml property for map centering stuff
+        self.map_center = self.rootObject().findChild(QtCore.QObject, "center_map")
+
         self.marker_model = MarkerModel(self)
         self.rootContext().setContextProperty("markermodel", self.marker_model)
 
         self.heading_line_model = HeadingLineModel(self)
-        self.rootContext().setContextProperty(
-            "heading_line", self.heading_line_model
-        )
+        self.rootContext().setContextProperty("heading_line", self.heading_line_model)
 
         self.yaw_line_model = YawLineModel(self)
         self.rootContext().setContextProperty("yaw_line", self.yaw_line_model)
@@ -82,6 +83,11 @@ class MapWidget(QtQuickWidgets.QQuickWidget):
         self.waypoint_model = WaypointModel()
         self.rootContext().setContextProperty("waypointmodel", self.waypoint_model)
 
+    # TODO: fix map centering
+    def recenter_map(self, center_coordinates):
+        self.map_center.setProperty(
+            "coordinate", QtPositioning.QGeoCoordinate(center_coordinates)
+        )
 
     def add_drone(
         self,
@@ -127,17 +133,18 @@ class MapWidget(QtQuickWidgets.QQuickWidget):
 
     def display_missions(self, all_waypoints):
         for name, waypoints in all_waypoints.items():
-            if name not in self._vehicles_mission.keys():
-                self._vehicles_mission[name] = FlightPlanHelper(
-                    name,
-                    self._vehicle_color[name],
-                    self.waypoint_model,
-                    self.flight_path_model,
-                    self.ctx
-                )
-                self._vehicles_mission[name].display_new_mission(waypoints)
-            else:
-                self._vehicles_mission[name].display_updated_mission(waypoints)
+            if name in self._vehicles.keys():
+                if name not in self._vehicles_mission.keys():
+                    self._vehicles_mission[name] = FlightPlanHelper(
+                        name,
+                        self._vehicle_color[name],
+                        self.waypoint_model,
+                        self.flight_path_model,
+                        self.ctx,
+                    )
+                    self._vehicles_mission[name].display_new_mission(waypoints)
+                else:
+                    self._vehicles_mission[name].display_updated_mission(waypoints)
 
     def remove_vehicle_from_map(self, name):
         if name in self._vehicles:
@@ -147,9 +154,9 @@ class MapWidget(QtQuickWidgets.QQuickWidget):
             del self._vehicles[name]
 
             # removing the Waypoints and Flight Path models
-            self._vehicles_mission[name].remove_waypoints_and_lines()
-            del self._vehicles_mission[name]
-
+            if name in self._vehicles_mission:
+                self._vehicles_mission[name].remove_waypoints_and_lines()
+                del self._vehicles_mission[name]
 
 class FlightPlanHelper:
     def __init__(self, name, color, waypoint_model, flight_path_model, ctx):
@@ -161,7 +168,7 @@ class FlightPlanHelper:
 
     def remove_waypoints_and_lines(self):
         self.flight_path_model.removePathLine(self.name)
-        self.waypoint_model.remove_all_waypoint_markers()
+        self.waypoint_model.remove_all_waypoint_markers(self.name)
 
     def display_new_mission(self, waypoints):
         flight_lines, coords = self.prepare_flight_lines_object(waypoints)
@@ -169,7 +176,7 @@ class FlightPlanHelper:
 
         for wp_coord in coords:
             wp_marker = self.prepare_waypoint_marker_object(wp_coord)
-            self.waypoint_model.addWaypoint(self.name, wp_marker)
+            self.waypoint_model.addWaypoints(self.name, wp_marker)
 
     def display_updated_mission(self, new_waypoints):
 
@@ -178,10 +185,10 @@ class FlightPlanHelper:
         self.flight_path_model.updatePathLine(self.name, new_flight_lines)
 
         # For waypoint markers, we have to remove the waypoint markers and redraw them
-        self.waypoint_model.remove_all_waypoint_markers()
+        self.waypoint_model.remove_all_waypoint_markers(self.name)
         for wp_coord in coords:
             wp_marker = self.prepare_waypoint_marker_object(wp_coord)
-            self.waypoint_model.addWaypoint(self.name, wp_marker)
+            self.waypoint_model.addWaypoints(self.name, wp_marker)
 
     def prepare_waypoint_marker_object(self, wp_coord):
         wp_marker = Marker()
@@ -190,12 +197,14 @@ class FlightPlanHelper:
         wp_marker.setSource(icon_type)
         wp_marker.setPosition(wp_coord)
         return wp_marker
+
     def prepare_flight_lines_object(self, waypoints):
         flight_lines = Line()
         flight_lines.setColor(self.color)
         qcoordinates = [QtPositioning.QGeoCoordinate(*ii) for ii in waypoints]
         flight_lines.setPath(qcoordinates)
         return flight_lines, qcoordinates
+
 
 class MapHelper:
     def __init__(
@@ -307,7 +316,7 @@ class MapHelper:
         if self.mode == "stabilize".upper():
             file = "map_widget/colored_icons/" + self.color + "_pos.png"
             icon_type = self.ctx.get_resource(file)
-        elif self == "auto".upper():
+        elif self.mode == "rtl".upper():
             file = "map_widget/colored_icons/" + self.color + "_rtl_pos.png"
             icon_type = self.ctx.get_resource(file)
         else:
@@ -433,7 +442,7 @@ class WaypointModel(QAbstractListModel):
             return True
         return QAbstractListModel.setData(self, index, value, role)
 
-    def addWaypoint(self, name, waypoint):
+    def addWaypoints(self, name, waypoint):
         self.beginInsertRows(QModelIndex(), self.rowCount(), self.rowCount())
         self._waypoints.append(waypoint)
         self.endInsertRows()
@@ -444,11 +453,14 @@ class WaypointModel(QAbstractListModel):
             return Qt.ItemIsEnabled
         return QAbstractListModel.flags(index) | Qt.ItemIsEditable
 
-    def remove_all_waypoint_markers(self):
-        self.beginRemoveRows(QModelIndex(), self.rowCount(), self.rowCount())
-        self._waypoints = []
-        self.endRemoveRows()
-        self.vehicle_names.clear()
+    def remove_all_waypoint_markers(self, name):
+        indices = [ind for ind, ele in enumerate(self.vehicle_names) if ele == name]
+        for i in sorted(indices, reverse=True):
+            self.beginRemoveRows(QModelIndex(), i, i)
+            del self._waypoints[i]
+            del self.vehicle_names[i]
+            self.endRemoveRows()
+
 
 class FlightLineModel(QAbstractListModel):
     PathRole = Qt.UserRole + 1
