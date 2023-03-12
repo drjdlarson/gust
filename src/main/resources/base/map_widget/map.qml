@@ -15,6 +15,7 @@ Item {
             latitude: 33.19424
             longitude: -87.48138
         }
+	objectName: "center_map"
     }
 
 // FOR TESTING WITH OPENSTREETMAP
@@ -143,7 +144,7 @@ Item {
             remove: myTrans
             delegate: MapPolyline {
                 id: flight_line
-                line.width: 3
+                line.width: 1.5
                 line.color: flight_line_color
                 path: flight_line_path
             }
@@ -184,10 +185,10 @@ Item {
                     Image {
                         id: image
                         source: source_waypoint
-                        sourceSize.width: 15
-                        sourceSize.height: 15
-                        width: 15
-                        height: 15
+                        sourceSize.width: 12
+                        sourceSize.height: 12
+                        width: 12
+                        height: 12
                         }
                 }
             }

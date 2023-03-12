@@ -18,11 +18,7 @@ from PyQt5.QtGui import (
     QLinearGradient,
     QPixmap,
 )
-from PyQt5.QtWidgets import (
-    QWidget,
-    QVBoxLayout,
-    QApplication
-)
+from PyQt5.QtWidgets import QWidget, QVBoxLayout, QApplication
 from gust.gui.msg_decoder import MessageDecoder as msg_decoder
 
 g5Width = 480
@@ -32,16 +28,15 @@ g5CenterY = g5Height / 2
 altBoxWidth = 75
 tasHeight = 30
 speedBoxWidth = 75
-g5Diag = sqrt(g5Width ** 2 + g5Height ** 2)
+g5Diag = sqrt(g5Width**2 + g5Height**2)
 mstokt = 1.94384
-
 
 
 class pyG5AIWidget(QWidget):
     """Generate G5 wdiget view."""
 
     def __init__(self, parent):
-    # def __init__(self))
+        # def __init__(self))
         super().__init__(parent=parent)
 
     def setup_hud_ui(self, ctx):
@@ -101,7 +96,6 @@ class pyG5AIWidget(QWidget):
         grad.setColorAt(0, QColor(0, 255, 255, 255))
         self.qp.setBrush(grad)
 
-
         # draw contour + backgorun sky
         self.qp.drawRect(QRectF(0, 0, g5Width, g5Height))
 
@@ -109,7 +103,7 @@ class pyG5AIWidget(QWidget):
         self.qp.translate(g5CenterX, g5CenterY)
         self.qp.rotate(-self.roll_angle)
 
-        #draw the ground
+        # draw the ground
         grad = QLinearGradient(
             g5CenterX,
             +self.pitch_angle / self._pitchScale * g5CenterY,
@@ -358,7 +352,9 @@ class pyG5AIWidget(QWidget):
         self.setPen(0, Qt.transparent)
 
         self.qp.setBrush(QBrush(QColor(0, 0, 0, 90)))
-        self.qp.drawRect(0, 0, speedBoxLeftAlign + speedBoxWidth + 15, g5Height-tasHeight)
+        self.qp.drawRect(
+            0, 0, speedBoxLeftAlign + speedBoxWidth + 15, g5Height - tasHeight
+        )
 
         self.setPen(2, Qt.white)
 
@@ -475,7 +471,7 @@ class pyG5AIWidget(QWidget):
         )
 
         # draw the satellites count
-        pixmap = QPixmap(self.ctx.get_resource('attitude_ind_widget/satellite.png'))
+        pixmap = QPixmap(self.ctx.get_resource("attitude_ind_widget/satellite.png"))
         x = speedBoxWidth + 28
         self.qp.drawPixmap(x, g5Height - tasHeight - 25, 22, 22, pixmap)
 
@@ -484,16 +480,13 @@ class pyG5AIWidget(QWidget):
             g5Height - tasHeight - 25,
             25,
             25,
-            )
+        )
         font = self.qp.font()
         font.setPixelSize(15)
         self.qp.setFont(font)
         self.qp.drawText(
-            rect,
-            Qt.AlignHCenter | Qt.AlignVCenter,
-            ": {}".format(int(self.sat_count))
-            )
-
+            rect, Qt.AlignHCenter | Qt.AlignVCenter, ": {}".format(int(self.sat_count))
+        )
 
         #################################################
         # Alpha and Beta
@@ -514,28 +507,28 @@ class pyG5AIWidget(QWidget):
         self.qp.drawLine(
             QPointF(g5CenterX - max_span, g5Height - tasHeight - offset),
             QPointF(g5CenterX + max_span, g5Height - tasHeight - offset),
-            )
+        )
         for sign in (0, -1, 1):
             z = 1.2 if sign == 0 else 1
             self.qp.drawLine(
+                QPointF(g5CenterX + (sign * max_span), g5Height - tasHeight - offset),
                 QPointF(
                     g5CenterX + (sign * max_span),
-                    g5Height - tasHeight - offset),
-                QPointF(
-                    g5CenterX + (sign * max_span),
-                    g5Height - tasHeight - z * taller_height - offset),
-                )
+                    g5Height - tasHeight - z * taller_height - offset,
+                ),
+            )
         for sign in (-1, 1):
             for val in range(5):
                 self.qp.drawLine(
                     QPointF(
                         g5CenterX + (sign * val * small_gap),
-                        g5Height - tasHeight - offset),
+                        g5Height - tasHeight - offset,
+                    ),
                     QPointF(
                         g5CenterX + (sign * val * small_gap),
-                        g5Height - tasHeight - smaller_height - offset),
-                    )
-
+                        g5Height - tasHeight - smaller_height - offset,
+                    ),
+                )
 
         beta = self.beta
         if self.beta > max_beta:
@@ -548,20 +541,23 @@ class pyG5AIWidget(QWidget):
             max_beta,
             g5CenterX - max_span,
             g5CenterX + max_span,
-            )
+        )
         beta_polygon = QPolygonF(
             [
-                QPointF(beta_x, g5Height -tasHeight - offset),
-                QPointF(beta_x + poly_thc, g5Height - tasHeight - offset - 2 * poly_thc),
+                QPointF(beta_x, g5Height - tasHeight - offset),
+                QPointF(
+                    beta_x + poly_thc, g5Height - tasHeight - offset - 2 * poly_thc
+                ),
                 # QPointF(beta_x, g5Height - tasHeight - offset - 4 * poly_thc),
-                QPointF(beta_x - poly_thc, g5Height - tasHeight - offset - 2 * poly_thc),
+                QPointF(
+                    beta_x - poly_thc, g5Height - tasHeight - offset - 2 * poly_thc
+                ),
             ]
-            )
+        )
         self.setPen(2, Qt.red)
         brush = QBrush(QColor(255, 0, 0))
         self.qp.setBrush(brush)
         self.qp.drawPolygon(beta_polygon)
-
 
         # Alpha (-5 to 15 deg)
         max_alpha = 15
@@ -577,44 +573,35 @@ class pyG5AIWidget(QWidget):
         self.qp.drawLine(
             QPointF(al_x, al_top),
             QPointF(al_x, al_bottom),
-            )
+        )
         for i in range(5):
             z = 1.5 if i == 3 else 1
             self.qp.drawLine(
                 QPointF(
                     al_x,
                     al_top + i * al_gap,
-                    ),
-                QPointF(
-                    al_x - z * taller_height,
-                    al_top + i * al_gap),
-                )
+                ),
+                QPointF(al_x - z * taller_height, al_top + i * al_gap),
+            )
         for i in range(4):
             self.qp.drawLine(
                 QPointF(
                     al_x,
                     al_top + al_gap / 2 + i * al_gap,
-                    ),
-                QPointF(
-                    al_x - smaller_height,
-                    al_top + al_gap / 2 + i * z * al_gap),
-                )
+                ),
+                QPointF(al_x - smaller_height, al_top + al_gap / 2 + i * z * al_gap),
+            )
 
         rect = QRectF(
             al_x - taller_height - 2.5 * offset,
             al_bottom - al_gap + 0.5 * offset,
             2 * offset,
             2 * offset,
-            )
+        )
         font = self.qp.font()
         font.setPixelSize(12)
         self.qp.setFont(font)
-        self.qp.drawText(
-            rect,
-            Qt.AlignHCenter | Qt.AlignVCenter,
-            "0"
-            )
-
+        self.qp.drawText(rect, Qt.AlignHCenter | Qt.AlignVCenter, "0")
 
         alpha = self.alpha
         if self.alpha > max_alpha:
@@ -627,19 +614,18 @@ class pyG5AIWidget(QWidget):
             max_alpha,
             al_bottom,
             al_top,
-            )
+        )
         alpha_polygon = QPolygonF(
             [
                 QPointF(al_x, alpha_y),
                 QPointF(al_x - 2 * poly_thc, alpha_y - poly_thc),
                 QPointF(al_x - 2 * poly_thc, alpha_y + poly_thc),
             ]
-            )
+        )
         self.setPen(2, Qt.red)
         brush = QBrush(QColor(255, 0, 0))
         self.qp.setBrush(brush)
         self.qp.drawPolygon(alpha_polygon)
-
 
         #################################################
         # ALTITUDE TAPE
@@ -650,9 +636,8 @@ class pyG5AIWidget(QWidget):
         altBoxSpikedimension = 10
         altTapeScale = 500
 
-
         altTapeLeftAlign = g5Width - altBoxRightAlign - altBoxWidth
-        alt_tape_height=g5Height #-tasHeight
+        alt_tape_height = g5Height  # -tasHeight
 
         vsScale = 10
         vsIndicatorWidth = 7
@@ -660,7 +645,9 @@ class pyG5AIWidget(QWidget):
         alttapteLeftBound = altTapeLeftAlign - 1.5 * altBoxSpikedimension
         self.setPen(0, Qt.transparent)
         self.qp.setBrush(QBrush(QColor(0, 0, 0, 90)))
-        self.qp.drawRect(alttapteLeftBound, 0, g5Width - alttapteLeftBound, alt_tape_height)
+        self.qp.drawRect(
+            alttapteLeftBound, 0, g5Width - alttapteLeftBound, alt_tape_height
+        )
         self.setPen(2, Qt.white)
 
         self.qp.setBackgroundMode(Qt.TransparentMode)
@@ -860,10 +847,8 @@ class pyG5AIWidget(QWidget):
 
     def mapFromto(self, x, a, b, c, d):
         """Maps data x originally in range[a, b] to a new range [c, d]"""
-        y = (x-a)/(b-a)*(d-c) + c
+        y = (x - a) / (b - a) * (d - c) + c
         return y
-
-
 
     def pitchLine(self, offset, length):
         """Return a pitch line.
@@ -897,13 +882,15 @@ class pyG5AIWidget(QWidget):
         return QLine(startPoint, endPoint)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     app = QApplication(sys.argv)
-    app.setStyleSheet('''
+    app.setStyleSheet(
+        """
         QWidget {
             font-size: 35px;
         }
-    ''')
+    """
+    )
 
     myApp = pyG5AIWidget()
     myApp.show()
@@ -911,4 +898,4 @@ if __name__ == '__main__':
     try:
         sys.exit(app.exec_())
     except SystemExit:
-        print('Closing Window...')
+        print("Closing Window...")

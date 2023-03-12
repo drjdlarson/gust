@@ -30,6 +30,11 @@ cmdParse.add_argument("name", default="", type=str)
 cmdParse.add_argument("cmd", default="", type=str)
 cmdParse.add_argument("param", default="", type=str)
 
+silParse = DRONE_NS.parser()
+silParse.add_argument("sil_name", default="", type=str)
+silParse.add_argument("vehicle_type", default="", type=str)
+silParse.add_argument("home", default="", type=str)
+
 
 @DRONE_NS.route("/connect")
 class ConnInfo(Resource):
@@ -88,9 +93,7 @@ class AutopilotCmd(Resource):
         cmd_info = {"name": name, "cmd": cmd, "param": param}
         logger.info(cmd_info)
 
-        cmd_succ, info = send_info_to_udp_server(
-            cmd_info, conn_settings.AUTO_CMD
-        )
+        cmd_succ, info = send_info_to_udp_server(cmd_info, conn_settings.AUTO_CMD)
         if cmd_succ:
             return {"success": True, "msg": ""}
         else:
@@ -122,7 +125,6 @@ class DownloadWP(Resource):
             for name in names:
                 wp_list = database.get_mission_items(name)
                 all_waypoints[name] = [s for s in wp_list if s != (0.0, 0.0)]
-                logger.info("WSGI FILTERING THE WAYPOINTS-----------")
 
         else:
             logger.info("Unable to get latest waypoints")
@@ -216,6 +218,16 @@ class DroneAndColor(Resource):
         return drone_and_colors
 
 
+@DRONE_NS.route("/get_saved_locations")
+class SavedLocations(Resource):
+    def get(self):
+        database.connect_db()
+        saved_locations = database.get_saved_locations()
+        for name, coords in saved_locations.items():
+            saved_locations[name] = tuple(saved_locations[name].split(","))
+        return saved_locations
+
+
 @DRONE_NS.route("/get_available_ports")
 class PortsData(Resource):
     def get(self):
@@ -236,11 +248,15 @@ class ColorsData(Resource):
 
 @DRONE_NS.route("/start_sil")
 class StartSIL(Resource):
+    @DRONE_NS.expect(silParse)
     def get(self):
-        start_sil = {}
-        sil_succ, info = send_info_to_udp_server(
-            start_sil, conn_settings.START_SIL
-        )
+        args = silParse.parse_args()
+        start_sil = {
+            "sil_name": args["sil_name"],
+            "vehicle_type": args["vehicle_type"],
+            "home": args["home"],
+        }
+        sil_succ, info = send_info_to_udp_server(start_sil, conn_settings.START_SIL)
         if sil_succ:
             return {"success": True, "msg": ""}
         else:
@@ -286,9 +302,7 @@ class AttitudeData(Resource):
                 name, database.DroneRates.RATE2
             )
             key = index + 1
-            attitude_data[key] = database.get_params(
-                table_name, AttitudeData.params
-            )
+            attitude_data[key] = database.get_params(table_name, AttitudeData.params)
         return attitude_data
 
 
@@ -397,7 +411,5 @@ class ChannelsData(Resource):
                 name, database.DroneRates.RATE3
             )
             key = index + 1
-            channels_info[key] = database.get_params(
-                table_name, ChannelsData.params
-            )
+            channels_info[key] = database.get_params(table_name, ChannelsData.params)
         return channels_info

@@ -72,7 +72,9 @@ class FrontendWindow(QMainWindow, Ui_MainWindow_main):
         self._planningWindow = None
         self._sil_window = None
 
+        self.sil_vehicles = []
         self._continue_updating_data = False
+        self.flight_params = None
 
         self.manager = DataManager()
         self.ctx = ctx
@@ -86,14 +88,14 @@ class FrontendWindow(QMainWindow, Ui_MainWindow_main):
         self.pushButton_RTL.clicked.connect(self.clicked_RTL)
         self.pushButton_disarm.clicked.connect(self.clicked_disarm)
 
-        self.pushButton_refresh_map.clicked.connect(
-            self.clicked_refresh_map
-        )
+        self.pushButton_refresh_map.clicked.connect(self.clicked_refresh_map)
         self.pushButton_sensors.clicked.connect(self.clicked_sensors)
         self.pushButton_commands.clicked.connect(self.clicked_commands)
         self.pushButton_tune.clicked.connect(self.clicked_tune)
         self.pushButton_sensors.clicked.connect(self.clicked_sil)
         self.pushButton_planning.clicked.connect(self.clicked_planning)
+
+        self.comboBox_saved_locations.currentTextChanged.connect(self.recenter_map)
 
         self.once_clicked = False
         self.tableWidget.cellClicked.connect(self.item_clicked)
@@ -103,6 +105,15 @@ class FrontendWindow(QMainWindow, Ui_MainWindow_main):
         super().setupUi(mainWindow)
         self.widget_map.setup_qml(self.ctx)
         self.widget_hud.setup_hud_ui(self.ctx)
+
+        url = "{}get_saved_locations".format(DRONE_BASE)
+        self.saved_locations = requests.get(url).json()
+        self.comboBox_saved_locations.addItems(self.saved_locations.keys())
+
+    def recenter_map(self):
+        center_location = self.comboBox_saved_locations.currentText()
+        center_coords = self.saved_locations[center_location]
+        self.widget_map.recenter_map(center_coords)
 
     @pyqtSlot()
     def clicked_addvehicle(self):
@@ -115,11 +126,11 @@ class FrontendWindow(QMainWindow, Ui_MainWindow_main):
 
         if self._conWindow is None:
             self._conWindow = con_window.ConWindow(
-                self.ctx, ports["ports"], used_colors["used_colors"]
+                self.ctx, ports["ports"], used_colors["used_colors"], self.sil_vehicles
             )
 
         if self._conWindow.exec_():
-            time.sleep(1.0)
+            time.sleep(2.0)
             self._continue_updating_data = True
 
             # adding a row in the table
@@ -150,25 +161,24 @@ class FrontendWindow(QMainWindow, Ui_MainWindow_main):
     @pyqtSlot()
     def clicked_sensors(self):
         if self._sensorsWindow is None:
-            self._sensorsWindow = sensors_window.SensorsWindow(
-                self.ctx, parent=self
-            )
+            self._sensorsWindow = sensors_window.SensorsWindow(self.ctx, parent=self)
         self._sensorsWindow.show()
 
     def clicked_sil(self):
         if self._sil_window is None:
             self._sil_window = start_sil_window.StartSILWindow(
-                self.ctx, parent=self
+                self.ctx, self.saved_locations
             )
-        self._sil_window.show()
+            self._sil_window.signal.connect(self.add_sil_vehicle)
+
+        self._sil_window.exec_()
+        self._sil_window = None
 
     @pyqtSlot()
     def clicked_planning(self):
         if self._planningWindow is None:
-            self._planningWindow = (
-                planning_selection_window.PlanningSelectionWindow(
-                    self.ctx, parent=self
-                )
+            self._planningWindow = planning_selection_window.PlanningSelectionWindow(
+                self.ctx, parent=self
             )
         self._planningWindow.show()
         self._planningWindow = None
@@ -176,9 +186,7 @@ class FrontendWindow(QMainWindow, Ui_MainWindow_main):
     @pyqtSlot()
     def clicked_commands(self):
         if self._cmdWindow is None:
-            self._cmdWindow = commands_window.CommandsManager(
-                self.ctx, parent=self
-            )
+            self._cmdWindow = commands_window.CommandsManager(self.ctx, parent=self)
         self._cmdWindow.show()
 
     @pyqtSlot()
@@ -187,17 +195,17 @@ class FrontendWindow(QMainWindow, Ui_MainWindow_main):
         if button:
             sel_row = self.tableWidget.indexAt(button.pos()).row()
             name = self.tableWidget.item(sel_row, 1).text()
-            win = disconnect_confirmation.DisconnectConfirmation(
-                name, self.ctx
-            )
+            win = disconnect_confirmation.DisconnectConfirmation(name, self.ctx)
             res = win.exec_()
             if res:
                 self.tableWidget.removeRow(sel_row)
-                self._continue_updating_data = (
-                    self.tableWidget.rowCount() > 0
-                )
+                self._continue_updating_data = self.tableWidget.rowCount() > 0
                 self.clean_hud_and_lcd()
+                print("vehicle disconnecting is {}".format(name))
                 self.widget_map.remove_vehicle_from_map(name)
+
+    def add_sil_vehicle(self, sil_name):
+        self.sil_vehicles.append(sil_name)
 
     def update_request(self):
         if self.timer is None:
@@ -271,9 +279,7 @@ class FrontendWindow(QMainWindow, Ui_MainWindow_main):
             # self.con_status will be 1 or 0.
             self.disconnect_button = QPushButton("Disconnect")
             self.disconnect_button.clicked.connect(self.clicked_disconnect)
-            self.tableWidget.setCellWidget(
-                rowPos, 10, self.disconnect_button
-            )
+            self.tableWidget.setCellWidget(rowPos, 10, self.disconnect_button)
 
             self.widget_map.add_drone(
                 self.flight_params[key]["name"],
@@ -302,37 +308,19 @@ class FrontendWindow(QMainWindow, Ui_MainWindow_main):
 
         # Updating the lcd display
         self.label_seluav.setText(str(self.flight_params[key_pos]["name"]))
-        self.lcdNumber_altitude.display(
-            self.flight_params[key_pos]["relative_alt"]
-        )
-        self.lcdNumber_vspeed.display(
-            self.flight_params[key_pos]["vspeed"]
-        )
-        self.lcdNumber_airspeed.display(
-            self.flight_params[key_pos]["airspeed"]
-        )
-        self.lcdNumber_gndspeed.display(
-            self.flight_params[key_pos]["gndspeed"]
-        )
-        self.lcdNumber_voltage.display(
-            self.flight_params[key_pos]["voltage"]
-        )
-        self.lcdNumber_current.display(
-            self.flight_params[key_pos]["current"]
-        )
+        self.lcdNumber_altitude.display(self.flight_params[key_pos]["relative_alt"])
+        self.lcdNumber_vspeed.display(self.flight_params[key_pos]["vspeed"])
+        self.lcdNumber_airspeed.display(self.flight_params[key_pos]["airspeed"])
+        self.lcdNumber_heading.display(self.flight_params[key_pos]["yaw"])
+        self.lcdNumber_voltage.display(self.flight_params[key_pos]["voltage"])
+        self.lcdNumber_current.display(self.flight_params[key_pos]["current"])
 
         # Updating the Attitude Indicator
-        self.widget_hud.roll_angle = self.flight_params[key_pos][
-            "roll_angle"
-        ]
-        self.widget_hud.pitch_angle = self.flight_params[key_pos][
-            "pitch_angle"
-        ]
+        self.widget_hud.roll_angle = self.flight_params[key_pos]["roll_angle"]
+        self.widget_hud.pitch_angle = self.flight_params[key_pos]["pitch_angle"]
         self.widget_hud.gndspeed = self.flight_params[key_pos]["gndspeed"]
         self.widget_hud.airspeed = self.flight_params[key_pos]["airspeed"]
-        self.widget_hud.altitude = self.flight_params[key_pos][
-            "relative_alt"
-        ]
+        self.widget_hud.altitude = self.flight_params[key_pos]["relative_alt"]
         self.widget_hud.vspeed = self.flight_params[key_pos]["vspeed"]
         self.widget_hud.yaw = self.flight_params[key_pos]["yaw"]
         self.widget_hud.arm = self.flight_params[key_pos]["armed"]
@@ -340,56 +328,17 @@ class FrontendWindow(QMainWindow, Ui_MainWindow_main):
         self.widget_hud.mode = self.flight_params[key_pos]["flight_mode"]
         self.widget_hud.alpha = self.flight_params[key_pos]["alpha"]
         self.widget_hud.beta = self.flight_params[key_pos]["beta"]
-        self.widget_hud.sat_count = self.flight_params[key_pos][
-            "satellites_visible"
-        ]
+        self.widget_hud.sat_count = self.flight_params[key_pos]["satellites_visible"]
         self.widget_hud.repaint()
 
-    def test_uploading_waypoints(self):
-        url = "{}upload_wp".format(DRONE_BASE)
-        url += "?name=sim"
-
-        name = "blue_waypoints.txt"
-        rsrc_file = self.ctx.get_resource("cmr_planning/README")
-        rsrc_path = str(pathlib.Path(rsrc_file).parent.resolve())
-        filename = rsrc_path + "/" + name
-
-        url += "&filename=" + filename
-        url += "&mission_type=" + conn_settings.CMR
-        url += "&wp_color=" + "blue"
-
-        upload = requests.get(url).json()
-
-        msgBox = QMessageBox()
-
-        if upload["success"]:
-            msgBox.setIcon(QMessageBox.Information)
-            msgBox.setText(
-                "Uploaded blue waypoints to sim"
-            )
-            msgBox.exec()
-
-        else:
-            msgBox.setIcon(QMessageBox.Warning)
-            msgBox.setText(
-                "Uploaded blue waypoints to sim"            )
-            msgBox.exec()
-
     def clicked_refresh_map(self):
+        # self.recenter_map()
+        if self.flight_params is not None:
+            if len(self.flight_params) != 0:
+                url = "{}download_wp".format(DRONE_BASE)
+                all_waypoints = requests.get(url).json()
 
-        # self.test_uploading_waypoints()
-
-        url = "{}download_wp".format(DRONE_BASE)
-        all_waypoints = requests.get(url).json()
-        print(all_waypoints)
-
-        # all_waypoints = {'sim': [
-        #     (33.21589373771255, -87.56986696619138),
-        #     (33.19992239477393, -87.54676703331124),
-        #     (33.218759762150036, -87.512328099724),
-        # ]}
-        self.widget_map.display_missions(all_waypoints)
-
+                self.widget_map.display_missions(all_waypoints)
 
     def clean_hud_and_lcd(self):
         # Cleaning the LCD display
@@ -397,7 +346,7 @@ class FrontendWindow(QMainWindow, Ui_MainWindow_main):
         self.lcdNumber_altitude.display(0)
         self.lcdNumber_vspeed.display(0)
         self.lcdNumber_airspeed.display(0)
-        self.lcdNumber_gndspeed.display(0)
+        self.lcdNumber_heading.display(0)
         self.lcdNumber_voltage.display(0)
         self.lcdNumber_current.display(0)
 

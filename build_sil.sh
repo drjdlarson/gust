@@ -40,21 +40,15 @@ session=build_sil
 
 tmux new-session -d -s ${session}
 tmux send-keys -t ${session} 'conda activate gust_dev' C-m
-tmux send-keys -t ${session} 'python /home/lagerprocessor/Projects/ardupilot/Tools/autotest/sim_vehicle.py --no-mavproxy --vehicle=ArduCopter --location=SHELBY' C-m
+tmux send-keys -t ${session} 'python /home/lagerprocessor/Projects/ardupilot/Tools/autotest/sim_vehicle.py --no-mavproxy' C-m
 
 sleep 10
 
 tmux kill-session -t ${session}
 
-
-#python /home/lagerprocessor/Projects/ardupilot/Tools/autotest/sim_vehicle.py --no-mavproxy --vehicle=ArduCopter --location=SHELBY &
-#sleep 10
-
-# kill -SIGINT $!
-#kill -SIGINT $(ps -o pid= --ppid $$) 
-
 cp /home/lagerprocessor/Projects/ardupilot/build/sitl/bin/arducopter ./src/main/resources/base/sil_manager 
 cp /home/lagerprocessor/Projects/ardupilot/Tools/autotest/default_params/copter.parm ./src/main/resources/base/sil_manager 
 
-
+rm -rf ./terrain/
+rm -rf ./logs/
 

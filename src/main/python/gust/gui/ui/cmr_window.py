@@ -14,7 +14,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(959, 793)
+        MainWindow.resize(988, 793)
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
         self.horizontalLayout_2 = QtWidgets.QHBoxLayout(self.centralwidget)
@@ -35,6 +35,9 @@ class Ui_MainWindow(object):
         self.horizontalLayout_checkboxes.addWidget(self.checkBox_waypoints)
         spacerItem = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
         self.horizontalLayout_checkboxes.addItem(spacerItem)
+        self.comboBox_saved_locations = QtWidgets.QComboBox(self.centralwidget)
+        self.comboBox_saved_locations.setObjectName("comboBox_saved_locations")
+        self.horizontalLayout_checkboxes.addWidget(self.comboBox_saved_locations)
         self.pushButton_refresh = QtWidgets.QPushButton(self.centralwidget)
         self.pushButton_refresh.setObjectName("pushButton_refresh")
         self.horizontalLayout_checkboxes.addWidget(self.pushButton_refresh)

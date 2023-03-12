@@ -29,36 +29,8 @@
    <string notr="true">background-color: rgb(211, 215, 207);
 color: rgb(0, 0, 0);</string>
   </property>
-  <layout class="QFormLayout" name="formLayout">
+  <layout class="QGridLayout" name="gridLayout">
    <item row="0" column="0">
-    <widget class="QLabel" name="label_nameinput">
-     <property name="font">
-      <font>
-       <pointsize>13</pointsize>
-      </font>
-     </property>
-     <property name="text">
-      <string>Enter Vehicle's Name</string>
-     </property>
-    </widget>
-   </item>
-   <item row="0" column="1">
-    <widget class="QLineEdit" name="lineEdit_nameinput">
-     <property name="maximumSize">
-      <size>
-       <width>150</width>
-       <height>16777215</height>
-      </size>
-     </property>
-     <property name="styleSheet">
-      <string notr="true">background-color: rgb(238, 238, 236);</string>
-     </property>
-     <property name="text">
-      <string/>
-     </property>
-    </widget>
-   </item>
-   <item row="1" column="0">
     <widget class="QLabel" name="label_conn_type">
      <property name="font">
       <font>
@@ -70,7 +42,7 @@ color: rgb(0, 0, 0);</string>
      </property>
     </widget>
    </item>
-   <item row="1" column="1">
+   <item row="0" column="1">
     <widget class="QComboBox" name="comboBox_conn_type">
      <property name="maximumSize">
       <size>
@@ -80,48 +52,38 @@ color: rgb(0, 0, 0);</string>
      </property>
     </widget>
    </item>
-   <item row="2" column="0">
-    <widget class="QLabel" name="label_port">
+   <item row="1" column="0">
+    <widget class="QLabel" name="label_nameinput">
      <property name="font">
       <font>
        <pointsize>13</pointsize>
       </font>
      </property>
      <property name="text">
-      <string>PORT</string>
+      <string>Enter Vehicle's Name</string>
      </property>
     </widget>
    </item>
-   <item row="2" column="1">
-    <layout class="QHBoxLayout" name="horizontalLayout_3">
+   <item row="1" column="1">
+    <layout class="QHBoxLayout" name="horizontalLayout_2">
      <item>
-      <widget class="QComboBox" name="comboBox_port">
-       <property name="minimumSize">
-        <size>
-         <width>120</width>
-         <height>0</height>
-        </size>
-       </property>
+      <widget class="QLineEdit" name="lineEdit_nameinput">
        <property name="maximumSize">
         <size>
          <width>150</width>
          <height>16777215</height>
         </size>
        </property>
+       <property name="styleSheet">
+        <string notr="true">background-color: rgb(238, 238, 236);</string>
+       </property>
+       <property name="text">
+        <string/>
+       </property>
       </widget>
      </item>
      <item>
-      <widget class="QLineEdit" name="lineEdit_extra_tcp">
-       <property name="maximumSize">
-        <size>
-         <width>100</width>
-         <height>16777215</height>
-        </size>
-       </property>
-       <property name="text">
-        <string>TCP conn.</string>
-       </property>
-      </widget>
+      <widget class="QComboBox" name="comboBox_sil_name"/>
      </item>
      <item>
       <spacer name="horizontalSpacer_2">
@@ -138,7 +100,35 @@ color: rgb(0, 0, 0);</string>
      </item>
     </layout>
    </item>
-   <item row="4" column="0">
+   <item row="2" column="0">
+    <widget class="QLabel" name="label_port">
+     <property name="font">
+      <font>
+       <pointsize>13</pointsize>
+      </font>
+     </property>
+     <property name="text">
+      <string>PORT</string>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="1">
+    <widget class="QComboBox" name="comboBox_port">
+     <property name="minimumSize">
+      <size>
+       <width>120</width>
+       <height>0</height>
+      </size>
+     </property>
+     <property name="maximumSize">
+      <size>
+       <width>150</width>
+       <height>16777215</height>
+      </size>
+     </property>
+    </widget>
+   </item>
+   <item row="3" column="0">
     <widget class="QLabel" name="label_baud">
      <property name="font">
       <font>
@@ -150,7 +140,7 @@ color: rgb(0, 0, 0);</string>
      </property>
     </widget>
    </item>
-   <item row="4" column="1">
+   <item row="3" column="1">
     <widget class="QComboBox" name="comboBox_baud">
      <property name="maximumSize">
       <size>
@@ -160,7 +150,7 @@ color: rgb(0, 0, 0);</string>
      </property>
     </widget>
    </item>
-   <item row="5" column="0">
+   <item row="4" column="0">
     <widget class="QLabel" name="label_color">
      <property name="font">
       <font>
@@ -172,7 +162,7 @@ color: rgb(0, 0, 0);</string>
      </property>
     </widget>
    </item>
-   <item row="5" column="1">
+   <item row="4" column="1">
     <widget class="QComboBox" name="comboBox_color">
      <property name="maximumSize">
       <size>
@@ -182,7 +172,7 @@ color: rgb(0, 0, 0);</string>
      </property>
     </widget>
    </item>
-   <item row="6" column="0">
+   <item row="5" column="0">
     <spacer name="verticalSpacer">
      <property name="orientation">
       <enum>Qt::Vertical</enum>
@@ -195,7 +185,7 @@ color: rgb(0, 0, 0);</string>
      </property>
     </spacer>
    </item>
-   <item row="7" column="0" colspan="2">
+   <item row="6" column="0" colspan="2">
     <layout class="QHBoxLayout" name="horizontalLayout">
      <item>
       <spacer name="horizontalSpacer">
