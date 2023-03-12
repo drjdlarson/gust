@@ -37,9 +37,9 @@ COPY ./build_*.sh ./
 COPY ./after_install.sh ./
 COPY ./release_gust.sh ./
 COPY gust_packages gust_packages/
-COPY src src/
+COPY src src
 
 # install gust and its dependencies
-RUN pip3 install ./src/main/python[linux]
+RUN pip3 install ./src/main/python
 
-ENTRYPOINT ["release_gust.sh"]
+#ENTRYPOINT ["release_gust.sh"]
