@@ -9,7 +9,7 @@ Help()
         echo
         echo "Syntax release_gust.sh [-h|-s]"
         echo "-h	Print the help text."
-	echo "-s	Skip building the dependencies (e.g. WGSI apps, etc.)"
+        echo "-s	Skip building the dependencies (e.g. WGSI apps, radio manager etc.)"
         echo
 }
 
@@ -40,6 +40,9 @@ done
 ############################################################
 if [ "$skip" = false ] ; then
 	./build_wsgi.sh
+	./build_radio_manager.sh
+	./build_cmr_manager.sh
+	./build_zed_manager.sh
 fi
 
 

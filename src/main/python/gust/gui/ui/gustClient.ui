@@ -505,7 +505,7 @@ background-color: rgb(85, 87, 83);</string>
            </widget>
           </item>
           <item row="6" column="1">
-           <widget class="QLCDNumber" name="lcdNumber_gndspeed">
+           <widget class="QLCDNumber" name="lcdNumber_heading">
             <property name="minimumSize">
              <size>
               <width>80</width>
@@ -581,7 +581,7 @@ color: rgb(0, 0, 0);
            </widget>
           </item>
           <item row="7" column="1">
-           <widget class="QLabel" name="label_gndspeed">
+           <widget class="QLabel" name="label_heading">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
               <horstretch>0</horstretch>
@@ -610,7 +610,7 @@ color: rgb(0, 0, 0);
              <enum>QFrame::NoFrame</enum>
             </property>
             <property name="text">
-             <string>Gnd. Speed</string>
+             <string>Heading</string>
             </property>
             <property name="alignment">
              <set>Qt::AlignCenter</set>
@@ -919,14 +919,14 @@ font: 12pt &quot;Umpush&quot;;</string>
            </widget>
           </item>
           <item row="2" column="1">
-           <widget class="QPushButton" name="pushButton_servo">
+           <widget class="QPushButton" name="pushButton_planning">
             <property name="styleSheet">
              <string notr="true">background-color: rgb(48,132,70);
 color: rgb(255, 255, 255);
 font: 12pt &quot;Umpush&quot;;</string>
             </property>
             <property name="text">
-             <string>Servo Channels</string>
+             <string>Planning</string>
             </property>
            </widget>
           </item>
@@ -943,14 +943,14 @@ font: 12pt &quot;Umpush&quot;;</string>
            </widget>
           </item>
           <item row="1" column="1">
-           <widget class="QPushButton" name="pushButton_rc">
+           <widget class="QPushButton" name="pushButton_commands">
             <property name="styleSheet">
              <string notr="true">background-color: rgb(48,132,70);
 color: rgb(255, 255, 255);
 font: 12pt &quot;Umpush&quot;;</string>
             </property>
             <property name="text">
-             <string>RC Channels</string>
+             <string>Commands</string>
             </property>
            </widget>
           </item>
@@ -1096,6 +1096,30 @@ font: 14pt &quot;Umpush&quot;;</string>
          </widget>
         </item>
         <item>
+         <widget class="QPushButton" name="pushButton_sil">
+          <property name="minimumSize">
+           <size>
+            <width>150</width>
+            <height>0</height>
+           </size>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>16777215</width>
+            <height>30</height>
+           </size>
+          </property>
+          <property name="styleSheet">
+           <string notr="true">background-color: rgb(48,132,70);
+color: rgb(255, 255, 255);
+font: 14pt &quot;Umpush&quot;;</string>
+          </property>
+          <property name="text">
+           <string>SIL</string>
+          </property>
+         </widget>
+        </item>
+        <item>
          <spacer name="horizontalSpacer">
           <property name="font">
            <font>
@@ -1112,6 +1136,41 @@ font: 14pt &quot;Umpush&quot;;</string>
            </size>
           </property>
          </spacer>
+        </item>
+        <item>
+         <widget class="QComboBox" name="comboBox_saved_locations">
+          <property name="minimumSize">
+           <size>
+            <width>90</width>
+            <height>25</height>
+           </size>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>16777215</width>
+            <height>25</height>
+           </size>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="pushButton_refresh_map">
+          <property name="minimumSize">
+           <size>
+            <width>90</width>
+            <height>25</height>
+           </size>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>16777215</width>
+            <height>25</height>
+           </size>
+          </property>
+          <property name="text">
+           <string>Refresh</string>
+          </property>
+         </widget>
         </item>
        </layout>
       </item>
@@ -1149,6 +1208,24 @@ font: 14pt &quot;Umpush&quot;;</string>
         <property name="cornerButtonEnabled">
          <bool>true</bool>
         </property>
+        <attribute name="horizontalHeaderVisible">
+         <bool>true</bool>
+        </attribute>
+        <attribute name="horizontalHeaderCascadingSectionResizes">
+         <bool>false</bool>
+        </attribute>
+        <attribute name="horizontalHeaderDefaultSectionSize">
+         <number>120</number>
+        </attribute>
+        <attribute name="horizontalHeaderShowSortIndicator" stdset="0">
+         <bool>false</bool>
+        </attribute>
+        <attribute name="horizontalHeaderStretchLastSection">
+         <bool>false</bool>
+        </attribute>
+        <attribute name="verticalHeaderVisible">
+         <bool>true</bool>
+        </attribute>
         <column>
          <property name="text">
           <string/>

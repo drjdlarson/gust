@@ -19,3 +19,13 @@ A helper script `convert_ui_files.py` has been included to automatically convert
 
 # Helpful commands
 To get the qt designer run `qt5-tools designer`
+
+# Docker Compose
+See <https://www.stereolabs.com/docs/docker/building-arm-container-on-x86/> for multi-arch containers
+and <https://github.com/tldr-pages/tldr/blob/master/pages/common/docker-compose.md> for docker-compose commands
+
+The **lager_sensors** repo must be cloned inside gust at the root level for the docker containers, this is because the repo is private and this is easier than dealing with ssh keys in the conatainers.
+
+Install QEMU for hardware emulation with `sudo apt-get install qemu binfmt-support qemu-user-static`
+
+Run `docker run --rm --privileged multiarch/qemu-user-static --reset -p yes` to activate the emulation (should only need to be done once?).

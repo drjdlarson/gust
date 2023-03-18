@@ -1,28 +1,36 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Created on Wed Aug 10 12:18:20 2022
-
-@author: lagerprocessor
-"""
 import json
+import platform
 import logging
+import time, sys
+import random
+from time import sleep
 
+from PyQt5.QtCore import QProcess, QProcessEnvironment
 from PyQt5 import QtNetwork
 
 from utilities import ConnSettings as conn_settings
-from gust.conn_manager.radio_manager import radioManager
-from gust.conn_manager.zed_handler import zedHandler
+import utilities.database as database
+from utilities import send_info_to_udp_server
 
 
-logger = logging.getLogger("[conn-server]")
+logger = logging.getLogger(__name__)
+logger.propagate = False
 
 
 class ConnServer:
     running = False
+    _radios = {}
+    _sils = {}
+    available_udp_ports = []
+    available_tcp_ports = []
+    _radio_udp_port = {}
+    _sil_tcp_port = {}
+    _cmr_proc = None
+    _zeds = None
+    _debug = False
 
     @classmethod
-    def start_conn_server(cls):
+    def start_conn_server(cls, process_events, debug, ctx):
         """UDP Socket Server.
 
         Allow the connection server to start listening to socket connection and
@@ -31,11 +39,33 @@ class ConnServer:
         Receives dictionary from the client sockets and sends back dictionary.
         One of the keys in the dictionary is 'type'
         """
+        cls._debug = debug
+        ch = logging.StreamHandler(stream=sys.stdout)
+        if debug:
+            logger.setLevel(logging.DEBUG)
+            ch.setLevel(logging.DEBUG)
+        else:
+            logger.setLevel(logging.INFO)
+            ch.setLevel(logging.INFO)
+
+        formatter = logging.Formatter(
+            "[conn-server] %(levelname)s %(asctime)s - %(message)s"
+        )
+
+        # add formatter to ch
+        ch.setFormatter(formatter)
+
+        # add ch to logger
+        logger.addHandler(ch)
+
         if cls.running:
             logger.warning("Already running!!")
             return
 
         cls.running = True
+
+        cls.available_udp_ports = conn_settings.RADIO_PORTS
+        cls.available_tcp_ports = conn_settings.TCP_PORTS
 
         conn = QtNetwork.QUdpSocket()
         conn.bind(conn_settings.PORT)
@@ -43,40 +73,80 @@ class ConnServer:
         msg = "Listening at {}:{}".format(conn_settings.IP, conn_settings.PORT)
         logger.info(msg)
 
+        if not database.connect_db():
+            cls.running = False
+            logger.critical("Failed to connect to database, stopping conn_server")
+
         while cls.running:
+            process_events()
 
             # Receiving message from client socket
             if not conn.hasPendingDatagrams():
                 continue
 
-            # data, addr = conn.recvfrom(conn_settings.MAX_MSG_SIZE)
-            # received_info = json.loads(data.decode(conn_settings.FORMAT))
             data = conn.receiveDatagram(conn.pendingDatagramSize())
             received_info = json.loads(data.data().data().decode(conn_settings.FORMAT))
             addr = data.senderAddress()
             port = data.senderPort()
-            msg = "Message from {} -> {}".format(addr.toString().split(":")[-1], received_info)
+            msg = "Message from {} -> {}".format(
+                addr.toString().split(":")[-1], received_info
+            )
             logger.info(msg)
+            if received_info["type"] == conn_settings.DRONE_CONN:
+                succ, err = cls.connect_to_radio(received_info, ctx)
+                response = {"success": succ, "info": err}
 
-            # we can call the radio manager heres
-            if received_info['type'] == conn_settings.DRONE_CONN:
-                response = radioManager.connect_to_radio(received_info)
-                # logger.debug(response)
+            elif received_info["type"] == conn_settings.DRONE_DISC:
+                succ, err = cls.disconnect_drone(received_info)
+                response = {"success": succ, "info": err}
 
-            elif received_info['type'] == conn_settings.DRONE_DISC:
-                response = radioManager.disconnect_radio(received_info)
+            elif received_info["type"] == conn_settings.ZED_CONN:
+                succ, err = cls.connect_to_zed(received_info, ctx)
+                response = {"success": succ, "info": err}
 
-            elif received_info['type'] == conn_settings.ZED_CONN:
-                response = zedHandler.connect(received_info)
+            elif received_info["type"] == conn_settings.ZED_DIS_CONN:
+                succ, err = cls.disconnect_zed(received_info)
+                response = {"success": succ, "info": err}
+
+            elif received_info["type"] == conn_settings.AUTO_CMD:
+                succ, err = cls.send_autopilot_commands(received_info)
+                response = {"success": succ, "info": err}
+
+            elif received_info["type"] == conn_settings.UPLOAD_WP:
+                succ, err = cls.send_autopilot_commands(received_info)
+                response = {"success": succ, "info": err}
+
+            elif received_info["type"] == conn_settings.DOWNLOAD_WP:
+                succ, err = cls.download_and_save_mission(received_info)
+                response = {"success": succ, "info": err}
+
+            elif received_info["type"] == conn_settings.GOTO_NEXT_WP:
+                succ, err = cls.send_autopilot_commands(received_info)
+                response = {"success": succ, "info": err}
+
+            elif received_info["type"] == conn_settings.START_CMR:
+                succ, err = cls.start_cmr_process(ctx)
+                response = {"success": succ, "info": err}
+
+            elif received_info["type"] == conn_settings.START_SIL:
+                succ, err = cls.start_sil(received_info, ctx)
+                response = {"success": succ, "info": err}
+
+            elif received_info["type"] == conn_settings.STOP_CMR:
+                succ, err = cls.stop_cmr_process()
+                resposne = {"success": succ, "info": err}
 
             else:
-                continue
+                response = {
+                    "success": False,
+                    "info": "Signal not recognized by conn_server. \n Received signal: {}".format(
+                        str(received_info)
+                    ),
+                }
 
             # Sending message back to client socket
             f_response = json.dumps(response).encode(conn_settings.FORMAT)
-            # conn.sendto(f_response, addr)
             conn.writeDatagram(f_response, addr, port)
-
 
         logger.info("Closing the conn-server socket")
         # conn.shutdown()
@@ -84,15 +154,322 @@ class ConnServer:
 
     @classmethod
     def kill(cls):
-        zedHandler.kill()
         cls.running = False
 
+        # killing the zed manager process
+        if cls._zeds is not None:
+            if "windows" in platform.system().lower():
+                cls._zeds.kill()
+            else:
+                cls._zeds.terminate()
 
+            if cls._zeds.state() == QProcess.ProcessState.Running:
+                logger.info("Waiting for ZED process to end")
+                if not cls._zeds.waitForFinished():
+                    logger.critical("Failed to stop zed")
+            else:
+                logger.info("ZED process not running")
 
-# if __name__ == "__main__":
-#     start_conn_server()
-#     print("Starting the conn_server ...")
+        # killing the radio manager and SIL processes
+        processes = [cls._radios, cls._sils]
+        for process in processes:
+            for k, p in process.items():
+                if "windows" in platform.system().lower():
+                    p.kill()
+                else:
+                    p.terminate()
+                if not p.waitForFinished():
+                    logger.critical("Failed to end process: %s", k)
 
-#     empty = {}
-#     empty.update({'type': conn_settings.DRONE_CONN})
-#     print(empty['type'])
+    @classmethod
+    def connect_to_zed(cls, received_info, ctx):
+        program = ctx.get_resource("zed_manager/zed_manager")
+        if cls._debug:
+            args = [
+                "-d",
+            ]
+        else:
+            args = []
+        args.extend(
+            [
+                received_info["name"],
+                received_info["config"],
+                str(received_info["hac_dist"]),
+                str(received_info["update_rate"]),
+            ]
+        )
+
+        if cls._zeds is not None:
+            succ = False
+            err = "Zed process already running"
+        else:
+            cls._zeds = QProcess()
+            cls._zeds.setProcessChannelMode(QProcess.ProcessChannelMode.MergedChannels)
+            cls._zeds.setProcessEnvironment(QProcessEnvironment.systemEnvironment())
+            cls._zeds.readyRead.connect(
+                lambda: print(cls._zeds.readAllStandardOutput().data().decode().strip())
+            )
+            cls._zeds.start(program, args)
+
+            logger.info("%s %s", program, " ".join(args))
+
+            succ = cls._zeds.waitForStarted()
+            if not succ:
+                err = "Failed to start zed process"
+                logger.info(err)
+                return succ, err
+            err = None
+
+        return succ, err
+
+    @classmethod
+    def disconnect_zed(cls, received_info):
+        succ = True
+        err = ""
+
+        if cls._zeds is not None:
+            if cls._zeds.state() == QProcess.ProcessState.Running:
+                logger.info("Waiting for ZED process to end")
+                if "windows" in platform.system().lower():
+                    cls._zeds.kill()
+                else:
+                    cls._zeds.terminate()
+
+                if not cls._zeds.waitForFinished():
+                    logger.critical("Failed to stop zed")
+                    succ = False
+                    err = "ZED was running but failed to die."
+            else:
+                logger.info("ZED process not running")
+
+        return succ, err
+
+    @classmethod
+    def connect_to_radio(cls, received_info, ctx):
+        err = ""
+        name = received_info["name"]
+        cls._radio_udp_port[name] = random.choice(cls.available_udp_ports)
+
+        port_string = received_info["port"]
+        if port_string == "TCP":
+            port_string = "tcp:{}:{}".format(conn_settings.IP, cls._sil_tcp_port[name])
+
+        msg = "Connecting to {} on {}: udp connection: {}".format(
+            name, port_string, cls._radio_udp_port[name]
+        )
+        logger.info(msg)
+
+        program = ctx.get_resource("radio_manager/radio_manager")
+        args = [
+            "--name",
+            "{}".format(name),
+            "--port",
+            port_string,
+            "--color",
+            "{}".format(received_info["color"]),
+            "--baud",
+            "{}".format(received_info["baud"]),
+            "--udp_port",
+            "{}".format(str(cls._radio_udp_port[name])),
+        ]
+
+        if name in cls._radios:
+            succ = False
+            err = "{} radio process is already running on UDP socket {}".format(
+                name, cls._radio_udp_port[name]
+            )
+
+        else:
+            cls._radios[name] = QProcess()
+            cls._radios[name].setProcessChannelMode(
+                QProcess.ProcessChannelMode.MergedChannels
+            )
+            cls._radios[name].setProcessEnvironment(
+                QProcessEnvironment.systemEnvironment()
+            )
+            cls._radios[name].readyRead.connect(
+                lambda: print(
+                    cls._radios[name].readAllStandardOutput().data().decode().strip()
+                )
+            )
+            cls._radios[name].start(program, args)
+
+            succ = cls._radios[name].waitForStarted()
+            if not succ:
+                err = "Failed to start Radio process"
+                logger.warning(err)
+                return succ, err
+
+            cls.available_udp_ports.remove(cls._radio_udp_port[name])
+        return succ, err
+
+    @classmethod
+    def disconnect_drone(cls, received_info):
+        name = received_info["name"]
+
+        if name in cls._radios:
+
+            if "windows" in platform.system().lower():
+                cls._radios[name].kill()
+            else:
+                cls._radios[name].terminate()
+                time.sleep(0.5)
+            del cls._radios[name]
+
+            database.change_connection_status_value(name, 0)
+            cls.available_udp_ports.append(cls._radio_udp_port[name])
+            del cls._radio_udp_port[name]
+
+            if name in cls._sils:
+                if "windows" in platform.system().lower():
+                    cls._sils[name].kill()
+                else:
+                    cls._sils[name].terminate()
+                    time.sleep(0.5)
+                del cls._sils[name]
+
+                cls.available_tcp_ports.append(cls._sil_tcp_port[name])
+                del cls._sil_tcp_port[name]
+
+            succ = True
+            err = ""
+        else:
+            succ = False
+            err = "Radio connection not found in conn_server"
+
+        return succ, err
+
+    @classmethod
+    def start_sil(cls, received_info, ctx):
+        err = ""
+        sil_name = received_info["sil_name"]
+        cls._sil_tcp_port[sil_name] = random.choice(cls.available_tcp_ports)
+        msg = "Starting SIL {}: tcp connection: {}".format(
+            sil_name, cls._sil_tcp_port[sil_name]
+        )
+        logger.info(msg)
+
+        # Based on the received_info["vehicle_type"], select the appropriate program to run.
+        # Currently only supporting Arducopter
+        program = ctx.get_resource("sil_manager/arducopter")
+        param_filepath = ctx.get_resource("sil_manager/copter.parm")
+
+        args = [
+            "--model",
+            "quad",
+            "--defaults",
+            param_filepath,
+            "--autotest-dir",
+            ctx.get_resource("sil_manager"),
+            "--home",
+            received_info["home"],
+            "--base-port",
+            str(cls._sil_tcp_port[sil_name]),
+        ]
+
+        if sil_name in cls._sils:
+            succ = False
+            err = "{} SIL is already running on TCP {}".format(
+                sil_name, cls._sil_tcp_port[sil_name]
+            )
+
+        else:
+            cls._sils[sil_name] = QProcess()
+            cls._sils[sil_name].setProcessChannelMode(QProcess.MergedChannels)
+            cls._sils[sil_name].setProcessEnvironment(
+                QProcessEnvironment.systemEnvironment()
+            )
+            cls._sils[sil_name].start(program, args)
+            succ = cls._sils[sil_name].waitForStarted()
+
+            if not succ:
+                err = "Failed to start SIL"
+                logger.warning(err)
+                return succ, err
+
+            cls.available_tcp_ports.remove(cls._sil_tcp_port[sil_name])
+        return succ, err
+
+    @classmethod
+    def send_autopilot_commands(cls, received_info):
+        logger.info(received_info)
+        name = received_info["name"]
+        udp_port = cls._radio_udp_port[name]
+        succ, err = send_info_to_udp_server(
+            received_info,
+            received_info["type"],
+            conn_settings.RADIO_UDP_ADDR(udp_port),
+        )
+        return succ, err
+
+    @classmethod
+    def goto_next_waypoint(cls, received_info):
+        name = received_info["name"]
+        udp_port = cls._radio_udp_port[name]
+        succ, err = send_info_to_udp_server(
+            received_info,
+            conn_settings.GOTO_NEXT_WP,
+            conn_settings.RADIO_UDP_ADDR(udp_port),
+        )
+        return succ, err
+
+    @classmethod
+    def download_and_save_mission(cls, received_info):
+        for name, udp_port in cls._radio_udp_port.items():
+            database.remove_older_mission_items(name)
+            succ, err = send_info_to_udp_server(
+                {},
+                conn_settings.DOWNLOAD_WP,
+                conn_settings.RADIO_UDP_ADDR(udp_port),
+            )
+        # dummy return values for now
+        return True, " "
+
+    @classmethod
+    def start_cmr_process(cls, ctx):
+        if cls._cmr_proc is None:
+            logger.info("Starting the CMR manager QProcess")
+            program = ctx.get_resource("cmr_manager/cmr_manager")
+            args = [
+                "--port",
+                "{}".format(conn_settings.CMR_PORT),
+                "--ip",
+                "{}".format(conn_settings.IP),
+            ]
+
+            cls._cmr_proc = QProcess()
+            cls._cmr_proc.setProcessChannelMode(QProcess.MergedChannels)
+            cls._cmr_proc.setProcessEnvironment(QProcessEnvironment.systemEnvironment())
+            cls._cmr_proc.readyRead.connect(
+                lambda: print(
+                    cls._cmr_proc.readAllStandardOutput().data().decode().strip()
+                )
+            )
+            cls._cmr_proc.start(program, args)
+
+            succ = cls._cmr_proc.waitForStarted()
+            err = None
+
+            if not succ:
+                err = "Failed to start CMR process"
+                logger.info(err)
+
+        else:
+            succ = False
+            err = "CMR Process already running"
+
+        return succ, err
+
+    @classmethod
+    def stop_cmr_process(cls):
+        if "windows" in platform.system().lower():
+            cls._cmr_proc.kill()
+        else:
+            cls._cmr_proc.terminate()
+            time.sleep(0.125)
+        cls._cmr_proc = None
+
+        succ = True
+        err = ""
+
+        return succ, err

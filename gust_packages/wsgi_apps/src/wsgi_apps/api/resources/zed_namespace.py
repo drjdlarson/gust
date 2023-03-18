@@ -5,7 +5,7 @@ from flask_restx import Resource, Namespace
 
 import utilities.database as database
 from utilities import ConnSettings as conn_settings
-from utilities import send_info_to_conn_server
+from utilities import send_info_to_udp_server
 from wsgi_apps.api.url_bases import ZED
 from zed import ConfigSet, write_config_file
 
@@ -15,7 +15,7 @@ logger = logging.getLogger("[URL-Manager]")
 ZED_NS = Namespace(ZED)
 
 conParse = ZED_NS.parser()
-conParse.add_argument('id', default=-1, type=int)
+conParse.add_argument("id", default=-1, type=int)
 conParse.add_argument("name", default="", type=str)
 conParse.add_argument("locx", default=0, type=float)
 conParse.add_argument("locy", default=0, type=float)
@@ -51,12 +51,16 @@ class ConnInfo(Resource):
         cf.id = args["id"]
         cf.name = args["name"]
         cf.loc = np.array([args["locx"], args["locy"], args["locz"]])
-        cf.dcm = np.array([[args["dcm00"], args["dcm01"], args["dcm02"]],
-                           [args["dcm10"], args["dcm11"], args["dcm12"]],
-                           [args["dcm20"], args["dcm21"], args["dcm22"]]])
+        cf.dcm = np.array(
+            [
+                [args["dcm00"], args["dcm01"], args["dcm02"]],
+                [args["dcm10"], args["dcm11"], args["dcm12"]],
+                [args["dcm20"], args["dcm21"], args["dcm22"]],
+            ]
+        )
         cf.req_cal = args["req_cal"]
         cf.min = np.array([args["minx"], args["miny"], args["minz"]])
-        cf.max= np.array([args["maxx"], args["maxy"], args["maxz"]])
+        cf.max = np.array([args["maxx"], args["maxy"], args["maxz"]])
         cf.conf = args["conf"]
         cf.tex_conf = args["tex_conf"]
         hac_dist = args["hacDist"]
@@ -65,7 +69,12 @@ class ConnInfo(Resource):
         if cf.valid:
             database.connect_db()
             file_name = "zed_{:d}.yaml".format(cf.id)
-            write_config_file(file_name, [cf,])
+            write_config_file(
+                file_name,
+                [
+                    cf,
+                ],
+            )
             res = database.add_zed(cf.name, file_name)
             if res:
                 msg = {
@@ -74,7 +83,7 @@ class ConnInfo(Resource):
                     "hac_dist": hac_dist,
                     "update_rate": 1.0 / update_hz,
                 }
-                conn_succ, info = send_info_to_conn_server(msg, conn_settings.ZED_CONN)
+                conn_succ, info = send_info_to_udp_server(msg, conn_settings.ZED_CONN)
                 if conn_succ:
                     return {"success": True, "msg": ""}
                 else:
@@ -85,9 +94,9 @@ class ConnInfo(Resource):
             return {"success": False, "msg": "Invalid zed config"}
 
 
-
 getCurPointsParse = ZED_NS.parser()
-getCurPointsParse.add_argument('name', type=str, default='')
+getCurPointsParse.add_argument("name", type=str, default="")
+
 
 @ZED_NS.route("/get_current_points")
 class GetCurPoints(Resource):
@@ -97,3 +106,16 @@ class GetCurPoints(Resource):
         database.connect_db()
 
         return database.get_zed_points(args.name)
+
+
+@ZED_NS.route("/disconnect")
+class Disconnect(Resource):
+    def get(self):
+        conn_succ, info = send_info_to_udp_server(dict(), conn_settings.ZED_DIS_CONN)
+        if conn_succ:
+            return {"success": True, "msg": ""}
+        else:
+            return {
+                "success": False,
+                "msg": "Failed to disconnect ZED: {}".format(info),
+            }

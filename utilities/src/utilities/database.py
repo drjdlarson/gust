@@ -1,7 +1,6 @@
 """Handle database operations."""
 import os
 import logging
-from time import sleep
 import enum
 from PyQt5.QtSql import QSqlDatabase, QSqlQuery
 
@@ -12,6 +11,13 @@ import serial.tools.list_ports
 DB_FILE_KEY = "GUST_DB_FILE"
 DB_PATH_KEY = "GUST_DB_PATH"  # autoset by backend window on startup
 DB_DRIVER = "QSQLITE"
+
+_DB = None
+_main_table = "drone_collection"
+_connected_counter = 0
+_initialized_logger = False
+
+logger = logging.getLogger(__name__)
 
 
 def set_db_file(f):
@@ -28,13 +34,6 @@ def set_db_path(p):
 
 def DB_PATH():
     return os.environ.get(DB_PATH_KEY, "./")
-
-
-_DB = None
-_main_table = "drone_collection"
-_connected_counter = 0
-
-logger = logging.getLogger("[database]")
 
 
 @enum.unique
@@ -60,7 +59,30 @@ def db_name():
     return os.path.join(DB_PATH(), DB_FILE())
 
 
-def open_db():
+def setup_logger():
+    global _initialized_logger
+
+    if not _initialized_logger:
+        ch = logging.StreamHandler()
+
+        # if args.debug:
+        #     logger.setLevel(logging.DEBUG)
+        #     ch.setLevel(logging.DEBUG)
+        # else:
+        logger.setLevel(logging.INFO)
+        ch.setLevel(logging.INFO)
+
+        formatter = logging.Formatter(
+            "[database] %(levelname)s %(asctime)s - %(message)s"
+        )
+        ch.setFormatter(formatter)
+
+        logger.addHandler(ch)
+
+        _initialized_logger = True
+
+
+def open_db(location_file):
     """Open the database by removing the old file and creating a new one.
 
     This must be called once before any database operations occur.
@@ -70,21 +92,26 @@ def open_db():
     None.
     """
     global _DB
+    if _DB is not None:
+        logger.critical("Database has already been opened it is: {}".format(repr(_DB)))
+
+    setup_logger()
 
     # dont do anything if the database is already open
     if _DB is not None:
+        logger.critical("Database has already been opened")
         return
 
     # create database
     _DB = QSqlDatabase.addDatabase(DB_DRIVER)
     fpath = db_name()
+    logger.info("logger: {}".format(fpath))
 
     if os.path.exists(fpath):
         logger.info("Removing existing database {}".format(fpath))
         os.remove(fpath)
 
     _DB.setDatabaseName(fpath)
-    _DB.open()
 
     if not _DB.open():
         logger.critical("Unable to open database")
@@ -122,15 +149,52 @@ def open_db():
     logger.debug(cmd)
     res3 = query.exec_(cmd)
 
-    if res1 and res2 and res3:
+    cmd = """CREATE TABLE IF NOT EXISTS locations (
+        uid INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE,
+        name TEXT NOT NULL,
+        coords TEXT NOT NULL
+        );
+        """
+    logger.debug(cmd)
+    res4 = query.exec_(cmd)
+
+    if res4:
+        with open(location_file, "r") as fin:
+            for ii, line in enumerate(fin):
+                if ii == 0:
+                    continue
+                tokens = line.strip().split("=")
+                if len(tokens) != 2:
+                    continue
+                name = tokens[0]
+
+                if "#" in tokens[1]:
+                    ind = tokens[1].find("#")
+                    coords = tokens[1][:ind]
+                else:
+                    coords = tokens[1]
+                cmd = (
+                    "INSERT into locations (name, coords) VALUES ('{}', '{}');".format(
+                        name, coords
+                    )
+                )
+                logger.debug(cmd)
+                query.exec_(cmd)
+
+    if res1 and res2 and res3 and res4:
         logger.info("Database is now open")
 
 
 def connect_db():
     global _DB
 
+    setup_logger()
+
+    # logger.info("Connecting to database")
+
     # dont do anything if the database is already open
     if _DB is not None:
+        # logger.info("Database is already open")
         return True
 
     # create database
@@ -142,10 +206,10 @@ def connect_db():
         return False
 
     _DB.setDatabaseName(fpath)
-    _DB.open()
 
     if not _DB.open():
         logger.critical("Unable to open database")
+        return False
     return True
 
 
@@ -168,8 +232,10 @@ def _create_new_ids_table(p_name):
     query = _start_query()
 
     # create new table, not always required
-    cmd = "CREATE TABLE {:s}_ids ( id INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE );".format(
-        p_name
+    cmd = (
+        "CREATE TABLE {:s}_ids ( id INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE );".format(
+            p_name
+        )
     )
     logger.debug(cmd)
     res = query.exec_(cmd)
@@ -511,7 +577,6 @@ def get_drone_ids(distinct=True, active=True):
 
     query = _start_query()
     if _main_table not in _DB.tables():
-        print("_main_table is not in the database")
         logger.critical("Unable to find {} in database".format(_main_table))
 
     cmd = "SELECT {} name FROM {} {}".format(extra1, _main_table, extra2)
@@ -523,8 +588,9 @@ def get_drone_ids(distinct=True, active=True):
         names.append(query.value(0))
     return names
 
+
 def create_zed_table_name(name):
-    return "zed_data_{:s}".format(name.replace(" ", "").lower())
+    return "zed_data_{:s}".format(name.replace(" ", "_").lower())
 
 
 def add_zed(name, config):
@@ -666,9 +732,29 @@ def add_vehicle(name, port, color):
     )
     res5 = query.exec_(cmd)
 
-    if res1 and res2 and res3 and res4 and res5:
+    table_name = name + "_mission"
+    cmd = """CREATE TABLE IF NOT EXISTS {:s} (
+    seq int,
+    current int,
+    frame int,
+    command int,
+    param1 float,
+    param2 float,
+    param3 float,
+    param4 float,
+    x float,
+    y float,
+    z float,
+    autocontinue int
+    );""".format(
+        table_name
+    )
+    res6 = query.exec_(cmd)
+
+    res = res1 and res2 and res3 and res4 and res5 and res6
+    if res:
         _connected_counter += 1
-    return res1 and res2 and res3 and res4 and res5
+    return res
 
 
 def remove_vehicle(name):
@@ -718,6 +804,24 @@ def get_params(table_name, params):
     return val
 
 
+def get_mission_items(vehicle_name):
+    query = _start_query()
+    table_name = vehicle_name + "_mission"
+    cmd = "SELECT x, y FROM {}".format(table_name)
+    coords = []
+    result = query.exec_(cmd)
+    while result and query.next():
+        coords.append((query.value("x"), query.value("y")))
+    return coords
+
+
+def remove_older_mission_items(vehicle_name):
+    query = _start_query()
+    table_name = vehicle_name + "_mission"
+    cmd = "DELETE FROM {}".format(table_name)
+    query.exec_(cmd)
+
+
 def create_drone_rate_table_name(name, rate):
     return "{:s}_{:s}".format(name, rate)
 
@@ -742,12 +846,12 @@ def change_connection_status_value(name, val):
     cmd = """
     UPDATE drone_collection
     SET connection = {} WHERE name IS '{}';
-    """.format(val, name)
+    """.format(
+        val, name
+    )
     res = query.exec_(cmd)
     logger.debug("Changing connection status of {} to {}".format(name, val))
     return res
-
-
 
 
 def add_values(vals, table_name):
@@ -777,6 +881,7 @@ def add_values(vals, table_name):
     # logger.debug(cmd)
 
     return res
+
 
 def write_values(flt_data, name):
     """
@@ -816,6 +921,7 @@ def get_drone_name(uid):
     query.last()
     return query.value(0)
 
+
 def get_drone_color(name):
     """Returns the color associated with the drone"""
     query = _start_query()
@@ -824,16 +930,18 @@ def get_drone_color(name):
     query.last()
     return query.value(0)
 
+
 def get_used_colors():
     """Returns a list of colors being used by active drones"""
     query = _start_query()
     cmd = "SELECT color FROM drone_collection WHERE connection IS 1;"
     result = query.exec_(cmd)
-    query.seek(-1)
+    # query.seek(-1)
     colors = []
     while result and query.next():
         colors.append(query.value(0))
     return colors
+
 
 def write_zed_obj(name, posix, obj):
     tab_name = create_zed_table_name(name)
@@ -842,6 +950,25 @@ def write_zed_obj(name, posix, obj):
     )
     query = _start_query()
     res = query.exec_(cmd)
+    if not res:
+        logger.critical(query.lastError().text())
+    return res
+
+
+def write_zed_objs(name, posix, obj_lst):
+    logger.debug("Writing zed objects to database")
+
+    tab_name = create_zed_table_name(name)
+    cmd = "INSERT INTO {:s} (posix, xpos, ypos, zpos) VALUES".format(tab_name)
+    for ii, obj in enumerate(obj_lst):
+        if ii > 0:
+            cmd += ","
+        cmd += "\n\t({:f}, {:f}, {:f}, {:f})".format(posix, obj[0], obj[1], obj[2])
+    cmd += ";"
+
+    query = _start_query()
+    res = query.exec_(cmd)
+    logger.debug(cmd)
     if not res:
         logger.critical(query.lastError().text())
     return res
@@ -905,6 +1032,7 @@ def get_zed_points(name, delay=None):
         cmd = "SELECT {}, {}, {} FROM {} WHERE posix >= {:.2f}".format(
             *list(ret_vals.keys()), tab_name, query.value(0) - 0.01 - delay
         )
+        logger.info(cmd)
         res = query.exec_(cmd)
         if not res:
             logger.critical(query.lastError().text())
@@ -914,6 +1042,46 @@ def get_zed_points(name, delay=None):
             ret_vals[param] = query.value(param)
 
     return ret_vals
+
+
+def add_cmr_table():
+    query = _start_query()
+    cmd = """CREATE TABLE IF NOT EXISTS cmr_table (
+    name TEXT,
+    wp_color TEXT,
+    next_wp INTEGER,
+    wp_reached INTEGER,
+    UNIQUE(name, wp_color)
+    );
+    """
+    logger.debug(cmd)
+    res = query.exec_(cmd)
+    if not res:
+        logger.warning("Unable to add CMR table")
+    return res
+
+
+def add_cmr_vehicle(name, wp_color):
+    query = _start_query()
+    cmd = """INSERT INTO cmr_table (name, wp_color, next_wp,wp_reached) VALUES ("{}", "{}", 1, 0);
+    """.format(
+        name, wp_color
+    )
+    res = query.exec_(cmd)
+    if not res:
+        logger.warning(
+            "Unable to add {} with {} waypoints to cmr_table".format(name, wp_color)
+        )
+    return res
+
+def get_saved_locations():
+    query = _start_query()
+    cmd = "SELECT name, coords FROM locations"
+    val = {}
+    result = query.exec_(cmd)
+    while result and query.next():
+        val[query.value("name")] = query.value("coords")
+    return val
 
 
 if __name__ == "__main__":

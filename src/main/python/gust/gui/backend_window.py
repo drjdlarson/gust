@@ -5,10 +5,11 @@ import os
 import logging
 import time
 import random
+import traceback
 from time import sleep
 from functools import partial
 from PyQt5.QtWidgets import QMainWindow
-from PyQt5.QtCore import pyqtSlot, QModelIndex, pyqtSignal, QThreadPool
+from PyQt5.QtCore import pyqtSlot, QModelIndex, pyqtSignal, QThreadPool, QObject
 from PyQt5.QtGui import QIntValidator, QTextCursor
 from PyQt5.QtSql import QSqlTableModel
 
@@ -20,22 +21,21 @@ import utilities.database as database
 from gust.worker import Worker
 import gust.conn_manager.conn_server as conn_server
 
-logger = logging.getLogger("[backend]")
+
+logger = logging.getLogger(__name__)
 
 
 class BackendWindow(QMainWindow, Ui_BackendWindow):
     """Main interface for the backend window."""
 
-    text_update = pyqtSignal(str)
     kill_conn_server_signal = pyqtSignal()
 
-    def __init__(self, ctx):
+    def __init__(self, ctx, process_events, debug):
         super().__init__()
         self.setupUi(self)
 
-        # setup redirect for stdout/stderr
-        self.text_update.connect(self.update_console_text)
-        sys.stdout = sys.stderr = self
+        self.__process_events = process_events
+        self._debug = debug
 
         self.ctx = ctx
         self.lineEdit_port.setValidator(QIntValidator())
@@ -71,7 +71,7 @@ class BackendWindow(QMainWindow, Ui_BackendWindow):
         database.set_db_path(
             os.path.dirname(self.ctx.get_resource("resources_base_placeholder"))
         )
-        database.open_db()
+        database.open_db(self.ctx.get_resource("locations.txt"))
 
         self.sel_plug_model = QSqlTableModel(self)
         self._update_sel_plug_model()
@@ -120,17 +120,6 @@ class BackendWindow(QMainWindow, Ui_BackendWindow):
         succ = self._stop_plug_mon() and succ
 
         return succ
-
-    # hacks for making the class behave like stdout and logging
-    def write(self, text):
-        """To pass stdout/err to the builtin console."""
-        self.text_update.emit(text)
-
-    def flush(self):
-        """To allow for stdout/err to function."""
-        pass
-
-    # end hacks
 
     def update_console_text(self, text):
         """Update the console text."""
@@ -194,12 +183,6 @@ class BackendWindow(QMainWindow, Ui_BackendWindow):
             return
         print("{:s} {:s}".format(prefix, line.strip("\n")))
 
-    def _print_server_proc_msg(self):
-        outputBytes = server.SERVER_PROC.readAll().data()
-        outputUnicode = outputBytes.decode("utf-8")
-        for line in outputUnicode.split("\n"):
-            self._sub_proc_print(line, "[server]")
-
     def _print_plug_msg(self, ind):
         outputBytes = pluginMonitor.running_procs[ind].readAll().data()
         outputUnicode = outputBytes.decode("utf-8")
@@ -221,25 +204,21 @@ class BackendWindow(QMainWindow, Ui_BackendWindow):
         )
         self.update_console_text(msg)
 
-        res, err = server.start_server(self.ctx)
+        server.start_server(self.ctx, self._debug)
 
-        self.update_console_text("[server] {:s}\n".format(server.START_CMD))
-
-        if res:
-            server.SERVER_PROC.readyReadStandardOutput.connect(
-                self._print_server_proc_msg
-            )
-
-        else:
-            msg = "[server] FAILED TO START SERVER:\n{:s}\n".format(err)
-            self.update_console_text(msg)
-
-        pluginMonitor.start_monitor()
-        for ii, proc in enumerate(pluginMonitor.running_procs):
-            proc.readyReadStandardOutput.connect(partial(self._print_plug_msg, ii))
+        # TODO: fix plugin monitor with new worker class
+        # pluginMonitor.start_monitor()
+        # for ii, proc in enumerate(pluginMonitor.running_procs):
+        #     proc.readyReadStandardOutput.connect(partial(self._print_plug_msg, ii))
 
         # starting a thread to run the conn_server
-        worker = Worker(conn_server.ConnServer.start_conn_server)
+        worker = Worker(
+            conn_server.ConnServer.start_conn_server,
+            self.__process_events,
+            self._debug,
+            self.ctx,
+        )
+        # worker = Worker(conn_server.ConnServer.start_conn_server, self.ctx)
         self.threadpool.start(worker)
 
     @pyqtSlot()

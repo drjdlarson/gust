@@ -7,57 +7,96 @@ import utilities.icon_generator as icon_generator
 
 URL_BASE = "http://localhost:8000/{}/".format(BASE)
 DRONE_BASE = "{}{}/".format(URL_BASE, DRONE)
+CONN_TYPES = ["Radio", "Test", "Ardupilot SIL"]
 BAUD = ["9600", "38400", "56700", "115200"]
 
-all_colors = icon_generator.COLORS
+ALL_COLORS = icon_generator.COLORS
 
 
 class ConWindow(QDialog, Ui_MainWindow):
     """Main interface for the connection window."""
 
-    def __init__(self, ctx, ports, used_colors):
+    def __init__(self, ctx, ports, used_colors, sil_vehicles):
         super().__init__()
 
         self.ctx = ctx
+        self.radio_ports = ports
+        self.TCP = False
         self.setupUi(self)
 
-        available_colors = [i for i in all_colors if i not in used_colors]
-        self.comboBox_port.addItems(ports)
-        self.comboBox_baud.addItems(BAUD)
+        available_colors = [i for i in ALL_COLORS if i not in used_colors]
+
+        self.comboBox_conn_type.addItems(CONN_TYPES)
         self.comboBox_color.addItems(available_colors)
+        self.comboBox_port.addItems(self.radio_ports)
+        self.comboBox_baud.addItems(BAUD)
+        self.comboBox_sil_name.clear()
+        self.comboBox_sil_name.addItems(sil_vehicles)
+        self.comboBox_sil_name.setEnabled(False)
 
         self.pushButton_connect.clicked.connect(self.clicked_connect)
         self.pushButton_cancel.clicked.connect(self.clicked_cancel)
+        self.comboBox_conn_type.currentTextChanged.connect(self.check_conn_type)
 
     def clicked_cancel(self):
         self.reject()
 
+    def check_conn_type(self):
+        conn_type = self.comboBox_conn_type.currentText()
+
+        if conn_type == "Radio":
+            self.prepare_elements_dynamically(False, self.radio_ports, True)
+
+        elif conn_type == "Ardupilot SIL":
+            self.prepare_elements_dynamically(True, None, False)
+
+        elif conn_type == "Test":
+            self.prepare_elements_dynamically(False, ["/dev/test/"], False)
+
+    def prepare_elements_dynamically(self, tcp_bool, port_items, baud_bool):
+        self.comboBox_port.clear()
+        if port_items is None:
+            self.comboBox_port.setEnabled(False)
+        else:
+            self.comboBox_port.setEnabled(True)
+            self.comboBox_port.addItems(port_items)
+        self.TCP = tcp_bool
+        self.lineEdit_nameinput.setEnabled(not tcp_bool)
+        self.comboBox_sil_name.setEnabled(tcp_bool)
+        self.comboBox_baud.setEnabled(baud_bool)
+
     def clicked_connect(self):
 
-        port_name = self.comboBox_port.currentText()
+        if self.TCP:
+            self.name = self.comboBox_sil_name.currentText()
+            port_name = "TCP"
+        else:
+            self.name = self.lineEdit_nameinput.text()
+            port_name = self.comboBox_port.currentText()
+
         self.color_id = self.comboBox_color.currentText()
         self.baud = int(self.comboBox_baud.currentText())
-        self.name = self.lineEdit_nameinput.text()
+
         url = "{}connect".format(DRONE_BASE)
 
         if len(port_name) > 0 or len(self.name) > 0:
-            url += '?'
+            url += "?"
             added_data = False
 
             if len(port_name) > 0:
-                url += "port=" + port_name.replace('/', '%2F')
+                url += "port=" + port_name.replace("/", "%2F")
                 added_data = True
 
             if len(self.name) > 0:
                 if added_data:
                     url += "&"
-                url += "name=" + self.name.replace(' ', '_')
+                url += "name=" + self.name.replace(" ", "_")
                 added_data = True
 
             if len(self.color_id) > 0:
                 if added_data:
                     url += "&"
-                url += "color=" + self.color_id.replace(' ', '_')
+                url += "color=" + self.color_id.replace(" ", "_")
                 added_data = True
 
             if added_data:
@@ -69,7 +108,7 @@ class ConWindow(QDialog, Ui_MainWindow):
 
         msgBox = QMessageBox()
 
-        if conn['success']:
+        if conn["success"]:
             msgBox.setIcon(QMessageBox.Information)
             msgBox.setWindowTitle("Information")
             msgBox.setText("Connected to vehicle: {}".format(self.name))
@@ -79,7 +118,7 @@ class ConWindow(QDialog, Ui_MainWindow):
         else:
             msgBox.setIcon(QMessageBox.Warning)
             msgBox.setWindowTitle("Warning")
-            msgBox.setText("Failed connection: <<{:s}>>".format(conn['msg']))
+            msgBox.setText("Failed connection: <<{:s}>>".format(conn["msg"]))
             msgBox.exec()
 
     def setupUi(self, mainWindow):

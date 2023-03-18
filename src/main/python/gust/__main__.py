@@ -4,19 +4,22 @@ import sys
 import logging
 import argparse
 import signal
+from queue import Queue
 from functools import partial
 from fbs_runtime.application_context.PyQt5 import ApplicationContext
 
 from gust.gui.launcher import Launcher
 import gust.server.settings as server_settings
-# import gust.wsgi_apps.api.settings as api_settings
 from gust.plugin_monitor import pluginMonitor
+from gust import logger
 
 
 DAEMON = False
+DEBUG = False
+
 
 def parse_args():
-    global DAEMON
+    global DAEMON, DEBUG
 
     parser = argparse.ArgumentParser(description='Start the ground station backend.')
 
@@ -25,8 +28,8 @@ def parse_args():
     # parser.add_argument('--api-env', type=str, help=msg, default=api_settings.ENV,
     #                     choices=api_settings.env_config.keys())
 
-    msg = 'Flag indicating the server should start in the background with no GUI launcher'
-    parser.add_argument('--daemon', '-d', action='store_true', help=msg)
+    # msg = 'Flag indicating the server should start in the background with no GUI launcher'
+    # parser.add_argument('--daemon', '-d', action='store_true', help=msg)
 
     msg = ('Port number to listen on. '
            + 'The default is {:d}'.format(server_settings.PORT))
@@ -38,11 +41,18 @@ def parse_args():
     parser.add_argument('--num-workers', help=msg, default=server_settings.NUM_WORKERS,
                         type=int)
 
+    parser.add_argument(
+        "-d", "--debug",
+        action="store_true",
+        help="Run in debug mode",
+    )
+
     # %% Process input arguments
     args = parser.parse_args()
 
     # server_settings.ENV = args.api_env
-    DAEMON = args.daemon
+    # DAEMON = args.daemon
+    DEBUG = args.debug
     server_settings.PORT = args.port
     server_settings.NUM_WORKERS = args.num_workers
 
@@ -68,7 +78,7 @@ def register_sigint(app):
 
 
 def main():
-    global DAEMON
+    global DAEMON, DEBUG
 
     parse_args()
 
@@ -79,7 +89,7 @@ def main():
 
     appctxt = ApplicationContext()       # 1. Instantiate ApplicationContext
 
-    window = Launcher(appctxt)
+    window = Launcher(appctxt, appctxt.app.processEvents, DEBUG)
     window.show()
 
     register_sigterm(window)
@@ -91,6 +101,6 @@ def main():
     exit_code = appctxt.app.exec_()      # 2. Invoke appctxt.app.exec_()
     sys.exit(exit_code)
 
+
 # %% Start entry point
-logging.basicConfig(level=logging.DEBUG)
 main()

@@ -1,0 +1,5 @@
+docs/
+*.egginfo
+
+gust_packages/**/build/
+src/main/python/**/build/

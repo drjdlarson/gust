@@ -12,9 +12,10 @@ Item {
     Location {
         id: mapCenter
         coordinate {
-            latitude: 33.21456
-            longitude: -87.54322
+            latitude: 33.19424
+            longitude: -87.48138
         }
+	objectName: "center_map"
     }
 
 // FOR TESTING WITH OPENSTREETMAP
@@ -121,7 +122,7 @@ Item {
             delegate: MapPolyline {
                 id: yaw_line
                 line.width: 3
-                line.color: 'crimson'
+                line.color: yaw_color
                 path: model.yaw_path
             }
         }
@@ -131,10 +132,21 @@ Item {
             model: heading_line
             remove: myTrans
             delegate: MapPolyline {
-                id: yaw_line
+                id: heading_line
                 line.width: 3
-                line.color: 'transparent'
-                path: model.heading_path
+                line.color: heading_color
+                path: heading_path
+            }
+        }
+
+        MapItemView{
+            model: flight_line
+            remove: myTrans
+            delegate: MapPolyline {
+                id: flight_line
+                line.width: 1.5
+                line.color: flight_line_color
+                path: flight_line_path
             }
         }
 
@@ -142,9 +154,7 @@ Item {
             model: markermodel
             remove: myTrans
             delegate: MapQuickItem {
-                coordinate: model.position_marker
-                // coordinate: {33.2098, -87.5692}
-                //coordinate: QtPositioning.coordinate(33.21534, -87.54355)
+                coordinate: position_marker
                 anchorPoint.x: image.width/2
                 anchorPoint.y: image.height/2
                 autoFadeIn: false
@@ -152,16 +162,58 @@ Item {
                     Image {
                         id: image
                         //anchors.fill: parent
-                        source: model.source_marker
+                        source: source_marker
                         sourceSize.width: 30
                         sourceSize.height: 30
                         width: 30
                         height: 30
                         // rotation: model.rotation_marker
-                        transform: Rotation {origin.x: width/2; origin.y: height/2; angle: model.rotation_marker}
+                        transform: Rotation {origin.x: width/2; origin.y: height/2; angle: rotation_marker}
                         }
             }
         }
+
+        MapItemView{
+            model: waypointmodel
+            remove: myTrans
+            delegate: MapQuickItem {
+                coordinate: waypoint_marker
+                anchorPoint.x: image.width/2
+                anchorPoint.y: image.height/2
+                autoFadeIn: false
+                sourceItem:
+                    Image {
+                        id: image
+                        source: source_waypoint
+                        sourceSize.width: 12
+                        sourceSize.height: 12
+                        width: 12
+                        height: 12
+                        }
+                }
+            }
+
+        MapItemView{
+            model: homemodel
+            remove: myTrans
+            delegate: MapQuickItem {
+                coordinate: position_home
+                anchorPoint.x: image.width/2
+                anchorPoint.y: image.height/2
+                autoFadeIn: false
+                sourceItem:
+                    Image {
+                        id: image
+                        //anchors.fill: parent
+                        source: source_home
+                        sourceSize.width: 30
+                        sourceSize.height: 30
+                        width: 30
+                        height: 30
+                        }
+            }
+        }
+
 
         // The code below enables SSAA
         layer.enabled: true

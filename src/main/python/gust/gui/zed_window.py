@@ -1,5 +1,6 @@
 """Logic for zed manager/viewer window."""
 import requests
+import logging
 import pyqtgraph as pg
 from PyQt5.QtWidgets import QMainWindow, QFileDialog, QMessageBox
 from PyQt5.QtCore import QTimer
@@ -13,13 +14,15 @@ URL_BASE = "http://localhost:8000/{}/{}/".format(BASE, ZED)
 yaml = YAML()
 
 
+logger = logging.getLogger(__name__)
+
+
 class ZedWindow(QMainWindow, Ui_ZedWindow):
     """Main interface for the sensors selection window"""
 
     def __init__(self, ctx, parent=None):
         super().__init__(parent=parent)
         self.config = ConfigSet()
-        self.timer = None
         self._plot_rate = 1.0
         self.update_rate = 1.0
 
@@ -35,25 +38,66 @@ class ZedWindow(QMainWindow, Ui_ZedWindow):
 
         self.setupUi(self)
 
+        ch = logging.StreamHandler()
+        # if debug:
+        #     logger.setLevel(logging.DEBUG)
+        #     ch.setLevel(logging.DEBUG)
+        # else:
+        logger.setLevel(logging.INFO)
+        ch.setLevel(logging.INFO)
+
+        formatter = logging.Formatter(
+            "[zed-window] %(levelname)s %(asctime)s - %(message)s"
+        )
+
+        # add formatter to ch
+        ch.setFormatter(formatter)
+
+        # add ch to logger
+        logger.addHandler(ch)
+
         self.action_Open_configuration.triggered.connect(self.load_config)
 
         self.pushButton_connect.clicked.connect(self.connect_clicked)
+        self.pushButton_disconnect.clicked.connect(self.disconnect_clicked)
         self.pushButton_reset.clicked.connect(self.reset_clicked)
+
+        self.timer = QTimer()
+        self.enable_timer = False
+        self.timer.timeout.connect(self.update_plot_data)
 
         self.lineEdit_id.textChanged.connect(self.id_changed)
         self.lineEdit_name.textChanged.connect(self.name_changed)
         self.lineEdit_locx.textChanged.connect(self.loc_changed(0, self.lineEdit_locx))
         self.lineEdit_locy.textChanged.connect(self.loc_changed(1, self.lineEdit_locy))
         self.lineEdit_locz.textChanged.connect(self.loc_changed(2, self.lineEdit_locz))
-        self.lineEdit_dcm00.textChanged.connect(self.dcm_changed(0, 0, self.lineEdit_dcm00))
-        self.lineEdit_dcm01.textChanged.connect(self.dcm_changed(0, 1, self.lineEdit_dcm01))
-        self.lineEdit_dcm02.textChanged.connect(self.dcm_changed(0, 2, self.lineEdit_dcm02))
-        self.lineEdit_dcm10.textChanged.connect(self.dcm_changed(1, 0, self.lineEdit_dcm10))
-        self.lineEdit_dcm11.textChanged.connect(self.dcm_changed(1, 1, self.lineEdit_dcm11))
-        self.lineEdit_dcm12.textChanged.connect(self.dcm_changed(1, 2, self.lineEdit_dcm12))
-        self.lineEdit_dcm20.textChanged.connect(self.dcm_changed(2, 0, self.lineEdit_dcm20))
-        self.lineEdit_dcm21.textChanged.connect(self.dcm_changed(2, 1, self.lineEdit_dcm21))
-        self.lineEdit_dcm22.textChanged.connect(self.dcm_changed(2, 2, self.lineEdit_dcm22))
+        self.lineEdit_dcm00.textChanged.connect(
+            self.dcm_changed(0, 0, self.lineEdit_dcm00)
+        )
+        self.lineEdit_dcm01.textChanged.connect(
+            self.dcm_changed(0, 1, self.lineEdit_dcm01)
+        )
+        self.lineEdit_dcm02.textChanged.connect(
+            self.dcm_changed(0, 2, self.lineEdit_dcm02)
+        )
+        self.lineEdit_dcm10.textChanged.connect(
+            self.dcm_changed(1, 0, self.lineEdit_dcm10)
+        )
+        self.lineEdit_dcm11.textChanged.connect(
+            self.dcm_changed(1, 1, self.lineEdit_dcm11)
+        )
+        self.lineEdit_dcm12.textChanged.connect(
+            self.dcm_changed(1, 2, self.lineEdit_dcm12)
+        )
+        self.lineEdit_dcm20.textChanged.connect(
+            self.dcm_changed(2, 0, self.lineEdit_dcm20)
+        )
+        self.lineEdit_dcm21.textChanged.connect(
+            self.dcm_changed(2, 1, self.lineEdit_dcm21)
+        )
+        self.lineEdit_dcm22.textChanged.connect(
+            self.dcm_changed(2, 2, self.lineEdit_dcm22)
+        )
         self.lineEdit_minx.textChanged.connect(self.min_changed(0, self.lineEdit_minx))
         self.lineEdit_miny.textChanged.connect(self.min_changed(1, self.lineEdit_miny))
         self.lineEdit_minz.textChanged.connect(self.min_changed(2, self.lineEdit_minz))
@@ -65,6 +109,16 @@ class ZedWindow(QMainWindow, Ui_ZedWindow):
 
         self.lineEdit_update_rate.setText(str(self.update_rate))
         self.lineEdit_plot_rate.setText(str(self._plot_rate))
+
+    def stop_timer(self):
+        logger.info("Stopping requesting data...")
+        self.timer.stop()
+        self.enable_timer = False
+
+    def closeEvent(self, event):
+        logger.info("closing window...")
+        self.stop_timer()
+        event.accept()
 
     @property
     def plot_rate_ms(self):
@@ -145,15 +199,16 @@ class ZedWindow(QMainWindow, Ui_ZedWindow):
     def update_plot_data(self):
         url = "{}get_current_points".format(URL_BASE)
         resp = requests.get(url).json()
-        x = resp['xpos']
-        y = resp['ypos']
-        z = resp['zpos']
+        x = resp["xpos"]
+        y = resp["ypos"]
+        z = resp["zpos"]
 
         self.top_data.setData(x, y)
         self.left_data.setData(y, z)
         self.front_data.setData(x, z)
 
-        self.timer.start(self.plot_rate_ms)
+        if self.enable_timer:
+            self.timer.start(self.plot_rate_ms)
 
     def connect_clicked(self):
         url = "{}connect?".format(URL_BASE)
@@ -166,8 +221,12 @@ class ZedWindow(QMainWindow, Ui_ZedWindow):
         for row in range(3):
             for col in range(3):
                 url += "dcm{}{}={}&".format(row, col, self.config.dcm[row, col])
-        url += "minx={}&miny={}&minz={}&".format(self.config.min[0], self.config.min[1], self.config.min[2])
-        url += "maxx={}&maxy={}&maxz={}&".format(self.config.max[0], self.config.max[1], self.config.max[2])
+        url += "minx={}&miny={}&minz={}&".format(
+            self.config.min[0], self.config.min[1], self.config.min[2]
+        )
+        url += "maxx={}&maxy={}&maxz={}&".format(
+            self.config.max[0], self.config.max[1], self.config.max[2]
+        )
         url += "conf={}&tex_conf={}&".format(self.config.conf, self.config.tex_conf)
         url += "updateHz={}".format(self.update_rate)
 
@@ -188,15 +247,37 @@ class ZedWindow(QMainWindow, Ui_ZedWindow):
         dlg.setStandardButtons(QMessageBox.StandardButton.Ok)
         dlg.exec_()
 
-        if resp["success"] and self.timer is None:
-            self.timer = QTimer()
-            self.timer.timeout.connect(self.update_plot_data)
+        if resp["success"] and not self.enable_timer:
+            logger.info("Starting to request data")
             self.timer.start(self.plot_rate_ms)
+            self.enable_timer = True
+
+    def disconnect_clicked(self):
+        url = "{}disconnect".format(URL_BASE)
+        resp = requests.get(url).json()
+
+        dlg = QMessageBox(parent=self)
+
+        if resp["success"]:
+            dlg.setIcon(QMessageBox.Icon.Information)
+            dlg.setText("Disconnected from ZED!")
+            dlg.setWindowTitle("Success!")
+
+        else:
+            dlg.setIcon(QMessageBox.Icon.Warning)
+            dlg.setText("Failed to disconnect to ZED!")
+            dlg.setWindowTitle("Failed!")
+            dlg.setDetailedText(resp["msg"])
+
+        dlg.setStandardButtons(QMessageBox.StandardButton.Ok)
+        dlg.exec_()
+
+        if resp["success"] and self.enable_timer:
+            self.stop_timer()
 
     def reset_clicked(self):
         self.config = ConfigSet()
         self.reset_config_line_edits()
-
 
     def plot_rate_changed(self, e):
         try:
@@ -229,6 +310,7 @@ class ZedWindow(QMainWindow, Ui_ZedWindow):
             except ValueError:
                 return
             self.config.loc[ind] = v
+
         return f
 
     def min_changed(self, ind, le):
@@ -238,6 +320,7 @@ class ZedWindow(QMainWindow, Ui_ZedWindow):
             except ValueError:
                 return
             self.config.min[ind] = v
+
         return f
 
     def max_changed(self, ind, le):
@@ -247,6 +330,7 @@ class ZedWindow(QMainWindow, Ui_ZedWindow):
             except ValueError:
                 return
             self.config.max[ind] = v
+
         return f
 
     def dcm_changed(self, row, col, le):
@@ -256,6 +340,7 @@ class ZedWindow(QMainWindow, Ui_ZedWindow):
             except ValueError:
                 return
             self.config.dcm[row, col] = v
+
         return f
 
     def conf_changed(self, e):

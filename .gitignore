@@ -1,5 +1,12 @@
-tiles_cache/
-offline_folders/
+src/main/resources/base/wsgi_apps/
+src/main/resources/base/radio_manager/
+src/main/resources/base/cmr_manager/
+src/main/resources/base/zed_manager/
+src/main/resources/base/sil_manager/
+src/main/resources/base/map_widget/colored_icons/
+src/main/resources/base/cmr_planning/
+src/main/resources/base/map_widget/offline_folders/
+placeholder_offline_folders/
 plugins/
 *.sqlite
 

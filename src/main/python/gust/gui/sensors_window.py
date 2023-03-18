@@ -8,7 +8,7 @@ from PyQt5.QtCore import pyqtSlot, QModelIndex, pyqtSignal, QThreadPool
 from PyQt5.QtGui import QIntValidator, QTextCursor
 
 from gust.gui.ui.sensors import Ui_SensorsWindow
-from gust.gui.zed_window import ZedWindow
+# from gust.gui.zed_window import ZedWindow
 
 
 class SensorsWindow(QMainWindow, Ui_SensorsWindow):
@@ -29,8 +29,10 @@ class SensorsWindow(QMainWindow, Ui_SensorsWindow):
         self.setPalette(self.parentWidget().palette())
 
     def zed_clicked(self):
-        self._zed_window = ZedWindow(self.ctx, parent=self.parent())
+        pass
+        
+        # self._zed_window = ZedWindow(self.ctx, parent=self.parent())
 
-        self._zed_window.show()
+        # self._zed_window.show()
 
-        self.close()
+        # self.close()

@@ -10,16 +10,15 @@ import os
 
 COLORS = ["red", "blue", "green", "yellow", "orange", "gray", "brown"]
 RGB = [
-       (255, 0, 0),
-       (0, 0, 255),
-       (0, 255, 0),
-       (255, 255, 0),
-       (255, 150, 50),
-       (130, 130, 130),
-       (100, 50, 0),
-       ]
-FILES = ["home", "pos", "spos", "rtl_pos"]
-
+    (255, 0, 0),
+    (0, 0, 255),
+    (0, 255, 0),
+    (255, 255, 0),
+    (255, 150, 50),
+    (130, 130, 130),
+    (100, 50, 0),
+]
+FILES = ["home", "pos", "spos", "rtl_pos", "waypoint"]
 
 def prepare_icon(file, req_rgb, save_name):
     """
@@ -60,13 +59,14 @@ def prepare_icon(file, req_rgb, save_name):
     # img.show()
     # return pix
 
+
 # Example to test a new icon.
 # all_pix = prepare_icon("circle2.png", (0, 240, 0), "dummy_one.png")
 
 if __name__ == "__main__":
 
-    sep_path = os.path.dirname(__file__).split('python/')
-    path = "{}resources/base/map_widget/".format(sep_path[0])
+    sep_path = os.getcwd().split("/gust/")
+    path = "{}/gust/src/main/resources/base/map_widget/".format(sep_path[0])
 
     for (color, rgb) in zip(COLORS, RGB):
         for file in FILES:
