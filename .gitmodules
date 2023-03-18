@@ -1,0 +1,6 @@
+[submodule "repos/lager_sensors"]
+	path = repos/lager_sensors
+	url = git@github.com:drjdlarson/lager_sensors.git
+[submodule "repos/fbs"]
+	path = repos/fbs
+	url = https://github.com/ryan4984/fbs.git

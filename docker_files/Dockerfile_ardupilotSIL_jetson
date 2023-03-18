@@ -1,0 +1,60 @@
+FROM stereolabs/zed:3.7-devel-jetson-jp4.3
+LABEL maintainer="lager_gcs@outlook.com"
+LABEL description="Automatically build Ardupilot SIL for the jetson nano."
+WORKDIR /
+
+ARG DEBIAN_FRONTEND=noninteractive
+ARG USER_NAME=ardupilot
+ARG USER_UID=1000
+ARG USER_GID=1000
+RUN groupadd ${USER_NAME} --gid ${USER_GID}\
+    && useradd -l -m ${USER_NAME} -u ${USER_UID} -g ${USER_GID} -s /bin/bash
+
+RUN apt-get update && apt-get install --no-install-recommends -y \
+    lsb-release \
+    sudo \
+    tzdata \
+    bash-completion \
+    git
+
+RUN git clone https://github.com/ArduPilot/ardupilot.git
+
+WORKDIR /ardupilot
+RUN git submodule update --init --recursive
+
+# Create non root user for pip
+ENV USER=${USER_NAME}
+
+RUN echo "ardupilot ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/${USER_NAME}
+RUN chmod 0440 /etc/sudoers.d/${USER_NAME}
+
+RUN chown -R ${USER_NAME}:${USER_NAME} /${USER_NAME}
+
+USER ${USER_NAME}
+
+ENV SKIP_AP_EXT_ENV=1 SKIP_AP_GRAPHIC_ENV=1 SKIP_AP_COV_ENV=1 SKIP_AP_GIT_CHECK=1
+RUN Tools/environment_install/install-prereqs-ubuntu.sh -y
+
+# add waf alias to ardupilot waf to .ardupilot_env
+RUN echo "alias waf=\"/${USER_NAME}/waf\"" >> ~/.ardupilot_env
+
+# Check that local/bin are in PATH for pip --user installed package
+RUN echo "if [ -d \"\$HOME/.local/bin\" ] ; then\nPATH=\"\$HOME/.local/bin:\$PATH\"\nfi" >> ~/.ardupilot_env
+
+# Set the buildlogs directory into /tmp as other directory aren't accessible
+ENV BUILDLOGS=/tmp/buildlogs
+
+# Cleanup
+RUN sudo apt-get clean \
+    && sudo rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+#RUN sudo apt-get update && sudo apt-get install --no-install-recommends -y tmux
+#RUN Tools/autotest/sim_vehicle.py --no-mavproxy -v ArduCopter -j 6 # this is very slow in the container
+#RUN ./waf distclean  # not recommended
+RUN ./waf configure --board sitl \
+    && ./waf --targets bin/arducopter \
+    && Tools/autotest/param_metadata/param_parse.py --vehicle ArduCopter
+#RUN tmux new-session -d -s build_sil \
+#    && tmux send-keys -t build_sil 'Tools/autotest/sim_vehicle.py --no-mavproxy -v ArduCopter -j 6' C-m \
+#    && sleep 800 \
+#    && tmux kill-session -t build_sil

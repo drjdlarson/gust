@@ -1,0 +1,12 @@
+FROM ubuntu:jammy
+LABEL maintainer="lager_gcs@outlook.com"
+LABEL description="Clone custom fbs repo."
+WORKDIR /
+
+ARG DEBIAN_FRONTEND=noninteractive
+ARG USER_UID=1000
+ARG USER_GID=1000
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends git ca-certificates \
+    && git clone https://github.com/ryan4984/fbs.git  \
+    && rm -rf /var/lib/apt/lists/*

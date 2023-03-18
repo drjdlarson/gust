@@ -1,10 +1,93 @@
-version: '3'
 services:
+#  see https://stackoverflow.com/questions/72689666/getting-additional-property-ssh-is-not-allowed-error-when-specifying-ssh-agent for an example on getting ssh in the container
+#  and https://stackoverflow.com/questions/18136389/using-ssh-keys-inside-docker-container/66301568#66301568
+#  lager_sensors_repo:
+#    build:
+#      context: .
+#      dockerfile: docker_files/Dockerfile_lager_sensors_repo
+#      ssh:
+#        - default
+#    volumes:
+#      - lager_sensors_vol:/lager_sensors
+#  fbs_repo:
+#    build:
+#      context: .
+#      dockerfile: docker_files/Dockerfile_fbs_repo
+#    volumes:
+#      - fbs_vol:/fbs
+  ardupilot_jetson:
+    build:
+      context: .
+      dockerfile: docker_files/Dockerfile_ardupilotSIL_jetson
+    volumes:
+      - ardupilot_jetson_vol:/ardupilot
+
   jetson:
     build:
       context: .
       dockerfile: docker_files/Dockerfile_Jetson
+    depends_on:
+      ardupilot_jetson:
+        condition: service_completed_successfully
+    volumes:
+      - ardupilot_jetson_vol:/gust/repos/ardupilot_jetson
+      - ./build/jetson/target:/gust/target
+
+
 #  rpi:
 #    build:
 #      context: .
 #      dockerfile: docker_files/Dockerfile_RPi
+
+
+# see https://stackoverflow.com/questions/47519309/mount-an-empty-folder-in-host-to-a-non-empty-folder-in-docker
+# for mounting local folders to containers
+volumes:
+  ardupilot_jetson_vol:
+#    driver: local
+#    driver_opts:
+#      type: none
+#      device: ./repos/ardupilot_jetson
+#      o: bind
+#  lager_sensors_vol:
+#    driver: local
+#    driver_opts:
+#      type: none
+#      device: ./repos/lager_sensors
+#      o: bind
+#  fbs_vol:
+#    driver: local
+#    driver_opts:
+#      type: none
+#      device: ./repos/fbs
+#      o: bind
+#  gust_src_vol:
+#    driver: local
+#    driver_opts:
+#      type: none
+#      device: ./src
+#      o: bind
+#  gust_packages_vol:
+#    driver: local
+#    driver_opts:
+#      type: none
+#      device: ./gust_packages
+#      o: bind
+#  gust_utlities_vol:
+#    driver: local
+#    driver_opts:
+#      type: none
+#      device: ./utilities
+#      o: bind
+#  build_scripts_vol:
+#    driver: local
+#    driver_opts:
+#      type: none
+#      device: ./build_scripts
+#      o: bind
+#  jetson_target:
+#    driver: local
+#    driver_opts:
+#      type: none
+#      device: ./build/jetson/target
+#      o: bind
