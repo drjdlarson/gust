@@ -1,5 +1,5 @@
 # gust
-GCS for Unmanned Swarms and Teams (GUST)
+GCS for Uncrewed Swarms and Teams (GUST)
 
 # Setup
 You should be able to pip install the gust package and get most of this, be sure to do that after pip installing the custom fork of fbs so the newer version of PyInstaller is used (may need the -U flag when installing gust). You will need to manually install pyqt5-tools. Otherwise, this requires
