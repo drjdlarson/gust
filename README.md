@@ -29,3 +29,18 @@ The **lager_sensors** repo must be cloned inside gust at the root level for the 
 Install QEMU for hardware emulation with `sudo apt-get install qemu binfmt-support qemu-user-static`
 
 Run `docker run --rm --privileged multiarch/qemu-user-static --reset -p yes` to activate the emulation (should only need to be done once?).
+
+Cite
+====
+Please cite the framework as follows
+
+.. code-block:: bibtex
+
+    @Misc{gncpy,
+    author       = {Jordan D. Larson and Aabhash Bhandari and Ryan W. Thomas},
+    howpublished = {Web page},
+    title        = {{GUST}: A {G}round control station (GCS) for {U}ncrewed {S}warms and {T}eams},
+    year         = {2022},
+    url          = {https://github.com/drjdlarson/gust},
+    }
+    
