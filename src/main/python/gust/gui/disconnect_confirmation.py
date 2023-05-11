@@ -18,12 +18,13 @@ class DisconnectConfirmation(QDialog, Ui_MainWindow):
         self.ctx = ctx
         self.setupUi(self)
 
-
+        # event connections
         self.pushButton_cancel.clicked.connect(self.clicked_cancel)
         self.pushButton_ok.clicked.connect(self.clicked_ok)
         self.label_custom.setText("Disconnect {}?".format(name))
 
     def clicked_ok(self):
+        """Send the disconnect request for the vehicle"""
         url = "{}disconnect".format(DRONE_BASE)
         url += '?' + "name=" + self.name.replace(' ', '_')
         disconn = requests.get(url).json()
@@ -44,6 +45,7 @@ class DisconnectConfirmation(QDialog, Ui_MainWindow):
             msgBox.exec()
 
     def clicked_cancel(self):
+        """Closes the disconnect confirmation window"""
         self.reject()
 
     def setupUi(self, mainWindow):

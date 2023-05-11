@@ -72,6 +72,7 @@ then
   echo "TODO: Need to copy PyQt5/Qt5/plugins/geoservices/libqtgeoservices_itemsoverlay.so -> ./target/gust/PyQt5/Qt5/plugins/geoservices/"
 else
   #cp ${CONDA_PREFIX}/bin/gunicorn ./target/gust/
+  # hardcode these paths to docker path
   cp ${CONDA_PREFIX}/lib/python3.7/site-packages/PyQt5/Qt5/plugins/geoservices/libqtgeoservices_osm.so ./target/gust/PyQt5/Qt5/plugins/geoservices/
   cp ${CONDA_PREFIX}/lib/python3.7/site-packages/PyQt5/Qt5/plugins/geoservices/libqtgeoservices_itemsoverlay.so ./target/gust/PyQt5/Qt5/plugins/geoservices/
 fi

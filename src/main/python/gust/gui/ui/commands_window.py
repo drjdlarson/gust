@@ -178,7 +178,7 @@ class Ui_MainWindow(object):
         self.pushButton_takeoff.setText(_translate("MainWindow", "Take Off"))
         self.pushButton_arm.setText(_translate("MainWindow", "ARM"))
         self.pushButton_disarm.setText(_translate("MainWindow", "DISARM"))
-        self.pushButton_goto_next.setText(_translate("MainWindow", "GO TO Next"))
+        self.pushButton_goto_next.setText(_translate("MainWindow", "GO TO Next (All vehicles for LOITER_UNLIM)"))
         self.pushButton_restart_mission.setText(_translate("MainWindow", "Restart Mission"))
         self.pushButton_rtl.setText(_translate("MainWindow", "RTL"))
 

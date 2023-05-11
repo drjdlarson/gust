@@ -1,29 +1,20 @@
 """Logic for CMR planning window"""
+
 from PyQt5 import QtGui, QtCore
 from PyQt5.QtWidgets import (
     QMainWindow,
-    QFileDialog,
     QMessageBox,
-    QCheckBox,
     QTableWidgetItem,
     QPushButton,
     QComboBox,
 )
-from PyQt5.QtCore import (
-    QAbstractListModel,
-    Qt,
-    QByteArray,
-    QProcess,
-    QProcessEnvironment,
-)
+
 import math
 import os
-import platform
+
 import logging
 import pathlib
 import requests
-import dronekit
-import utilities.database as database
 from utilities import ConnSettings as conn_settings
 from gust.gui.ui.cmr_window import Ui_MainWindow
 from wsgi_apps.api.url_bases import BASE, DRONE
@@ -35,7 +26,7 @@ URL_BASE = "http://localhost:8000/{}/".format(BASE)
 DRONE_BASE = "{}{}/".format(URL_BASE, DRONE)
 
 _CMR_RUNNING = False
-
+WP_COLORS = ["red", "blue"]
 logger = logging.getLogger("[cmr-operation]")
 
 
@@ -50,27 +41,18 @@ class CmrWindow(QMainWindow, Ui_MainWindow):
         self.all_vehicles = {}
         self.cmr_vehicles = []
 
+        # event connections
         self.pushButton_draw_grid.clicked.connect(self.clicked_draw_grid)
-        self.pushButton_generate_wp.clicked.connect(
-            self.clicked_generate_waypoints
-        )
-        self.pushButton_load_wp.clicked.connect(
-            self.clicked_load_waypoints
-        )
+        self.pushButton_generate_wp.clicked.connect(self.clicked_generate_waypoints)
+        self.pushButton_load_wp.clicked.connect(self.clicked_load_waypoints)
         self.checkBox_grid.stateChanged.connect(self.grid_checkbox_changed)
-        self.checkBox_waypoints.stateChanged.connect(
-            self.waypoints_checkbox_changed
-        )
+        self.checkBox_waypoints.stateChanged.connect(self.waypoints_checkbox_changed)
         self.pushButton_refresh.clicked.connect(self.clicked_refresh)
-        self.pushButton_start_cmr.clicked.connect(
-            self.clicked_start_cmr_operation
-        )
-        self.pushButton_stop_cmr.clicked.connect(
-            self.clicked_stop_cmr_operation
-        )
-
+        self.pushButton_start_cmr.clicked.connect(self.clicked_start_cmr_operation)
+        self.pushButton_stop_cmr.clicked.connect(self.clicked_stop_cmr_operation)
 
     def clicked_start_cmr_operation(self):
+        """Actions when CMR operation is started: currently not available"""
         global _CMR_RUNNING
 
         if _CMR_RUNNING:
@@ -78,16 +60,19 @@ class CmrWindow(QMainWindow, Ui_MainWindow):
             error = "CMR process already running"
 
         else:
+            # Make sure at least 2 vehicles are connected
             if len(self.cmr_vehicles) >= 2:
+                # See WSGI App's drone_namespace for further logic and process handling
                 url = "{}start_cmr_proc".format(DRONE_BASE)
                 cmr_start = requests.get(url).json()
+
                 succ = cmr_start["success"]
                 error = cmr_start["msg"]
+
             else:
                 succ = False
-                error = (
-                    "Cannot start CMR process with less than 2 vehicles"
-                )
+                error = "Cannot start CMR process with less than 2 vehicles"
+
         msgBox = QMessageBox()
         if succ:
             _CMR_RUNNING = True
@@ -100,12 +85,15 @@ class CmrWindow(QMainWindow, Ui_MainWindow):
             msgBox.exec()
 
     def clicked_stop_cmr_operation(self):
+        """Stops the CMR process"""
         global _CMR_RUNNING
 
         if not _CMR_RUNNING:
             succ = False
             error = "CMR Process is not running"
+
         else:
+            # See WSGI App's drone_namespace for further logic and process handling
             url = "{}stop_cmr_proc".format(DRONE_BASE)
             cmr_stop = requests.get(url).json()
             succ = cmr_stop["success"]
@@ -123,11 +111,15 @@ class CmrWindow(QMainWindow, Ui_MainWindow):
             msgBox.exec()
 
     def clicked_refresh(self):
+        """Gets an updated list of vehicles connected"""
         url = "{}get_connected_drones_with_color".format(DRONE_BASE)
         self.all_vehicles = requests.get(url).json()
         self.populate_drone_table()
 
     def populate_drone_table(self):
+        """Displays the connected vehicles in the table
+        Note: This function is called by clicked_refresh function"""
+
         for name, drone_color in self.all_vehicles.items():
             index = list(self.all_vehicles.keys()).index(name)
 
@@ -140,28 +132,25 @@ class CmrWindow(QMainWindow, Ui_MainWindow):
             self.tableWidget_drones.setItem(index, 1, item)
 
             self.comboBox_wp_selection = QComboBox()
-            self.comboBox_wp_selection.addItems(self.wp_colors)
-            self.tableWidget_drones.setCellWidget(
-                index, 2, self.comboBox_wp_selection
-            )
+            self.comboBox_wp_selection.addItems(WP_COLORS)
+            self.tableWidget_drones.setCellWidget(index, 2, self.comboBox_wp_selection)
 
             self.upload_button = QPushButton("Upload")
-            self.upload_button.clicked.connect(
-                self.clicked_upload_waypoints
-            )
-            self.tableWidget_drones.setCellWidget(
-                index, 3, self.upload_button
-            )
+            self.upload_button.clicked.connect(self.clicked_upload_waypoints)
+            self.tableWidget_drones.setCellWidget(index, 3, self.upload_button)
 
     def clicked_upload_waypoints(self):
+        """Uploads the waypoints to the vehicle"""
+
+        # Finding the corresponding vehicle and waypoint color for the clicked button
         button = self.sender()
         if button:
             sel_row = self.tableWidget_drones.indexAt(button.pos()).row()
             drone_name = self.tableWidget_drones.item(sel_row, 1).text()
-            wp_color = self.tableWidget_drones.cellWidget(
-                sel_row, 2
-            ).currentText()
+            wp_color = self.tableWidget_drones.cellWidget(sel_row, 2).currentText()
 
+            # Forming a URL for WSGI App including name, waypoint file path, mission type, and wp_color.
+            # Note: wp_color is optional, and is only required for special missions like CMR.
             url = "{}upload_wp".format(DRONE_BASE)
             url += "?name=" + drone_name.replace(" ", "_")
 
@@ -177,17 +166,13 @@ class CmrWindow(QMainWindow, Ui_MainWindow):
             upload = requests.get(url).json()
 
             msgBox = QMessageBox()
-
             if upload["success"]:
                 self.cmr_vehicles.append(drone_name)
                 msgBox.setIcon(QMessageBox.Information)
                 msgBox.setText(
-                    "Uploaded {} waypoints to {}".format(
-                        wp_color, drone_name
-                    )
+                    "Uploaded {} waypoints to {}".format(wp_color, drone_name)
                 )
                 msgBox.exec()
-
             else:
                 msgBox.setIcon(QMessageBox.Warning)
                 msgBox.setText(
@@ -197,21 +182,20 @@ class CmrWindow(QMainWindow, Ui_MainWindow):
                 )
                 msgBox.exec()
 
-    def clicked_test_goto_next(self):
-        pass
-
-    # FOR TESTING
     def clicked_load_waypoints(self):
+        """Give Option to upload saved waypoint file.
+        Currently not supported"""
         pass
 
     def clicked_generate_waypoints(self):
+        """Generates two sets of waypoints for CMR and displays on Map"""
+
+        # Getting the latest parameters entered in lineEdit boxes.
         self.H = float(self.lineEdit_rel_height.text())
         self.s = float(self.lineEdit_spacing.text())
         self.theta_max = float(self.lineEdit_theta_max.text())
         self.theta_min = float(self.lineEdit_theta_min.text())
-
         self.waypoints = {}
-        self.wp_colors = ["red", "blue"]
 
         # one side of the survey line
         wp1 = self.calculate_waypoints_S(1)
@@ -219,9 +203,10 @@ class CmrWindow(QMainWindow, Ui_MainWindow):
         # other side of the survey line
         wp2 = self.calculate_waypoints_S(-1)
 
-        self.waypoints.update({1: {"coordinates": wp2, "color": "red"}})
-        self.waypoints.update({2: {"coordinates": wp1, "color": "blue"}})
+        self.waypoints.update({1: {"coordinates": wp2, "color": WP_COLORS[0]}})
+        self.waypoints.update({2: {"coordinates": wp1, "color": WP_COLORS[1]}})
 
+        # Saves the waypoint file and displays on map
         self.write_waypoints_to_a_file(self.waypoints)
         self.widget_cmr_map.add_waypoint_lines(wp1, "blue")
         self.widget_cmr_map.add_waypoint_lines(wp2, "red")
@@ -229,8 +214,11 @@ class CmrWindow(QMainWindow, Ui_MainWindow):
 
     def write_waypoints_to_a_file(self, waypoints):
         """
-        Writes two waypoint files.
-        Compatible to use with MP and QGC
+        Writes two waypoint files using standard MAVLink.
+        Compatible to use with MP and QGC.
+        Includes the mavlink commands MAV_CMD_NAV_: WAYPOINT, CONDITION_YAW, and LOITER_UNLIM.
+        See for file format: https://mavlink.io/en/file_formats/
+        See for MAV commands: https://mavlink.io/en/messages/common.html
 
         Parameters
         ----------
@@ -247,14 +235,19 @@ class CmrWindow(QMainWindow, Ui_MainWindow):
             name = "{}_waypoints.txt".format(value["color"])
             list_of_waypoints = value["coordinates"]
 
+            # Finding path of Resources folder
             rsrc_file = self.ctx.get_resource("cmr_planning/README")
             rsrc_path = str(pathlib.Path(rsrc_file).parent.resolve())
+
+            # Saving mission file in the Resource folder cmr_planning
             filename = rsrc_path + "/" + name
             if os.path.exists(filename):
                 os.remove(filename)
             with open(filename, "w") as f:
                 f.write("QGC WPL 110\n")
-                # manually writing the first line.
+
+                # Manually writing the first line.
+                # Check above links for message format and enums
                 f.write("0\t1\t0\t16\t0\t0\t0.0\t0.0\t1.0\t1.0\t0.0\t1\n")
                 for index, tup in enumerate(list_of_waypoints):
                     seq = 2 * index + 1
@@ -270,6 +263,7 @@ class CmrWindow(QMainWindow, Ui_MainWindow):
                     z = self.H
 
                     # writing the conditional yaw
+                    # Check above links for message format and enums
                     f.write(
                         "{}\t0\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t1\n".format(
                             seq,
@@ -285,7 +279,8 @@ class CmrWindow(QMainWindow, Ui_MainWindow):
                         )
                     )
 
-                    # writing the coordinate
+                    # writing the waypoint's coordinate
+                    # Check above links for message format and enums
                     f.write(
                         "{}\t0\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t1\n".format(
                             seq + 1,
@@ -300,15 +295,11 @@ class CmrWindow(QMainWindow, Ui_MainWindow):
                             z,
                         )
                     )
-
-    def clicked_test_upload_waypoints(self):
-        pass
-
-    def calculate_waypoints_frontback(self, direction):
+    def calculate_waypoints_S(self, direction):
         """
         Generate Waypoints for CMR for single survey line.
 
-        towards and away from a single common point.
+        S-shaped plan (Currently Used).
 
         Parameters
         ----------
@@ -325,10 +316,11 @@ class CmrWindow(QMainWindow, Ui_MainWindow):
         """
         waypoints = []
 
-        # Bearing of the Grid line
+        # Bearing of the line-of-interest
         self.line_bearing = self.get_bearing(
             self.start_lat, self.start_lon, self.end_lat, self.end_lon
         )
+        # Length of the line-of-interest
         line_length = self.get_distance(
             self.start_lat, self.start_lon, self.end_lat, self.end_lon
         )
@@ -345,7 +337,7 @@ class CmrWindow(QMainWindow, Ui_MainWindow):
         )
         waypoints.append(wp1)
 
-        # 2nd survey towards the survey line
+        # 2nd waypoint towards the line-of-interest
         wp = self.get_new_coordinates(
             self.start_lat,
             self.start_lon,
@@ -354,11 +346,98 @@ class CmrWindow(QMainWindow, Ui_MainWindow):
         )
         waypoints.append(wp)
 
-        total_s = 25
+        # Away from the survey line
+        waypoints.append(wp1)
+
+        total_s = self.s
         new_stopping_wp = wp1
 
         while total_s < line_length:
+            # to a new point
+            wp = self.get_new_coordinates(
+                new_stopping_wp[0],
+                new_stopping_wp[1],
+                self.s,
+                self.line_bearing,
+            )
+            waypoints.append(wp)
 
+            # towards the survey line
+            wp = self.get_new_coordinates(
+                wp[0], wp[1], k, self.line_bearing - direction * 90
+            )
+            waypoints.append(wp)
+
+            # to a new point
+            wp = self.get_new_coordinates(wp[0], wp[1], self.s, self.line_bearing)
+            waypoints.append(wp)
+
+            # away from the survey line
+            wp = self.get_new_coordinates(
+                wp[0], wp[1], k, self.line_bearing + direction * 90
+            )
+            waypoints.append(wp)
+
+            new_stopping_wp = wp
+            total_s += self.s * 2
+
+        return waypoints
+
+    def calculate_waypoints_frontback(self, direction):
+        """
+        Alternate way to generate Waypoints for CMR for single survey line.
+        Towards and away from a single common point.
+        (Not Currently used)
+
+        Parameters
+        ----------
+        direction : int
+            values: (-1 or 1)
+            waypoints on the cw direction of the line = 1
+            waypoints on the ccw direction of the line = -1.
+
+        Returns
+        -------
+        waypoints : list
+            set of waypoints for either side of the line.
+
+        """
+        waypoints = []
+
+        # Bearing of the line-of-interest
+        self.line_bearing = self.get_bearing(
+            self.start_lat, self.start_lon, self.end_lat, self.end_lon
+        )
+        # Length of the line-of-interest
+        line_length = self.get_distance(
+            self.start_lat, self.start_lon, self.end_lat, self.end_lon
+        )
+        m = self.H * math.tan(math.radians(self.theta_max))
+        n = self.H * math.tan(math.radians(self.theta_min))
+        k = m - n
+
+        # First waypoint
+        wp1 = self.get_new_coordinates(
+            self.start_lat,
+            self.start_lon,
+            m,
+            self.line_bearing + direction * 90,
+        )
+        waypoints.append(wp1)
+
+        # 2nd survey towards the line-of-interest
+        wp = self.get_new_coordinates(
+            self.start_lat,
+            self.start_lon,
+            n,
+            self.line_bearing + direction * 90,
+        )
+        waypoints.append(wp)
+
+        total_s = self.s
+        new_stopping_wp = wp1
+
+        while total_s < line_length:
             # away from the survey line
             waypoints.append(new_stopping_wp)
 
@@ -382,99 +461,73 @@ class CmrWindow(QMainWindow, Ui_MainWindow):
 
         return waypoints
 
-    def calculate_waypoints_S(self, direction):
+
+    def clicked_draw_grid(self):
         """
-        Generate Waypoints for CMR for single survey line.
+        FOR NOW, JUST DOING ONE LINE-OF-INTEREST.
 
-        S-shaped plan.
-
-        Parameters
-        ----------
-        direction : int
-            values: (-1 or 1)
-            waypoints on the cw direction of the line = 1
-            waypoints on the ccw direction of the line = -1.
+        Calculates the coordinates of the grid lines.
 
         Returns
         -------
-        waypoints : list
-            set of waypoints for either side of the line.
+        None.
 
         """
-        waypoints = []
+        grid_points = []
+        self.start_lat = float(self.lineEdit_start_lat.text())
+        self.start_lon = float(self.lineEdit_start_lon.text())
+        self.end_lat = float(self.lineEdit_end_lat.text())
+        self.end_lon = float(self.lineEdit_end_lon.text())
 
-        # Bearing of the Grid line
-        self.line_bearing = self.get_bearing(
-            self.start_lat, self.start_lon, self.end_lat, self.end_lon
-        )
-        line_length = self.get_distance(
-            self.start_lat, self.start_lon, self.end_lat, self.end_lon
-        )
-        m = self.H * math.tan(math.radians(self.theta_max))
-        n = self.H * math.tan(math.radians(self.theta_min))
-        k = m - n
+        grid_points.append((self.start_lat, self.start_lon))
+        grid_points.append((self.end_lat, self.end_lon))
 
-        # First waypoint
-        wp1 = self.get_new_coordinates(
-            self.start_lat,
-            self.start_lon,
-            m,
-            self.line_bearing + direction * 90,
-        )
-        waypoints.append(wp1)
+        self.widget_cmr_map.add_grid_lines(grid_points)
+        self.checkBox_grid.setChecked(True)
 
-        # 2nd survey towards the survey line
-        wp = self.get_new_coordinates(
-            self.start_lat,
-            self.start_lon,
-            n,
-            self.line_bearing + direction * 90,
-        )
-        waypoints.append(wp)
+    def grid_checkbox_changed(self):
+        """Event Trigger when the 'Grid' checkbox is clicked"""
+        if self.checkBox_grid.isChecked():
+            self.widget_cmr_map.change_grid_line_state(1)
+        else:
+            self.widget_cmr_map.change_grid_line_state(0)
 
-        # Away from the survey line
-        waypoints.append(wp1)
+    def waypoints_checkbox_changed(self):
+        """Event Trigger when the 'Waypoints' checkbox is clicked"""
+        if self.checkBox_waypoints.isChecked():
+            self.widget_cmr_map.change_waypoints_line_state(1)
+        else:
+            self.widget_cmr_map.change_waypoints_line_state(0)
 
-        total_s = 50
-        new_stopping_wp = wp1
+    def setupUi(self, mainWindow):
+        super().setupUi(mainWindow)
 
-        while total_s < line_length:
+        # loading CMR schematic from the resources folder
+        pixmap = QtGui.QPixmap(self.ctx.get_resource("cmr_planning/cmr_schematic.jpeg"))
+        self.label_schematic.setPixmap(pixmap)
 
-            # to a new point
-            wp = self.get_new_coordinates(
-                new_stopping_wp[0],
-                new_stopping_wp[1],
-                self.s,
-                self.line_bearing,
-            )
-            waypoints.append(wp)
+        # setup map stuff
+        self.widget_cmr_map.setup_qml(self.ctx)
 
-            # towards the survey line
-            wp = self.get_new_coordinates(
-                wp[0], wp[1], k, self.line_bearing - direction * 90
-            )
-            waypoints.append(wp)
+        self.checkBox_waypoints.setTristate(False)
+        self.checkBox_grid.setTristate(False)
+        self.set_default_values()
 
-            # to a new point
-            wp = self.get_new_coordinates(
-                wp[0], wp[1], self.s, self.line_bearing
-            )
-            waypoints.append(wp)
-
-            # away from the survey line
-            wp = self.get_new_coordinates(
-                wp[0], wp[1], k, self.line_bearing + direction * 90
-            )
-            waypoints.append(wp)
-
-            new_stopping_wp = wp
-            total_s += self.s * 2
-
-        return waypoints
+    def set_default_values(self):
+        """Populates default values to all the boxes"""
+        self.lineEdit_start_lat.setText(str(33.19389))
+        self.lineEdit_start_lon.setText(str(-87.48133))
+        self.lineEdit_end_lat.setText(str(33.19165))
+        self.lineEdit_end_lon.setText(str(-87.48089))
+        self.lineEdit_rel_height.setText(str(30))
+        self.lineEdit_spacing.setText(str(45))
+        self.lineEdit_theta_max.setText(str(60))
+        self.lineEdit_theta_min.setText(str(15))
 
     def get_distance(self, lat1, lon1, lat2, lon2):
         """
         Calculates the distances between two points.
+        See: Haversine Equations
 
         Parameters
         ----------
@@ -500,9 +553,9 @@ class CmrWindow(QMainWindow, Ui_MainWindow):
 
         del_lat = lat2 - lat1
         del_lon = lon2 - lon1
-        a = (math.sin(del_lat / 2)) ** 2 + math.cos(lat1) * math.cos(
-            lat2
-        ) * (math.sin(del_lon / 2)) ** 2
+        a = (math.sin(del_lat / 2)) ** 2 + math.cos(lat1) * math.cos(lat2) * (
+            math.sin(del_lon / 2)
+        ) ** 2
         c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
         d = R * c
         return d
@@ -510,6 +563,7 @@ class CmrWindow(QMainWindow, Ui_MainWindow):
     def get_bearing(self, lat1, lon1, lat2, lon2):
         """
         Calculates the bearing of a line with start and end points.
+        See: Haversine Equations
 
         Parameters
         ----------
@@ -544,6 +598,7 @@ class CmrWindow(QMainWindow, Ui_MainWindow):
     def get_new_coordinates(self, lat1, lon1, dis, angle):
         """
         Calculates new coordinate from start coordinate, distance, and bearing.
+        See: Haversine Equations
 
         Parameters
         ----------
@@ -580,62 +635,3 @@ class CmrWindow(QMainWindow, Ui_MainWindow):
         lat2 = math.degrees(lat2)
         lon2 = math.degrees(lon2)
         return (lat2, lon2)
-
-    def clicked_draw_grid(self):
-        """
-        FOR NOW, JUST DOING ONE LINE.
-
-        Calculates the coordinates of the grid lines.
-
-        Returns
-        -------
-        None.
-
-        """
-        grid_points = []
-        self.start_lat = float(self.lineEdit_start_lat.text())
-        self.start_lon = float(self.lineEdit_start_lon.text())
-        self.end_lat = float(self.lineEdit_end_lat.text())
-        self.end_lon = float(self.lineEdit_end_lon.text())
-
-        grid_points.append((self.start_lat, self.start_lon))
-        grid_points.append((self.end_lat, self.end_lon))
-
-        self.widget_cmr_map.add_grid_lines(grid_points)
-        self.checkBox_grid.setChecked(True)
-
-    def grid_checkbox_changed(self):
-        if self.checkBox_grid.isChecked():
-            self.widget_cmr_map.change_grid_line_state(1)
-        else:
-            self.widget_cmr_map.change_grid_line_state(0)
-
-    def waypoints_checkbox_changed(self):
-        if self.checkBox_waypoints.isChecked():
-            self.widget_cmr_map.change_waypoints_line_state(1)
-        else:
-            self.widget_cmr_map.change_waypoints_line_state(0)
-
-    def setupUi(self, mainWindow):
-        super().setupUi(mainWindow)
-
-        pixmap = QtGui.QPixmap(
-            self.ctx.get_resource("cmr_planning/cmr_schematic.jpeg")
-        )
-        self.label_schematic.setPixmap(pixmap)
-
-        self.widget_cmr_map.setup_qml(self.ctx)
-
-        self.checkBox_waypoints.setTristate(False)
-        self.checkBox_grid.setTristate(False)
-        self.set_default_values()
-
-    def set_default_values(self):
-        self.lineEdit_start_lat.setText(str(33.19389))
-        self.lineEdit_start_lon.setText(str(-87.48133))
-        self.lineEdit_end_lat.setText(str(33.19165))
-        self.lineEdit_end_lon.setText(str(-87.48089))
-        self.lineEdit_rel_height.setText(str(30))
-        self.lineEdit_spacing.setText(str(45))
-        self.lineEdit_theta_max.setText(str(60))
-        self.lineEdit_theta_min.setText(str(15))

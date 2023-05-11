@@ -34,26 +34,27 @@ class ConWindow(QDialog, Ui_MainWindow):
         self.comboBox_sil_name.addItems(sil_vehicles)
         self.comboBox_sil_name.setEnabled(False)
 
+        # event connection
         self.pushButton_connect.clicked.connect(self.clicked_connect)
         self.pushButton_cancel.clicked.connect(self.clicked_cancel)
         self.comboBox_conn_type.currentTextChanged.connect(self.check_conn_type)
 
     def clicked_cancel(self):
+        # Closes the dialog window
         self.reject()
 
     def check_conn_type(self):
+        """Selects the current connection type and assign values to few attributes"""
         conn_type = self.comboBox_conn_type.currentText()
-
         if conn_type == "Radio":
             self.prepare_elements_dynamically(False, self.radio_ports, True)
-
         elif conn_type == "Ardupilot SIL":
             self.prepare_elements_dynamically(True, None, False)
-
         elif conn_type == "Test":
             self.prepare_elements_dynamically(False, ["/dev/test/"], False)
 
     def prepare_elements_dynamically(self, tcp_bool, port_items, baud_bool):
+        """Sets values for a few attributes"""
         self.comboBox_port.clear()
         if port_items is None:
             self.comboBox_port.setEnabled(False)
@@ -66,7 +67,9 @@ class ConWindow(QDialog, Ui_MainWindow):
         self.comboBox_baud.setEnabled(baud_bool)
 
     def clicked_connect(self):
+        """Prepares the url request and send connection request to WSGI Apps"""
 
+        # self.TCP is a bool to see if SIL is connected
         if self.TCP:
             self.name = self.comboBox_sil_name.currentText()
             port_name = "TCP"

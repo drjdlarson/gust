@@ -276,7 +276,7 @@
        <string notr="true">background-color: rgb(138, 226, 52);</string>
       </property>
       <property name="text">
-       <string>GO TO Next</string>
+       <string>GO TO Next (All vehicles for LOITER_UNLIM)</string>
       </property>
      </widget>
     </item>
