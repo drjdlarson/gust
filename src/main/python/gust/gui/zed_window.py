@@ -16,7 +16,6 @@ yaml = YAML()
 
 logger = logging.getLogger(__name__)
 
-
 class ZedWindow(QMainWindow, Ui_ZedWindow):
     """Main interface for the sensors selection window"""
 

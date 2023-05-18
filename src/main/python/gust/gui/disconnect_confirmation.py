@@ -1,4 +1,4 @@
-"""Disconnection window ui logic."""
+"""Logic for vehicle disconnection confirmation window."""
 from PyQt5.QtWidgets import QMessageBox, QDialog
 import requests
 from gust.gui.ui.confirmation import Ui_MainWindow

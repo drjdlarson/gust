@@ -31,7 +31,6 @@ RUN update-alternatives --install /usr/bin/python python /usr/bin/python3 2 \
 RUN wget https://bootstrap.pypa.io/get-pip.py \
     && python get-pip.py
 
-
 # Packages required for gust
 RUN python -m pip install \
     numpy \

@@ -1,3 +1,4 @@
+"""Logic for engine-off confirmation window."""
 from PyQt5.QtWidgets import QDialog
 from gust.gui.ui.confirmation import Ui_MainWindow
 

@@ -1,16 +1,7 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Created on Fri Sep  2 22:09:57 2022
-
-@author: lagerprocessor
-"""
-
-
+"""Logic for RC Channels display window"""
 import sys
 from PyQt5 import QtWidgets, QtCore
 from PyQt5.QtWidgets import QApplication, QMainWindow, QVBoxLayout
-
 from gust.gui.ui.generic_channels import Ui_MainWindow
 
 class RCWindow(QMainWindow, Ui_MainWindow):
@@ -43,6 +34,7 @@ class RCWindow(QMainWindow, Ui_MainWindow):
         self.label_chan = {}
         self.progressBar = {}
 
+        # Manually creating all the UI elements for RC channel label and bar
         for i in range(self.chancount):
             chan = i + 1
 
@@ -81,6 +73,20 @@ class RCWindow(QMainWindow, Ui_MainWindow):
             self.gridLayout_chan.addWidget(self.verticalWidget_each, row, column)
 
     def set_RCvalue(self, chan, value):
+        """
+        Set Values to the RC channels
+
+        Parameters
+        ----------
+        chan: int
+            Channel Number
+        value: int
+            RC Channel PWN value
+
+        Returns
+        -------
+
+        """
         self.progressBar[chan].setProperty("value", value)
 
     def setupUi(self, mainWindow):

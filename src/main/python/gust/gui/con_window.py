@@ -1,3 +1,4 @@
+"""Logic for Vehicle Connection window"""
 from PyQt5.QtWidgets import QMessageBox, QDialog
 import requests
 from gust.gui.ui.conn import Ui_MainWindow

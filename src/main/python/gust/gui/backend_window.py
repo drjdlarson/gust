@@ -21,6 +21,7 @@ logger = logging.getLogger(__name__)
 class BackendWindow(QMainWindow, Ui_BackendWindow):
     """Main interface for the backend window."""
 
+    # signal to kill ConnServer's process once the backend is shut
     kill_conn_server_signal = pyqtSignal()
 
     def __init__(self, ctx, process_events, debug):

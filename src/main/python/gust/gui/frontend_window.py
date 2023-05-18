@@ -1,3 +1,4 @@
+"""Logic for main frontend window."""
 import time
 from datetime import timedelta
 from PyQt5 import QtCore, QtGui
@@ -83,6 +84,8 @@ class FrontendWindow(QMainWindow, Ui_MainWindow_main):
         self.widget_map.setup_qml(self.ctx)
         self.widget_hud.setup_hud_ui(self.ctx)
 
+        # saved locations information is stored in gust/src/main/resources/base
+        # can add more locations for new places
         url = "{}get_saved_locations".format(DRONE_BASE)
         self.saved_locations = requests.get(url).json()
         self.comboBox_saved_locations.addItems(self.saved_locations.keys())
@@ -156,6 +159,7 @@ class FrontendWindow(QMainWindow, Ui_MainWindow_main):
             self._sil_window = start_sil_window.StartSILWindow(
                 self.ctx, self.saved_locations
             )
+            # signal is emiited from _sil_window once SIL is started successfully
             self._sil_window.signal.connect(self.add_sil_vehicle)
 
         self._sil_window.exec_()
@@ -369,11 +373,10 @@ class FrontendWindow(QMainWindow, Ui_MainWindow_main):
         self.widget_hud.repaint()
 
     def clicked_refresh_map(self):
-        """Recenters the map and display the uploaded waypoints from all vehicles"""
+        """Re-centers the map and display the uploaded waypoints from all vehicles"""
 
         # Need to implement this
         # self.recenter_map()
-
         if self.flight_params is not None:
             if len(self.flight_params) != 0:
                 # request uploaded waypoints from the vehicles
@@ -399,6 +402,7 @@ class FrontendWindow(QMainWindow, Ui_MainWindow_main):
 
 class DataManager(QtCore.QObject):
 
+    # signal to notify FrontendWindow once a set of data is received and packaged as dict
     signal = pyqtSignal(dict)
 
     def __init__(self):
@@ -412,7 +416,8 @@ class DataManager(QtCore.QObject):
         """
         This function is called at a certain interval. See update_request() method of FrontendWindow.
         It sends http requests to the WSGI App to receive messages.
-        It emits 'signal' whenever the messages are received. The 'signal' is used by FrontendWindow to display information.
+        It emits 'signal' whenever the messages are received.
+        The 'signal' is used by FrontendWindow to display information.
 
         Returns
         -------

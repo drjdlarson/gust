@@ -1,3 +1,4 @@
+"""Logic for program launcher window."""
 import sys
 import logging
 from queue import Queue
@@ -45,6 +46,7 @@ class MyReceiver(QObject):
 
 
 class Launcher(QMainWindow, Ui_Launcher):
+    """Main program launcher Window"""
     def __init__(self, ctx, process_events, debug):
         super().__init__()
         self.ctx = ctx
@@ -65,10 +67,12 @@ class Launcher(QMainWindow, Ui_Launcher):
         self._std_receiver = None
 
     def setupUi(self, mainWindow):
+        """Sets up the user interface."""
         super().setupUi(mainWindow)
 
     @pyqtSlot()
     def clicked_client(self):
+        """Event connection for client. Opens up FrontendWindow"""
         self._frontendWindow=frontend_window.FrontendWindow(
             self.ctx)
 
@@ -77,6 +81,7 @@ class Launcher(QMainWindow, Ui_Launcher):
 
     @pyqtSlot()
     def clicked_server(self):
+        """Event connection for server. Opens up BackendWindow"""
         # Create Queue and redirect sys.stdout to this queue
         q = Queue()
         sys.stdout = WriteStream(q)
@@ -113,6 +118,7 @@ class Launcher(QMainWindow, Ui_Launcher):
 
     @pyqtSlot()
     def clicked_log(self):
+        """Event connection for log. Opens up the LogWindow"""
         self._logWindow=log_window.LogWindow(
             self.ctx)
         self._logWindow.show()

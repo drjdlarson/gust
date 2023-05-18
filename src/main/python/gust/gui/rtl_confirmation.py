@@ -1,21 +1,6 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Created on Tue Aug  2 15:00:26 2022
-
-@author: lagerprocessor
-"""
-
-import sys
-import os
-from functools import partial
-from PyQt5.QtWidgets import QMainWindow, QMessageBox, QDialog
-from PyQt5.QtCore import pyqtSlot, QModelIndex, pyqtSignal, QThreadPool
-from PyQt5.QtGui import QIntValidator, QTextCursor
-import requests
+"""Logic for RTL confirmation window"""
 from gust.gui.ui.confirmation import Ui_MainWindow
-
-URL_BASE = "http://localhost:8000/api/"
+from PyQt5.QtWidgets import QDialog
 
 
 class RTLConfirmation(QDialog, Ui_MainWindow):
@@ -26,12 +11,14 @@ class RTLConfirmation(QDialog, Ui_MainWindow):
         self.ctx = ctx
         self.setupUi(self)
 
-
         self.pushButton_cancel.clicked.connect(self.clicked_cancel)
         self.pushButton_ok.clicked.connect(self.clicked_ok)
         self.label_custom.setText("Activate RTL?")
 
     def clicked_ok(self):
+        # Currently not connected to anything
+        # This just needs to send a URL request to change flight mode
+        # Similar to as in commands_window.py
         self.reject()
 
     def clicked_cancel(self):
