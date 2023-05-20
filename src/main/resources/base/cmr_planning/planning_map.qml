@@ -11,6 +11,7 @@ Item {
 
     Location {
         id: mapCenter
+        // Update this to be dynamically set
         coordinate {
             latitude: 33.19424
             longitude: -87.48138
@@ -20,9 +21,6 @@ Item {
     Keys.onSpacePressed: {
         mapBase.center = mapCenter.coordinate
         mapBase.zoomLevel = 16
-        // mapBase.fitViewportToVisibleMapItems()
-        // var point = mapBase.fromCoordinate(locationTC, false)
-        // mapBase.toCoordinate(point, false)
     }
 
     Plugin {
@@ -44,6 +42,7 @@ Item {
             name: 'osm'
             PluginParameter {
                 name: 'osm.mapping.custom.host'
+                // this value is updated by gui.ui.planning_map_widget.py
                 value: 'file:MAP_FilledByMapWidget'
             }
 
@@ -59,6 +58,7 @@ Item {
 
             PluginParameter {
                 name: "osm.mapping.cache.directory"
+                // this value is updated by gui.ui.planning_map_widget.py
                 value: "CACHE_FilledByMapWidget"
             }
         }

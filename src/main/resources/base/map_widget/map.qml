@@ -11,6 +11,7 @@ Item {
 
     Location {
         id: mapCenter
+        // Update this to be dynamic
         coordinate {
             latitude: 33.19424
             longitude: -87.48138
@@ -44,9 +45,6 @@ Item {
     Keys.onSpacePressed: {
         mapBase.center = mapCenter.coordinate
         mapBase.zoomLevel = 16
-        // mapBase.fitViewportToVisibleMapItems()
-        // var point = mapBase.fromCoordinate(locationTC, false)
-        // mapBase.toCoordinate(point, false)
     }
 
 
@@ -64,6 +62,7 @@ Item {
 
             PluginParameter {
                 name: 'osm.mapping.custom.host'
+                // this value is updated by gui.ui.map_widget.py
                 value: 'file:MAP_FilledByMapWidget'
             }
 
@@ -79,6 +78,7 @@ Item {
 /*
             PluginParameter {
                 name: "osm.mapping.cache.directory"
+                // this value is updated by gui.ui.map_widget.py
                 value: "CACHE_FilledByMapWidget"
             }
 */
@@ -115,7 +115,7 @@ Item {
         z: mapBase.z + 1
 
 
-        // 2 coordinates can be passed from map_widget
+        // 2 coordinates and color are passed from map_widget.py
         MapItemView{
             model: yaw_line
             remove: myTrans
@@ -127,7 +127,7 @@ Item {
             }
         }
 
-        // 2 coordinates can be passed from map_widget
+        // 2 coordinates and color are passed from map_widget.py
         MapItemView{
             model: heading_line
             remove: myTrans
@@ -139,6 +139,7 @@ Item {
             }
         }
 
+        // Multiple coordinates and color are passed from map_widget.py
         MapItemView{
             model: flight_line
             remove: myTrans
@@ -150,6 +151,7 @@ Item {
             }
         }
 
+        // Vehicle's position, heading, and icon are passed by map_widget.py
         MapItemView{
             model: markermodel
             remove: myTrans
@@ -173,6 +175,7 @@ Item {
             }
         }
 
+        // List of coordinates and icons are passed by map_widget
         MapItemView{
             model: waypointmodel
             remove: myTrans
@@ -193,6 +196,7 @@ Item {
                 }
             }
 
+        // List of coordinates and icons are passed by map_widget
         MapItemView{
             model: homemodel
             remove: myTrans
@@ -213,7 +217,6 @@ Item {
                         }
             }
         }
-
 
         // The code below enables SSAA
         layer.enabled: true
