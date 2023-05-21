@@ -1,6 +1,5 @@
+"""Main file running the WSGI application"""
 import logging
-import sys
-
 import gunicorn.app.base
 import gunicorn.glogging as glogging
 

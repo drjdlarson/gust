@@ -1,6 +1,6 @@
 """GUST plugin for Radio Manager."""
-import argparse, math
-import dronekit
+
+import math
 import random
 import time
 import numpy as np
@@ -9,24 +9,42 @@ import sys
 import signal
 import os
 import json
+from argparse import ArgumentParser
+
+import dronekit
 from PyQt5 import QtNetwork
+
 import utilities.database as database
 from utilities import ConnSettings as conn_settings
-from argparse import ArgumentParser
 from radio_manager import logger
 
 d2r = np.pi / 100
 r2d = 1 / d2r
 
 
-# %% Custom Functions
+#################
+# Dronekit's API Reference:
+# https://dronekit-python.readthedocs.io/en/latest/automodule.html
+#################
 
+
+# %% Custom Functions
 
 def get_distance_metres(aLocation1, aLocation2):
     """
-    Returns the ground distance in metres between two `LocationGlobal` or `LocationGlobalRelative` objects.
+    Get the distance between two positions.
 
-    Based on Haversine equations
+    Parameters
+    ----------
+    aLocation1: dronekit's `LocationGlobal` or `LocationGlobalRelative` object
+
+    aLocation2: dronekit's `LocationGlobal` or `LocationGlobalRelative` object
+
+    Returns
+    -------
+    d: float
+        Distance between two positions in metres
+
     """
     del_lat = aLocation2.lat - aLocation1.lat
     del_lon = aLocation2.lon - aLocation1.lon
@@ -40,9 +58,20 @@ def get_distance_metres(aLocation1, aLocation2):
 
 def distance_to_current_waypoint(radio):
     """
-    Gets distance in metres to the current waypoint.
-    It returns None for the first waypoint (Home location).
+    Find the distance of the vehicle from the next waypoint in the mission.
+
+    Parameters
+    ----------
+    radio: dronekit's Vehicle object
+
+    Returns
+    -------
+    distancetopoint: float
+        Distance of the vehicle to the next waypoint.
+
     """
+
+    # Finding the next waypoint in the mission
     nextwaypoint = radio.commands.next
     if nextwaypoint == 0:
         return None
@@ -57,7 +86,22 @@ def distance_to_current_waypoint(radio):
     return distancetopoint
 
 
-def goto_next_wp(received_signal, radio):
+def goto_next_wp(radio):
+    """
+    Command the vehicle to proceed to the next waypoint
+
+    Parameters
+    ----------
+    radio: dronekit's Vehicle object
+
+    Returns
+    -------
+    succ: bool
+        Success of the command
+    err: str
+        Response of the command (usually error message)
+
+    """
     radio.commands.next = radio.commands.next + 1
     succ = True
     err = "Going to wp: {}".format(radio.commands.next)
@@ -65,42 +109,83 @@ def goto_next_wp(received_signal, radio):
 
 
 def set_mode(mode, radio):
-    if radio is None:
-        succ = False
-        err = "Not Connected to radio"
-    else:
-        radio.mode = dronekit.VehicleMode(mode)
-        succ = True
-        err = ""
+    """
+    Change the flight mode of the vehicle to mode.
+
+    Parameters
+    ----------
+    mode: str
+        Flight Mode of the vehicle. See Dronekit's API reference for available
+        flight modes.
+    radio: dronekit's Vehicle object
+
+    Returns
+    -------
+    succ: bool
+        Success of the command
+    err: str
+        Response of the command (usually error message)
+    """
+    radio.mode = dronekit.VehicleMode(mode)
+    succ = True
+    err = ""
     return succ, err
 
 
 def take_off(take_off_alt, radio):
-    if radio is None:
-        succ = False
-        err = "Not Connected to radio"
-    else:
-        logger.info("Basic pre-arm checks")
-        while not radio.is_armable:
-            logger.info("waiting for vehicle to initialize")
-            time.sleep(1)
+    """
+    Send a take-off command to the vehicle. Fails if the vehicle is not already armed.
 
-        logger.info("arming motors")
-        radio.mode = dronekit.VehicleMode("GUIDED")
-        radio.armed = True
+    Parameters
+    ----------
+    take_off_alt: int
+        Take-off altitude
+    radio: dronekit's Vehicle object
 
-        while not radio.armed:
-            logger.info("waiting for arming...")
-            time.sleep(1)
+    Returns
+    -------
+    succ: bool
+        Success of the command
+    err: str
+        Response of the command (usually error message)
+    """
 
-        logger.info("Taking off...")
-        radio.simple_takeoff(take_off_alt)
-        succ = True
-        err = ""
+    logger.info("Basic pre-arm checks")
+    while not radio.is_armable:
+        logger.info("waiting for vehicle to initialize")
+        time.sleep(1)
+
+    if not radio.armed:
+        return False, "Vehicle is not armed."
+
+    logger.info("Vehicle is armed.")
+    logger.info("Changing flight mode to GUIDED")
+    radio.mode = dronekit.VehicleMode("GUIDED")
+
+    logger.info("Taking off...")
+    radio.simple_takeoff(take_off_alt)
+    succ = True
+    err = ""
     return succ, err
 
 
 def arm_disarm(bool_val, radio):
+    """
+    Change the arm state of the vehicle.
+
+    Parameters
+    ----------
+    bool_val: bool
+        True for arming and False for disarming.
+    radio: dronekit's Vehicle object
+
+    Returns
+    -------
+    succ: bool
+        Success of the command
+    err: str
+        Response of the command (usually error message)
+    """
     if radio.armed is not bool_val:
         radio.armed = bool_val
         succ = True
@@ -108,20 +193,40 @@ def arm_disarm(bool_val, radio):
     else:
         succ = False
         err = "Armed state is already {}".format(bool_val)
-
+    return succ, err
 
 def upload_waypoints(received_signal, radio):
-    """Upload a mission from a file"""
+    """
+    Uploads a mission to the vehicle
+
+    Parameters
+    ----------
+    received_signal: dict
+        Main received signal from ConnServer. Includes path for the mission file.
+    radio: dronekit's Vehicle object.
+
+    Returns
+    -------
+    succ: bool
+        Success of the command
+    err: str
+        Response of the command (usually error message)
+    """
+
+    # filepath for the mission file.
     filename = received_signal["filename"]
 
+    # a list of mission items (dronekit.Command objects)
     missionList = readmission(filename, radio)
     logger.info("Uploading waypoints from {}\n".format(filename))
-    logger.info("Clearing older mission\n")
 
+    # clearing the current mission from the vehicle.
+    logger.info("Clearing older mission\n")
     cmds = radio.commands
     cmds.clear()
     cmds.upload()
 
+    # Uploading each waypoint
     logger.info("uploading new mission\n")
     for command in missionList:
         cmds.add(command)
@@ -136,16 +241,30 @@ def upload_waypoints(received_signal, radio):
 
 def readmission(filename, radio):
     """
-    Load a mission from a file into a list.
+    Read the mission file and prepare to be uploaded to the vehicle.
+    The file is formatted as a regular Mission (waypoint) file.
+    This file should be compatible with Mission Planner and QGC.
 
-    This function is used by upload_mission().
+    Parameters
+    ----------
+    filename: str
+        Path of the mission file
+    radio: dronekit's Vehicle object
+
+    Returns
+    -------
+    missionlist: list
+        List of dronekit.Command objects. Each item of missionlist can be directly
+        uploaded to the vehicle.
     """
-    print("Reading mission from file: {}\n".format(filename))
+
+    logger.info("Reading mission from file: {}\n".format(filename))
     cmds = radio.commands
     missionlist = []
     with open(filename) as f:
         for i, line in enumerate(f):
             if i == 0:
+                # Make sure the waypoint file has the correct format
                 if not line.startswith("QGC WPL 110"):
                     raise Exception("File is not supported WP version")
             else:
@@ -162,6 +281,8 @@ def readmission(filename, radio):
                 ln_y = float(linearray[9])
                 ln_z = float(linearray[10])
                 ln_autocontinue = int(linearray[11])
+
+                # creating a dronekit.Command object for each line in the mission file.
                 cmd = dronekit.Command(
                     0,
                     0,
@@ -200,7 +321,73 @@ def readmission(filename, radio):
     return missionlist
 
 
+def download_mission():
+    """Download dronekit.Command objects from the vehicle's mission."""
+
+    missionlist = []
+    cmds = radio.commands
+    cmds.download()
+    cmds.wait_ready()
+    # cmd is the dronekit.Command object in the vehicle.
+    for cmd in cmds:
+        missionlist.append(cmd)
+    return missionlist
+
+
+def download_and_save_mission(received_signal, radio):
+    """
+    Download missions from the vehicle and save in the database.
+
+    Parameters
+    ----------
+    received_signal: dict
+        Main message coming from the ConnServer
+    radio: dronekit's Vehicle Object
+
+    Returns
+    -------
+    succ: bool
+        Success of the command
+    err: str
+        Response of the command (usually error message)
+    """
+    err = ""
+    missions = download_mission()
+    for cmd in missions:
+        cmd_vals = {
+            "seq": cmd.seq,
+            "current": cmd.current,
+            "frame": cmd.frame,
+            "command": cmd.command,
+            "param1": cmd.param1,
+            "param2": cmd.param2,
+            "param3": cmd.param3,
+            "param4": cmd.param4,
+            "x": cmd.x,
+            "y": cmd.y,
+            "z": cmd.z,
+            "autocontinue": cmd.autocontinue,
+        }
+        # writing the mission items in the database.
+        table_name = name + "_mission"
+        res = database.add_values(cmd_vals, table_name)
+        if not res:
+            err = "Unable to write waypoint #{} to the database".format(cmd.seq)
+    return True, err
+
+
 def prepare_dummy_data():
+    """
+    Prepare a set of dummy MAVLink data. Used for a dummy test connection.
+    The data is divided into different rates. More info on this can be found on the
+    docs or in the database file.
+    The rate key in each dict stores a Enum (defined in database).
+
+    Returns
+    -------
+    all_data: tuple
+        Tuple of all rate dicts.
+    """
     current_time = get_current_time()
     randf1 = round(random.uniform(50, 100), 2)
     randf11 = round(random.uniform(0, 20), 2)
@@ -210,8 +397,8 @@ def prepare_dummy_data():
     randf222 = round(random.uniform(0, 10))
     randf3 = random.uniform(-5, 5)
     randint1 = random.randint(0, 1)
-    gnss_fix1 = random.randint(0, 2)
-    mode1 = random.randint(0, 3)
+    gnss_fix1 = random.randint(1, 5)
+
 
     rate1 = {
         "rate": database.DroneRates.RATE1,
@@ -233,7 +420,7 @@ def prepare_dummy_data():
             "relative_alt": randf1,
             "yaw": randf22,
             "heading": randf22 + 20,
-            "gnss_fix": mode1,
+            "gnss_fix": gnss_fix1,
             "satellites_visible": randf11,
             "roll_angle": randf11,
             "pitch_angle": randf11,
@@ -306,9 +493,11 @@ def prepare_dummy_data():
     return all_data
 
 
-def prepare_data_from_mavlink(radio, name, port, rate1, rate2, rate3, rate4, data):
+def prepare_data_from_mavlink(radio, rate1, rate2, rate3, rate4, data):
+    """"""
     current_time = get_current_time()
 
+    data = {}
     data["MAV"] = {}
     data["ATTITUDE"] = {}
     data["VFR_HUD"] = {}
@@ -438,42 +627,6 @@ def check_for_signal(conn, radio):
     # Sending message back to client socket (Conn-server)
     f_response = json.dumps(response).encode(conn_settings.FORMAT)
     conn.writeDatagram(f_response, addr, port)
-
-
-def download_mission():
-    missionlist = []
-    cmds = radio.commands
-    cmds.download()
-    cmds.wait_ready()
-    for cmd in cmds:
-        missionlist.append(cmd)
-    return missionlist
-
-
-def download_and_save_mission(received_signal, radio):
-    err = ""
-    missions = download_mission()
-    for cmd in missions:
-        cmd_vals = {
-            "seq": cmd.seq,
-            "current": cmd.current,
-            "frame": cmd.frame,
-            "command": cmd.command,
-            "param1": cmd.param1,
-            "param2": cmd.param2,
-            "param3": cmd.param3,
-            "param4": cmd.param4,
-            "x": cmd.x,
-            "y": cmd.y,
-            "z": cmd.z,
-            "autocontinue": cmd.autocontinue,
-        }
-        table_name = name + "_mission"
-        res = database.add_values(cmd_vals, table_name)
-        if not res:
-            err = "Unable to write waypoint #{} to the database".format(cmd.seq)
-
-    return True, err
 
 
 def get_autopilot_command(received_signal, radio):
@@ -647,9 +800,10 @@ if __name__ == "__main__":
 
         while True:
             check_for_signal(sig_conn, radio)
-            (rate1, rate2, rate3, rate4, mav_data,) = prepare_data_from_mavlink(
-                radio, name, port, rate1, rate2, rate3, rate4, mav_data
+            (rate1, rate2, rate3, rate4, mav_data) = prepare_data_from_mavlink(
+                radio, rate1, rate2, rate3, rate4, mav_data
             )
             all_data = rate1, rate2, rate3, rate4
             res = database.write_values(all_data, name)
             time.sleep(0.075)
+

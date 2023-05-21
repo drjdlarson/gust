@@ -14,6 +14,7 @@ logger = logging.getLogger("[URL-Manager]")
 
 ZED_NS = Namespace(ZED)
 
+# Receiving arguments for ZED connection
 conParse = ZED_NS.parser()
 conParse.add_argument("id", default=-1, type=int)
 conParse.add_argument("name", default="", type=str)
@@ -44,6 +45,7 @@ conParse.add_argument("updateHz", default=1, type=float)
 
 @ZED_NS.route("/connect")
 class ConnInfo(Resource):
+    """Handles connection with ZED"""
     @ZED_NS.expect(conParse)
     def get(self):
         cf = ConfigSet()
@@ -100,6 +102,8 @@ getCurPointsParse.add_argument("name", type=str, default="")
 
 @ZED_NS.route("/get_current_points")
 class GetCurPoints(Resource):
+    """Gets current points from the database."""
+
     @ZED_NS.expect(getCurPointsParse)
     def get(self):
         args = getCurPointsParse.parse_args()
@@ -110,6 +114,8 @@ class GetCurPoints(Resource):
 
 @ZED_NS.route("/disconnect")
 class Disconnect(Resource):
+    """Handles disconnection from the ZED."""
+
     def get(self):
         conn_succ, info = send_info_to_udp_server(dict(), conn_settings.ZED_DIS_CONN)
         if conn_succ:

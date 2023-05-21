@@ -4,13 +4,22 @@ import json
 
 
 class ConnSettings:
+    """Stores common information used for messaging and IPC."""
+
+    # IP and port. ConnServer's UDP socket is started on this address
     IP = "127.0.0.1"
     PORT = 9810
     FORMAT = "utf-8"
+
     MAX_CONNECTIONS = 10
     MAX_MSG_SIZE = 1500
     TIMEOUT = 10
+
+    # UDP ports available for RadioManager QProcess in ConnServer.
+    # RadioManager's UDP sockets are started on these addresses.
     RADIO_PORTS = [9820, 9825, 9830, 9835, 9840, 9850, 9855, 9860, 9865]
+
+    # TCP ports available for SIL QProcess in ConnServer.
     TCP_PORTS = [5760, 5770, 5780, 5790, 5800, 5810, 5820, 5830, 5840]
 
     # DRONE message_type
@@ -31,6 +40,7 @@ class ConnSettings:
     CMR = "cmr_planning"
 
     # CMR Process
+    # CMR QProcess' UDP socket is started on this port.
     CMR_PORT = 9880
     START_CMR = "start_cmr_process"
     STOP_CMR = "stop_cmr_process"
@@ -41,10 +51,12 @@ class ConnSettings:
 
     @classmethod
     def ADDR(cls):
+        """Forms a address for sockets"""
         return cls.IP, cls.PORT
 
     @classmethod
     def RADIO_UDP_ADDR(cls, port):
+        """Forms an address for Radio's UDP sockets"""
         return cls.IP, port
 
 
