@@ -1,5 +1,5 @@
 # gust
-GCS for Unmanned Swarms and Teams (GUST)
+GCS for Uncrewed Swarms and Teams (GUST)
 
 # Setup
 You should be able to pip install the gust package and get most of this, be sure to do that after pip installing the custom fork of fbs so the newer version of PyInstaller is used (may need the -U flag when installing gust). You will need to manually install pyqt5-tools. Otherwise, this requires
@@ -29,4 +29,20 @@ The **lager_sensors** repo must be cloned inside gust at the root level for the 
 Install QEMU for hardware emulation with `sudo apt-get install qemu binfmt-support qemu-user-static`
 
 Run `docker run --rm --privileged multiarch/qemu-user-static --reset -p yes` to activate the emulation (should only need to be done once?).
+
 See <https://discuss.ardupilot.org/t/ardupilot-and-docker-part-1/90532> for ardupilot docker info
+=======
+
+Cite
+====
+Please cite the framework as follows
+
+.. code-block:: bibtex
+
+    @Misc{gncpy,
+    author       = {Jordan D. Larson and Aabhash Bhandari and Ryan W. Thomas},
+    howpublished = {Web page},
+    title        = {{GUST}: A {G}round control station (GCS) for {U}ncrewed {S}warms and {T}eams},
+    year         = {2022},
+    url          = {https://github.com/drjdlarson/gust},
+    }
