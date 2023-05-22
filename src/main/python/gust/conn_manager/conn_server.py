@@ -225,6 +225,7 @@ class ConnServer:
 
         # killing all the radio manager and SIL processes
         processes = [cls._radios, cls._sils]
+        logger.info("Killing all radio and SIL processes")
         for process in processes:
             for k, p in process.items():
                 if "windows" in platform.system().lower():
@@ -390,6 +391,7 @@ class ConnServer:
         This stops all communication with the vehicle."""
 
         name = received_info["name"]
+        logger.info("Disconnecting {}...".format(name))
 
         # Check if a radio process actually exists for the vehicle
         if name in cls._radios:
@@ -512,7 +514,10 @@ class ConnServer:
 
         # Radio Process Id and sending message is similar to send_autopilot_commands()
         # [See above.]
+
         name = received_info["name"]
+        logger.info("{} proceeding to the next waypoint.".format(name))
+
         udp_port = cls._radio_udp_port[name]
         succ, err = send_info_to_udp_server(
             received_info,
@@ -527,6 +532,7 @@ class ConnServer:
         connected vehicles."""
         for name, udp_port in cls._radio_udp_port.items():
             database.remove_older_mission_items(name)
+            logger.info("Downloading mission from {}".format(name))
 
             # Does not need radio process Id since we're downloading missions from
             # all connected vehicles
@@ -579,6 +585,7 @@ class ConnServer:
     def stop_cmr_process(cls):
         """Stops the CMR QProcess."""
 
+        logger.info("Stopping CMR Process.")
         if "windows" in platform.system().lower():
             cls._cmr_proc.kill()
         else:

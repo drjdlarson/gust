@@ -4,8 +4,10 @@ import logging
 import enum
 from PyQt5.QtSql import QSqlDatabase, QSqlQuery
 
+#################
+# DO NOT CHANGE STRINGS IN THIS FILE (unless you are absolutely certain).
+#################
 
-import serial.tools.list_ports
 
 # DB_FILE = 'test_database.sqlite'
 DB_FILE_KEY = "GUST_DB_FILE"
@@ -13,7 +15,6 @@ DB_PATH_KEY = "GUST_DB_PATH"  # autoset by backend window on startup
 DB_DRIVER = "QSQLITE"
 
 _DB = None
-_main_table = "drone_collection"
 _connected_counter = 0
 _initialized_logger = False
 
@@ -23,22 +24,22 @@ logger = logging.getLogger(__name__)
 def set_db_file(f):
     os.environ[DB_FILE_KEY] = f
 
-
 def DB_FILE():
-    return os.environ.get(DB_FILE_KEY, "dummy.sqlite")
-
+    """Returns the file name as saved in Resources"""
+    return os.environ.get(DB_FILE_KEY, "gust_database.sqlite")
 
 def set_db_path(p):
     os.environ[DB_PATH_KEY] = p
 
-
 def DB_PATH():
+    """Returns the file path of resources folder.
+    This is set by BackendWindow.setup()"""
     return os.environ.get(DB_PATH_KEY, "./")
 
 
 @enum.unique
 class DroneRates(enum.Enum):
-
+    """Enums to define different sets of telemetry data."""
     RATE1 = enum.auto()
     RATE2 = enum.auto()
     RATE3 = enum.auto()
@@ -60,6 +61,8 @@ def db_name():
 
 
 def setup_logger():
+    """Handles setting up the logger stuff."""
+
     global _initialized_logger
 
     if not _initialized_logger:
@@ -83,39 +86,44 @@ def setup_logger():
 
 
 def open_db(location_file):
-    """Open the database by removing the old file and creating a new one.
+    """
+    Opens the database. This is first called by BackendWindow.setup(). Database
+    needs to be open before any other operation with GUST.
 
-    This must be called once before any database operations occur.
+    Parameters
+    ----------
+    location_file: str
+        File path of saved locations file stored in Resources.
 
     Returns
     -------
-    None.
+
     """
     global _DB
+    # Don't do anything if the database is already open.
     if _DB is not None:
         logger.critical("Database has already been opened it is: {}".format(repr(_DB)))
+        return
 
     setup_logger()
 
-    # dont do anything if the database is already open
-    if _DB is not None:
-        logger.critical("Database has already been opened")
-        return
-
-    # create database
+    # create a new database
     _DB = QSqlDatabase.addDatabase(DB_DRIVER)
     fpath = db_name()
     logger.info("logger: {}".format(fpath))
 
+    # delete the file if it already exists.
     if os.path.exists(fpath):
         logger.info("Removing existing database {}".format(fpath))
         os.remove(fpath)
 
     _DB.setDatabaseName(fpath)
 
+    # The database should be open at this point.
     if not _DB.open():
         logger.critical("Unable to open database")
 
+    # Creating a table for plugins collection.
     query = _start_query()
     cmd = """CREATE TABLE IF NOT EXISTS PluginCollection (
         collection_id INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE,
@@ -125,6 +133,8 @@ def open_db(location_file):
     if not res1:
         logger.critical(query.lastError().text())
 
+    # Creating a table for drone collection. Vehicles information is saved with a
+    # unique id and name
     query = _start_query()
     cmd = """CREATE TABLE IF NOT EXISTS drone_collection (
     uid INTEGER PRIMARY KEY,
@@ -140,6 +150,7 @@ def open_db(location_file):
     if not res2:
         logger.critical(query.lastError().text())
 
+    # Creating a table for Zed connection information
     cmd = """CREATE TABLE IF NOT EXISTS zed_collection (
     uid INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE,
     name TEXT NOT NULL,
@@ -149,6 +160,7 @@ def open_db(location_file):
     logger.debug(cmd)
     res3 = query.exec_(cmd)
 
+    # Creating a table to store saved locations information.
     cmd = """CREATE TABLE IF NOT EXISTS locations (
         uid INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE,
         name TEXT NOT NULL,
@@ -159,40 +171,47 @@ def open_db(location_file):
     res4 = query.exec_(cmd)
 
     if res4:
-        with open(location_file, "r") as fin:
-            for ii, line in enumerate(fin):
-                if ii == 0:
-                    continue
-                tokens = line.strip().split("=")
-                if len(tokens) != 2:
-                    continue
-                name = tokens[0]
-
-                if "#" in tokens[1]:
-                    ind = tokens[1].find("#")
-                    coords = tokens[1][:ind]
-                else:
-                    coords = tokens[1]
-                cmd = (
-                    "INSERT into locations (name, coords) VALUES ('{}', '{}');".format(
-                        name, coords
-                    )
-                )
-                logger.debug(cmd)
-                query.exec_(cmd)
+        res4 = write_saved_locations_in_db(location_file)
 
     if res1 and res2 and res3 and res4:
         logger.info("Database is now open")
 
+def write_saved_locations_in_db(location_fpath):
+    """Store saved locations info in the database."""
+    query = _start_query()
+    results = []
+    with open(location_fpath, "r") as fin:
+        for ii, line in enumerate(fin):
+            if ii == 0:
+                continue
+            tokens = line.strip().split("=")
+            if len(tokens) != 2:
+                continue
+            name = tokens[0]
+
+            if "#" in tokens[1]:
+                ind = tokens[1].find("#")
+                coords = tokens[1][:ind]
+            else:
+                coords = tokens[1]
+            cmd = (
+                "INSERT into locations (name, coords) VALUES ('{}', '{}');".format(
+                    name, coords
+                )
+            )
+            logger.debug(cmd)
+            res = query.exec_(cmd)
+            results.append(res)
+    # Returns True only if all queries are successful.
+    return all(results)
 
 def connect_db():
-    global _DB
+    """Connect to the database. This is required before interacting with the database."""
 
+    global _DB
     setup_logger()
 
-    # logger.info("Connecting to database")
-
-    # dont do anything if the database is already open
+    # Don't do anything if the database is already open
     if _DB is not None:
         # logger.info("Database is already open")
         return True
@@ -220,11 +239,10 @@ def close_db():
 
 
 def _start_query():
+    """Starts a QSqlQuery. The query object to used to send commands to the database."""
     global _DB
-
     query = QSqlQuery(_DB)
     query.exec_("PRAGMA foreign_keys=ON;")
-
     return query
 
 
@@ -367,7 +385,7 @@ def _add_new_pc_val(p_name, p_id):
 
 
 def add_plugin(p_name):
-    """Add a new plugin to the data base, account for multiple of the same name.
+    """Add a new plugin to the database, account for multiple of the same name.
 
     Parameters
     ----------
@@ -570,16 +588,18 @@ def get_drone_ids(distinct=True, active=True):
     else:
         extra1 = ""
 
+    # disconnected vehicles will have connection == 0, but they will still remain
+    # in the database.
     if active:
         extra2 = "WHERE connection IS 1"
     else:
         extra2 = ""
 
     query = _start_query()
-    if _main_table not in _DB.tables():
-        logger.critical("Unable to find {} in database".format(_main_table))
+    if "drone_collection" not in _DB.tables():
+        logger.critical("Unable to find drone_collection in database")
 
-    cmd = "SELECT {} name FROM {} {}".format(extra1, _main_table, extra2)
+    cmd = "SELECT {} name FROM drone_collection {}".format(extra1, extra2)
     result = query.exec_(cmd)
 
     # query.seek(-1)
@@ -594,6 +614,7 @@ def create_zed_table_name(name):
 
 
 def add_zed(name, config):
+    """Add a new item in the zed_connection table"""
     query = _start_query()
 
     cmd = 'INSERT into zed_collection (name, config) VALUES ("{:s}", "{:s}");'.format(
@@ -623,10 +644,26 @@ def add_zed(name, config):
 
 
 def add_vehicle(name, port, color):
+    """
+    Add a new vehicle in the database with all necessary tables.
+    
+    Parameters
+    ----------
+    name : str
+        name of the vehicle
+    port : str
+        port used for vehicle connection
+    color : str
+        Color selected for the vehicle
+
+    Returns
+    -------
+
+    """
     global _connected_counter
     query = _start_query()
 
-    # adding to the main table
+    # adding vehicle's info to the main table
     cmd = 'INSERT into drone_collection (uid, name, port, color, connection) VALUES ({}, "{}", "{}", "{}", 1);'.format(
         _connected_counter, name, port, color
     )
@@ -720,9 +757,9 @@ def add_vehicle(name, port, color):
        m_time float PRIMARY key,
        armed int,
        flight_mode Text,
-       mav_type int,
-       autopilot int,
-       custom_mode int,
+       ekf_ok int,
+       vehicle_type int,
+       sys_status Text,
        tof int,
        next_wp int,
        relay_sw int,
@@ -758,19 +795,23 @@ def add_vehicle(name, port, color):
 
 
 def remove_vehicle(name):
+    """Remove the vehicle from the database"""
 
     query = _start_query()
 
     cmd = "DELETE FROM drone_collection WHERE name LIKE '%{}%';".format(name)
     res = query.exec_(cmd)
-    if not res:
-        logger.warning("Unable to delete {} from drone_collection".format(name))
     if res:
-        logger.info("Deleted {} from done_collection".format(name))
+        logger.info("Deleted {} from drone_collection".format(name))
+    else:
+        logger.warning("Unable to delete {} from drone_collection".format(name))
+        return
 
     rates = [member.name for member in DroneRates]
     rates = [x.lower() for x in rates]
     res = []
+
+    # deleting all the tables related to the vehicle.
     for i, rate in enumerate(rates):
         drop_rate = "DROP TABLE IF EXISTS {}".format(
             create_drone_rate_table_name(name, rate)
@@ -786,18 +827,26 @@ def remove_vehicle(name):
 
 
 def get_params(table_name, params):
-    """Get parameters from the database.
+    """
+    Get parameters from the database
+
+    Parameters
+    ----------
+    table_name : str
+        Table name
+    params : list
+        list of params whose values are requested
 
     Returns
     -------
-    dict
-        dictionary of parameter keys and values
+    val : dict
+        Dict of requested parameters and their values {param: value}
     """
     query = _start_query()
     req_params = ", ".join(params)
     cmd = "SELECT {} FROM {}".format(req_params, table_name)
     val = {}
-    result = query.exec_(cmd)
+    query.exec_(cmd)
     query.last()
     for param in params:
         val[param] = query.value(param)
@@ -805,17 +854,19 @@ def get_params(table_name, params):
 
 
 def get_mission_items(vehicle_name):
+    """Get the saved mission items for the vehicle."""
     query = _start_query()
     table_name = vehicle_name + "_mission"
-    cmd = "SELECT x, y FROM {}".format(table_name)
+    cmd = "SELECT x, y, z FROM {}".format(table_name)
     coords = []
     result = query.exec_(cmd)
     while result and query.next():
-        coords.append((query.value("x"), query.value("y")))
+        coords.append((query.value("x"), query.value("y"), query.value("z")))
     return coords
 
 
 def remove_older_mission_items(vehicle_name):
+    """Delete the saved mission items for the vehicle."""
     query = _start_query()
     table_name = vehicle_name + "_mission"
     cmd = "DELETE FROM {}".format(table_name)
@@ -823,11 +874,15 @@ def remove_older_mission_items(vehicle_name):
 
 
 def create_drone_rate_table_name(name, rate):
+    """Returns a table name for given vehicle name and rate"""
     return "{:s}_{:s}".format(name, rate)
 
 
 def change_connection_status_value(name, val):
     """
+    Change the connection value of the vehicle. This is set to 0 when the vehicle
+    disconnects.
+
     Parameters
     ----------
     name : str
@@ -856,11 +911,12 @@ def change_connection_status_value(name, val):
 
 def add_values(vals, table_name):
     """
+    Adds new telemetry data to the database.
 
     Parameters
     ----------
     vals : dict
-        Set of flight data.
+        Set of flight data to be written into the database.
     table_name : str
         Table name of where to store data
         eg. drone0_rate1
@@ -1045,6 +1101,7 @@ def get_zed_points(name, delay=None):
 
 
 def add_cmr_table():
+    """Adds a new table to handle CMR operation"""
     query = _start_query()
     cmd = """CREATE TABLE IF NOT EXISTS cmr_table (
     name TEXT,
@@ -1062,6 +1119,7 @@ def add_cmr_table():
 
 
 def add_cmr_vehicle(name, wp_color):
+    """Adds a new vehicle involved in CMR operation"""
     query = _start_query()
     cmd = """INSERT INTO cmr_table (name, wp_color, next_wp,wp_reached) VALUES ("{}", "{}", 1, 0);
     """.format(
@@ -1075,6 +1133,7 @@ def add_cmr_vehicle(name, wp_color):
     return res
 
 def get_saved_locations():
+    """Returns a dict with information about saved locations."""
     query = _start_query()
     cmd = "SELECT name, coords FROM locations"
     val = {}

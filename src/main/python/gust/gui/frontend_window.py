@@ -13,6 +13,7 @@ from PyQt5.QtCore import (
     QTimer,
 )
 import requests
+import gust.gui.msg_decoder as msg_decoder
 from gust.gui.ui.gustClient import Ui_MainWindow_main
 from gust.gui import (
     con_window,
@@ -34,6 +35,8 @@ URL_BASE = "http://localhost:8000/{}/".format(BASE)
 DRONE_BASE = "{}{}/".format(URL_BASE, DRONE)
 FILES = ["home", "pos", "spos", "rtl_pos"]
 
+# front-end update rate in Hz.
+_FE_UPDATE_RATE = 12
 
 class FrontendWindow(QMainWindow, Ui_MainWindow_main):
     """Main interface for the frontend window."""
@@ -196,7 +199,12 @@ class FrontendWindow(QMainWindow, Ui_MainWindow_main):
 
             # res represents the response of the disonnect_confirmation dialog window
             if res:
+                # remove the vehicle's row from the table
                 self.tableWidget.removeRow(sel_row)
+
+                # if it was a SIL vehicle, remove its name from this list.
+                if name in self.sil_vehicles:
+                    self.sil_vehicles.remove(name)
 
                 # keep continuing data updates if there is at least one vehicle connected on the table
                 self._continue_updating_data = self.tableWidget.rowCount() > 0
@@ -224,7 +232,7 @@ class FrontendWindow(QMainWindow, Ui_MainWindow_main):
         if self.timer is None:
             self.timer = QTimer()
             self.manager.timer = self.timer
-            self.manager.rate = 100
+            self.manager.rate = (1 / _FE_UPDATE_RATE) * 1000
 
             # run the requests at a certain interval
             self.timer.timeout.connect(self.manager.run)
@@ -232,7 +240,7 @@ class FrontendWindow(QMainWindow, Ui_MainWindow_main):
             # update the UI everytime data is received from the requests
             self.manager.signal.connect(self.update_frame)
             if self._continue_updating_data:
-                self.timer.start(100)
+                self.timer.start(self.manager.rate)
 
     def update_frame(self, passed_signal):
         """
@@ -347,8 +355,20 @@ class FrontendWindow(QMainWindow, Ui_MainWindow_main):
         key_val += 1
         key_pos = str(key_val)
 
-        # Updating the lcd display
-        self.label_seluav.setText(str(self.flight_params[key_pos]["name"]))
+        # Updating the Labels
+        self.label_seluav.setText(str(self.flight_params[key_pos]["name"]).upper())
+        vehicle_type = msg_decoder.MessageDecoder.findType(self.flight_params[key_pos]["vehicle_type"])
+        self.label_vehicle_type.setText(vehicle_type)
+        self.label_status.setText(str(self.flight_params[key_pos]["sys_status"]))
+
+        # setting ekf status
+        if bool(self.flight_params[key_pos]["ekf_ok"]):
+            ekf_str = "EKF_GOOD"
+        else:
+            ekf_str = "EKF_BAD"
+        self.label_ekf.setText(ekf_str)
+
+        # Updating the LCD display
         self.lcdNumber_altitude.display(self.flight_params[key_pos]["relative_alt"])
         self.lcdNumber_vspeed.display(self.flight_params[key_pos]["vspeed"])
         self.lcdNumber_airspeed.display(self.flight_params[key_pos]["airspeed"])
@@ -388,7 +408,11 @@ class FrontendWindow(QMainWindow, Ui_MainWindow_main):
 
     def clean_hud_and_lcd(self):
         """Cleaning the LCD display and HUD"""
-        self.label_seluav.setText("Current Vehicle Name")
+        self.label_seluav.setText("VEHICLE NAME")
+        self.label_status.setText("SYSTEM STATUS")
+        self.label_ekf.setText("EKF STATUS")
+        self.label_vehicle_type.setText("VEHICLE TYPE")
+
         self.lcdNumber_altitude.display(0)
         self.lcdNumber_vspeed.display(0)
         self.lcdNumber_airspeed.display(0)

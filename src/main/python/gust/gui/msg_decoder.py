@@ -12,7 +12,7 @@ class MessageDecoder:
         if x == 1:
             ans = "Fixed Wing"
         elif x == 2:
-            ans = "Quadrotor"
+            ans = "Quadcopter"
         elif x == 4:
             ans = "Helicopter"
         elif x == 10:

@@ -110,7 +110,14 @@ class CommandsManager(QMainWindow, Ui_MainWindow):
             url = "{}autopilot_cmd".format(DRONE_BASE)
             url += "?name=" + self.selected_name.replace(" ", "_")
             url += "&cmd=" + conn_settings.TAKEOFF
-            url += "&param=" + self.lineEdit_takeoff_alt.text()
+
+            if self.lineEdit_takeoff_alt.text() is not None:
+                takeoff_alt = self.lineEdit_takeoff_alt.text()
+            # set take-off alt to 50m if no altitude is provided
+            else:
+                takeoff_alt = 50
+
+            url += "&param=" + takeoff_alt
             takeoff = requests.get(url).json()
             self.show_message_box(takeoff["success"], takeoff["msg"])
         else:

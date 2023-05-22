@@ -418,6 +418,7 @@ class MapHelper:
         file = "map_widget/colored_icons/" + self.color + "_home.png"
         home.setSource(self.ctx.get_resource(file))
         home_pos = (self.home_lat, self.home_lon)
+
         # preparing the home coordinate as a QGeoCoordinate object
         home_pos_coord = QtPositioning.QGeoCoordinate(*home_pos)
         home.setPosition(home_pos_coord)

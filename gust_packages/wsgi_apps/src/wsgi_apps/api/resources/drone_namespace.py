@@ -151,7 +151,7 @@ class DownloadWP(Resource):
             # Downloading for all connected vehicles.
             for name in names:
                 wp_list = database.get_mission_items(name)
-                all_waypoints[name] = [s for s in wp_list if s != (0.0, 0.0)]
+                all_waypoints[name] = [s for s in wp_list if s != (0.0, 0.0, 0.0)]
             return all_waypoints
 
         else:
@@ -427,9 +427,9 @@ class SysInfo(Resource):
     params = [
         "armed",
         "flight_mode",
-        "mav_type",
-        "autopilot",
-        "custom_mode",
+        "ekf_ok",
+        "vehicle_type",
+        "sys_status",
         "tof",
         "next_wp",
         "relay_sw",
