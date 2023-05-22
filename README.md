@@ -30,6 +30,9 @@ Install QEMU for hardware emulation with `sudo apt-get install qemu binfmt-suppo
 
 Run `docker run --rm --privileged multiarch/qemu-user-static --reset -p yes` to activate the emulation (should only need to be done once?).
 
+See <https://discuss.ardupilot.org/t/ardupilot-and-docker-part-1/90532> for ardupilot docker info
+=======
+
 Cite
 ====
 Please cite the framework as follows
@@ -43,4 +46,3 @@ Please cite the framework as follows
     year         = {2022},
     url          = {https://github.com/drjdlarson/gust},
     }
-    

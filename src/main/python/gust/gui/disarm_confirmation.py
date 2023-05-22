@@ -1,19 +1,6 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Created on Tue Aug  2 15:02:22 2022
+"""Logic for Disarm Confirmation window"""
 
-@author: lagerprocessor
-"""
-
-
-import sys
-import os
-from functools import partial
-from PyQt5.QtWidgets import QMainWindow, QMessageBox, QDialog
-from PyQt5.QtCore import pyqtSlot, QModelIndex, pyqtSignal, QThreadPool
-from PyQt5.QtGui import QIntValidator, QTextCursor
-import requests
+from PyQt5.QtWidgets import QDialog
 from gust.gui.ui.confirmation import Ui_MainWindow
 
 
@@ -25,15 +12,17 @@ class DisarmConfirmation(QDialog, Ui_MainWindow):
         self.ctx = ctx
         self.setupUi(self)
 
-
+        # event connections
         self.pushButton_cancel.clicked.connect(self.clicked_cancel)
         self.pushButton_ok.clicked.connect(self.clicked_ok)
         self.label_custom.setText("Disarm?")
 
     def clicked_ok(self):
+        """Currently not doing anything, Need to connect this to disarm request."""
         self.reject()
 
     def clicked_cancel(self):
+        """Close the disarm confirmation window"""
         self.reject()
 
     def setupUi(self, mainWindow):

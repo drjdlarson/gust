@@ -1,15 +1,6 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Created on Tue Sep  6 10:26:29 2022
-
-@author: lagerprocessor
-"""
-
 import sys
 from PyQt5 import QtWidgets, QtCore
-from PyQt5.QtWidgets import QApplication, QMainWindow, QVBoxLayout
-
+from PyQt5.QtWidgets import QApplication, QMainWindow
 from gust.gui.ui.generic_channels import Ui_MainWindow
 
 class ServoWindow(QMainWindow, Ui_MainWindow):
@@ -35,6 +26,7 @@ class ServoWindow(QMainWindow, Ui_MainWindow):
         self.label_chan = {}
         self.progressBar = {}
 
+        # Manually Creating the UI elements for channel name and bar
         for i in range(self.servo_count):
             chan = i + 1
 
@@ -73,6 +65,20 @@ class ServoWindow(QMainWindow, Ui_MainWindow):
             self.gridLayout_chan.addWidget(self.verticalWidget_each, row, column)
 
     def set_servo_value(self, chan, value):
+        """
+        Set Values to the servo channels
+
+        Parameters
+        ----------
+        chan: int
+            Channel Number
+        value: int
+            Servo Channel PWN value
+
+        Returns
+        -------
+
+        """
         self.progressBar[chan].setProperty("value", value)
 
     def setupUi(self, mainWindow):
@@ -82,7 +88,7 @@ class ServoWindow(QMainWindow, Ui_MainWindow):
 
 if __name__ == '__main__':
     app =QApplication(sys.argv)
-    myApp = ServoChannels()
+    myApp = ServoWindow()
     myApp.show()
 
     myApp.set_servo_value(3, 2000)

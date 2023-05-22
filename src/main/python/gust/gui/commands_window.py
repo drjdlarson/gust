@@ -20,10 +20,10 @@ class CommandsManager(QMainWindow, Ui_MainWindow):
         self.ctx = ctx
         self.setupUi(self)
 
-        # {'name': 'color'}
         self.vehicles = {}
         self.selected_name = None
 
+        # event connections
         self.pushButton_refresh.clicked.connect(self.clicked_refresh)
         self.pushButton_select.clicked.connect(self.clicked_select)
         self.pushButton_mode.clicked.connect(self.clicked_set_mode)
@@ -35,12 +35,17 @@ class CommandsManager(QMainWindow, Ui_MainWindow):
         self.comboBox_mode.addItems(FLIGHT_MODES)
 
     def clicked_refresh(self):
+        """Gets an updated list of vehicles connected"""
         self.comboBox_names.clear()
         url = "{}get_connected_drones_with_color".format(DRONE_BASE)
         self.vehicles = requests.get(url).json()
         self.comboBox_names.addItems(self.vehicles.keys())
 
     def clicked_select(self):
+        """Selects a vehicle from the list of connected vehicles.
+        Selected vehicle's name is displayed in the center.
+        This step is required before performing any commands for the vehicle"""
+
         self.selected_name = self.comboBox_names.currentText()
         self.label_drone_name.setText(self.selected_name)
 
@@ -51,19 +56,17 @@ class CommandsManager(QMainWindow, Ui_MainWindow):
         pass
 
     def clicked_arm(self):
-        if self.selected_name is not None:
-            self.send_arm_disarm_request(1)
-        else:
-            self.show_message_box(False, "Vehicle not selected")
+        """Arms the selected vehicle"""
+        self.send_arm_disarm_request(1)
 
     def clicked_disarm(self):
-        if self.selected_name is not None:
-            self.send_arm_disarm_request(0)
-        else:
-            self.show_message_box(False, "Vehicle not selected")
+        """Disarms the selected vehicle"""
+        self.send_arm_disarm_request(0)
 
     def send_arm_disarm_request(self, param):
+        # Check if the selection is not empty
         if self.selected_name is not None:
+            # See WSGI App's drone_namespace for further logic
             url = "{}autopilot_cmd".format(DRONE_BASE)
             url += "?name=" + self.selected_name.replace(" ", "_")
             url += "&cmd=" + conn_settings.ARM_DISARM
@@ -74,13 +77,17 @@ class CommandsManager(QMainWindow, Ui_MainWindow):
             self.show_message_box(False, "Vehicle not selected")
 
     def clicked_set_mode(self):
+        """Changes the flight mode based on the ComboBox selection"""
         self.set_flight_mode(self.comboBox_mode.currentText())
 
     def clicked_rtl(self):
+        """Changes the flight mode to RTL"""
         self.set_flight_mode("RTL")
 
     def set_flight_mode(self, mode):
+        # Check if the selection is not empty
         if self.selected_name is not None:
+            # See WSGI App's drone_namespace for further logic
             url = "{}autopilot_cmd".format(DRONE_BASE)
             url += "?name=" + self.selected_name.replace(" ", "_")
             url += "&cmd=" + conn_settings.SET_MODE
@@ -97,17 +104,30 @@ class CommandsManager(QMainWindow, Ui_MainWindow):
         pass
 
     def clicked_takeoff(self):
+        # Check if the selection is not empty
         if self.selected_name is not None:
+            # See WSGI App's drone_namespace for further logic
             url = "{}autopilot_cmd".format(DRONE_BASE)
             url += "?name=" + self.selected_name.replace(" ", "_")
             url += "&cmd=" + conn_settings.TAKEOFF
-            url += "&param=" + self.lineEdit_takeoff_alt.text()
+
+            if self.lineEdit_takeoff_alt.text() is not None:
+                takeoff_alt = self.lineEdit_takeoff_alt.text()
+            # set take-off alt to 50m if no altitude is provided
+            else:
+                takeoff_alt = 50
+
+            url += "&param=" + takeoff_alt
             takeoff = requests.get(url).json()
             self.show_message_box(takeoff["success"], takeoff["msg"])
         else:
             self.show_message_box(False, "Vehicle not selected")
 
     def clicked_goto_next(self):
+        """Commands the vehicle to proceed to the next waypoint.
+        Currently, sending this command for all connected vehicles (for CMR).
+        """
+
         for name in self.vehicles.keys():
             url = "{}autopilot_cmd".format(DRONE_BASE)
             url += "?name=" + name.replace(" ", "_")
@@ -115,8 +135,9 @@ class CommandsManager(QMainWindow, Ui_MainWindow):
             url += "&param=" + "0"
             goto_next = requests.get(url).json()
 
-
+        # Check if the selection is not empty
         # if self.selected_name is not None:
+        #     See WSGI App's drone_namespace for further logic
         #     url = "{}autopilot_cmd".format(DRONE_BASE)
         #     url += "?name=" + self.selected_name.replace(" ", "_")
         #     url += "&cmd=" + conn_settings.GOTO_NEXT_WP
@@ -129,10 +150,8 @@ class CommandsManager(QMainWindow, Ui_MainWindow):
     def clicked_restart_mission(self):
         pass
 
-    def clicked_rtl(self):
-        pass
-
     def show_message_box(self, succ, msg):
+        """Displays the messages in a separate dialogue box"""
         if not succ:
             msgBox = QMessageBox()
             msgBox.setIcon(QMessageBox.Warning)

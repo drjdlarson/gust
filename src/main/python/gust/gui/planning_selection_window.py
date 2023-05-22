@@ -1,5 +1,5 @@
+"""Logic for Flight Planning scheme selection"""
 from PyQt5.QtWidgets import QMessageBox, QDialog, QMainWindow
-from PyQt5.QtCore import pyqtSlot
 from gust.gui.ui.planning_module import Ui_MainWindow
 from gust.gui import cmr_window
 
@@ -26,6 +26,8 @@ class PlanningSelectionWindow(QMainWindow, Ui_MainWindow):
         self.close()
 
     def clicked_open(self):
+        """Opens the selected planning window"""
+         # Currently only includes CMR Planning Window
 
         sel_type = self.comboBox_planning_types.currentText()
         if sel_type == "CMR Planning":

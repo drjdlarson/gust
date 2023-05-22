@@ -1,5 +1,6 @@
 #!/bin/bash
 
+scriptDir=./build_scripts
 
 Help()
 {
@@ -12,31 +13,36 @@ Help()
 	echo "-r	Build the radio_manager helper executable before running."
 	echo "-c	Build the cmr manager helper executable before running."
 	echo "-z	Build the zed manager helper executable before running."
+	echo "-s	Build the Ardupilot sil helper executable before running."
 
 	echo
 }
 
 
 
-while getopts ":hawrcz" option; do
+while getopts ":hawrczs" option; do
 	case $option in
 		a) # build all helping executables
-			./build_wsgi.sh
-			./build_radio_manager.sh
-			./build_cmr_manager.sh
-			# ./build_zed_manager.sh
+			${scriptDir}/build_wsgi.sh
+			${scriptDir}/build_radio_manager.sh
+			${scriptDir}/build_cmr_manager.sh
+			${scriptDir}/build_zed_manager.sh
+			${scriptDir}/build_sil.sh
 			;;
 		w) # build wsgi app
-			./build_wsgi.sh
+			${scriptDir}/build_wsgi.sh
 			;;
 		r) # build radio manager
-			./build_radio_manager.sh
+			${scriptDir}/build_radio_manager.sh
 			;;
 		c) # build cmr manager
-			./build_cmr_manager.sh
+			${scriptDir}/build_cmr_manager.sh
 			;;
 		z) # build zed manager
-			./build_zed_manager.sh
+			${scriptDir}/build_zed_manager.sh
+			;;
+	  s) # build zed manager
+			${scriptDir}/build_sil.sh
 			;;
 		h) # display help
 			Help

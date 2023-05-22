@@ -1,13 +1,18 @@
+"""A common file for all message encodings and enums"""
 import math
 
 class MessageDecoder:
+    """Decodes different message and enums"""
 
     @staticmethod
     def findType(x):
+        """Vehicle Type:: MAV_TYPE
+        # https://mavlink.io/en/messages/common.html#MAV_TYPE
+        """
         if x == 1:
             ans = "Fixed Wing"
         elif x == 2:
-            ans = "Quadrotor"
+            ans = "Quadcopter"
         elif x == 4:
             ans = "Helicopter"
         elif x == 10:
@@ -26,6 +31,8 @@ class MessageDecoder:
 
     @staticmethod
     def findAutopilot(x):
+        """Autopilot type: MAV_AUTOPILOT
+        # https://mavlink.io/en/messages/common.html#enums"""
         if x == 3:
             ans = "ArduPilot"
         elif x == 4:
@@ -36,6 +43,8 @@ class MessageDecoder:
 
     @staticmethod
     def findState(x):
+        """System Status:: MAV_STATE
+        # https://mavlink.io/en/messages/common.html#enums"""
         if x == 1:
             ans = "Booting"
         elif x == 2:
@@ -60,6 +69,10 @@ class MessageDecoder:
 
     @staticmethod
     def findMode(x):
+        """Flight Mode:: MAV_MODE
+        # https://mavlink.io/en/messages/common.html#enums"""
+
+        # It is encoded as a bitmask
         # getting the position of the first 1 from the right of 8-bits
         if int(x) == 0:
             return "NONE"
@@ -84,16 +97,21 @@ class MessageDecoder:
 
     @staticmethod
     def findFix(x):
+        """GNSS Fix Type (Following BFS enum convention)
+        https://github.com/bolderflight/gnss/blob/main/include/gnss/gnss.h
+        """
         if x == 1:
-            ans = "2D Fix"
+            ans = "NO Fix"
         elif x == 2:
-            ans = "3D Fix"
+            ans = "2D Fix"
         elif x == 3:
-            ans = "FIX_DGNSS"
+            ans = "3D Fix"
         elif x == 4:
-            ans = "RTK_FLOAT"
+            ans = "DGNSS Fix"
         elif x == 5:
-            ans = "RTK_FIXED"
+            ans = "RTK Float"
+        elif x == 6:
+            ans = "RTK Fix"
         else:
             ans = "NO_FIX"
         return ans.upper()

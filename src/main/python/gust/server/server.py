@@ -20,6 +20,9 @@ _LOGGER_WAS_INITED = False
 
 
 def start_server(ctx, debug):
+    """Starting the main backend server process.
+    This is started from the Backend window"""
+
     global SERVER_PROC, START_CMD, _SERVER_RUNNING, _LOGGER_WAS_INITED
 
     if not _LOGGER_WAS_INITED:
@@ -77,6 +80,7 @@ def start_server(ctx, debug):
 
 
 def stop_server():
+    """Stop the backend server process"""
     global SERVER_PROC, _SERVER_RUNNING
 
     succ = SERVER_PROC is not None and _SERVER_RUNNING

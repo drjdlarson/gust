@@ -1,11 +1,4 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Created on Sat Jun  4 11:53:26 2022
-
-@author: abhandari11
-"""
-
+"""Logic to display the Attitude Indicator in the FrontEnd Window"""
 import sys
 from math import cos, radians, sin, sqrt
 
@@ -36,7 +29,6 @@ class pyG5AIWidget(QWidget):
     """Generate G5 wdiget view."""
 
     def __init__(self, parent):
-        # def __init__(self))
         super().__init__(parent=parent)
 
     def setup_hud_ui(self, ctx):
@@ -52,6 +44,7 @@ class pyG5AIWidget(QWidget):
         self.ctx = ctx
 
     def clean_hud(self):
+        """Populating default values in the HUD"""
         self.roll_angle = 0
         self.pitch_angle = 0
         self.gndspeed = 0
@@ -62,7 +55,6 @@ class pyG5AIWidget(QWidget):
         self.arm = "NONE"
         self.gnss_fix = 0
         self.mode = "NONE"
-
         self.alpha = 0
         self.beta = 0
         self.sat_count = 0
@@ -78,11 +70,12 @@ class pyG5AIWidget(QWidget):
         self.qp.setPen(pen)
 
     def paintEvent(self, event):
-        """Paint the widget."""
+        """Paint the widget every frame"""
         diamondHeight = 14
         diamondWidth = 14
 
         self.qp = QPainter(self)
+        # qp is the main painting object through rest of this file
 
         # set default font size
         font = self.qp.font()
@@ -436,6 +429,7 @@ class pyG5AIWidget(QWidget):
 
         font = self.qp.font()
         font.setPixelSize(speedBoxHeight - 10)
+
         # set default font size
         self.qp.setFont(font)
 
@@ -653,6 +647,7 @@ class pyG5AIWidget(QWidget):
         self.qp.setBackgroundMode(Qt.TransparentMode)
         font = self.qp.font()
         font.setPixelSize(10)
+
         # set default font size
         self.qp.setFont(font)
 
@@ -684,6 +679,7 @@ class pyG5AIWidget(QWidget):
                 )
 
             currentTape -= 1
+
         # tapeHeight = (vsScale - currentTape) / vsScale * g5Height
         vsHeight = -self.vspeed / 1 / vsScale * g5Height
         vsRect = QRectF(g5Width, g5CenterY, -vsIndicatorWidth, vsHeight)
@@ -699,6 +695,7 @@ class pyG5AIWidget(QWidget):
 
         font = self.qp.font()
         font.setPixelSize(20)
+
         # set default font size
         self.qp.setFont(font)
 

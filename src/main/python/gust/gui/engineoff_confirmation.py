@@ -1,18 +1,5 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Created on Tue Aug  2 14:58:22 2022
-
-@author: lagerprocessor
-"""
-
-import sys
-import os
-from functools import partial
-from PyQt5.QtWidgets import QMainWindow, QMessageBox, QDialog
-from PyQt5.QtCore import pyqtSlot, QModelIndex, pyqtSignal, QThreadPool
-from PyQt5.QtGui import QIntValidator, QTextCursor
-import requests
+"""Logic for engine-off confirmation window."""
+from PyQt5.QtWidgets import QDialog
 from gust.gui.ui.confirmation import Ui_MainWindow
 
 URL_BASE = "http://localhost:8000/api/"
@@ -26,15 +13,17 @@ class EngineOffConfirmation(QDialog, Ui_MainWindow):
         self.ctx = ctx
         self.setupUi(self)
 
-
+        # event connections
         self.pushButton_cancel.clicked.connect(self.clicked_cancel)
         self.pushButton_ok.clicked.connect(self.clicked_ok)
         self.label_custom.setText("Engine Shutdown?")
 
     def clicked_ok(self):
+        """Currently not doing anything, needs to request signal for engine-off"""
         self.reject()
 
     def clicked_cancel(self):
+        """Closes the disconnect confirmation window"""
         self.reject()
 
     def setupUi(self, mainWindow):

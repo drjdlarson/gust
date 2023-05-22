@@ -1,30 +1,22 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Created on Mon Jun 13 11:36:44 2022
+"""Logic for flight log analyzer window"""
 
-@author: lagerprocessor
-"""
-import sys
-import os
-from functools import partial
 from PyQt5.QtWidgets import QMainWindow, QMessageBox
-from PyQt5.QtCore import pyqtSlot, QModelIndex, pyqtSignal, QThreadPool
-from PyQt5.QtGui import QIntValidator, QTextCursor
-import requests
 from gust.gui.ui.log import Ui_MainWindow
 
 URL_BASE="http://localhost:8000/api/"
 
 class LogWindow(QMainWindow,Ui_MainWindow):
-    """Main interface for the connection window"""
+    """Main interface for the flight log analyzing window"""
+
+    # Currently not connected to anything.
+    # This window should accept flight log data from connected vehicles via MAVLink
+    # and be able to do the following:
+    # 1. Create an interface to visualize the data (plot time data based on selection)
+    # 2. Save the log data in certain formats for future use.
 
     def __init__(self,ctx):
         super().__init__()
         self.setupUi(self)
-
-        # self.pushButton_connect.clicked.connect(self.clicked_connect)
-
 
     def setupUi(self, mainWindow):
         """Sets up the user interface."""

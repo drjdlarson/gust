@@ -1,15 +1,14 @@
 """Map Widget for all planning windows"""
-import os
-import time
-import random
-import math
+
 import pathlib
-from functools import partial
-from PyQt5 import QtCore, QtWidgets, QtQuickWidgets, QtPositioning, QtQuickWidgets
-from PyQt5.QtCore import QTimer, QTemporaryDir, QFile, QAbstractListModel, Qt, QByteArray, QModelIndex, QVariant
+from PyQt5 import QtCore, QtPositioning, QtQuickWidgets
+from PyQt5.QtCore import QTemporaryDir, QFile, QAbstractListModel, Qt, QByteArray, QModelIndex, QVariant
 
 
 class PlanningMapWidget(QtQuickWidgets.QQuickWidget):
+    """Main Map widget calss for CMR Planning Window"""
+
+    # Similar to MapWidget class (See gust.gui.ui.map_widget.py)
 
     def __init__(self, parent=None):
         super(PlanningMapWidget, self).__init__(parent,
@@ -18,6 +17,8 @@ class PlanningMapWidget(QtQuickWidgets.QQuickWidget):
         self._waypoint_line_names = []
 
     def setup_qml(self, ctx):
+        """Sets up the QML map interface. See MapWidget.setup_qml() for more."""
+
         self.ctx = ctx
         qml_file = self.ctx.get_resource("cmr_planning/planning_map.qml")
         resource_file = self.ctx.get_resource('map_widget/README')
@@ -47,6 +48,8 @@ class PlanningMapWidget(QtQuickWidgets.QQuickWidget):
         self.rootContext().setContextProperty("line_model", self.line_model)
 
     def change_grid_line_state(self, val):
+        """Change the visibility of grid lines on the map."""
+
         if self._grid_line_names:
             if val == 1:
                 self.line_model.change_line_color("yellow_grid", "yellow")
@@ -54,6 +57,8 @@ class PlanningMapWidget(QtQuickWidgets.QQuickWidget):
                 self.line_model.change_line_color("yellow_grid", "transparent")
 
     def change_waypoints_line_state(self, val):
+        """Change the visibility of flight path lines on the map"""
+
         if self._waypoint_line_names:
             for name in self._waypoint_line_names:
                 color = name.split("_")[0]
@@ -63,24 +68,60 @@ class PlanningMapWidget(QtQuickWidgets.QQuickWidget):
                     self.line_model.change_line_color(name, "transparent")
 
     def add_grid_lines(self, coordinates):
+        """
+        Add Grid lines on the map
+
+        For CMR, this is shown as the Line-of-Interest. This may not be used for normal
+        flight planning. This is yellow in color.
+
+        Parameters
+        ----------
+        coordinates: list
+            List of coordinates in the format (Lat, Lon)
+
+        Returns
+        -------
+
+        """
+
+        # Creating and adding lines is done similar to MapWidget.
         grid_line = Lines()
         grid_line.setColor("yellow")
         qcoordinates = [QtPositioning.QGeoCoordinate(*ii) for ii in coordinates]
         grid_line.setPath(qcoordinates)
         self.line_model.addLine("yellow_grid", grid_line)
-
         self._grid_line_names.append("yellow_grid")
 
     def add_waypoint_lines(self, coordinates, color):
+        """
+        Add vehicle's flight plan on the map.
+
+        Parameters
+        ----------
+        coordinates: list
+            List of mission's waypoint coordinates in the form (Lat. Lon)
+        color: str
+            Color associated with the vehicle
+
+        Returns
+        -------
+
+        """
+
+        # Creating and adding lines is done similar to MapWidget
         wp_line = Lines()
         wp_line.setColor(color)
         qcoordinates = [QtPositioning.QGeoCoordinate(*ii) for ii in coordinates]
         wp_line.setPath(qcoordinates)
         self.line_model.addLine("{}_wp".format(color), wp_line)
-
         self._waypoint_line_names.append("{}_wp".format(color))
 
+
 class Lines(QAbstractListModel):
+    """A helper class to create lines in the map"""
+
+    # Similar to Line class in gust.gui.ui.map_widget.py
+
     pathChanged = QtCore.pyqtSignal(list)
     colorChanged = QtCore.pyqtSignal(str)
 
@@ -105,6 +146,10 @@ class Lines(QAbstractListModel):
 
 
 class LineModel(QAbstractListModel):
+    """A Map element to display flight lines of vehicle's mission on the map"""
+
+    # Similar to FlightLineModel class in gust.gui.ui.map_widget.py
+
     PathRole = Qt.UserRole + 1
     ColorRole = Qt.UserRole + 2
 

@@ -1,13 +1,8 @@
 """Definition of the server window GUI."""
-import shutil
 import sys
 import os
 import logging
-import time
-import random
-import traceback
-from time import sleep
-from functools import partial
+
 from PyQt5.QtWidgets import QMainWindow
 from PyQt5.QtCore import pyqtSlot, QModelIndex, pyqtSignal, QThreadPool, QObject
 from PyQt5.QtGui import QIntValidator, QTextCursor
@@ -21,13 +16,12 @@ import utilities.database as database
 from gust.worker import Worker
 import gust.conn_manager.conn_server as conn_server
 
-
 logger = logging.getLogger(__name__)
-
 
 class BackendWindow(QMainWindow, Ui_BackendWindow):
     """Main interface for the backend window."""
 
+    # signal to kill ConnServer's process once the backend is shut
     kill_conn_server_signal = pyqtSignal()
 
     def __init__(self, ctx, process_events, debug):
@@ -88,6 +82,13 @@ class BackendWindow(QMainWindow, Ui_BackendWindow):
         database.close_db()
 
     def _scan_plugins(self):
+        """
+        Scans and lists available plugins
+
+        Returns
+        -------
+
+        """
         pluginMonitor.scan_for_plugins()
 
         self.listWidget_availPlugins.clear()
@@ -115,10 +116,8 @@ class BackendWindow(QMainWindow, Ui_BackendWindow):
 
     def _stop_subtasks(self):
         self.kill_conn_server_signal.emit()
-
         succ = self._stop_server()
         succ = self._stop_plug_mon() and succ
-
         return succ
 
     def update_console_text(self, text):
