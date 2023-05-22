@@ -6,7 +6,7 @@ from PyQt5.QtCore import QTemporaryDir, QFile, QAbstractListModel, Qt, QByteArra
 
 
 class PlanningMapWidget(QtQuickWidgets.QQuickWidget):
-    """Main Map widget calss for CMR Planning Window"""
+    """Main Map widget cals for CMR Planning Window"""
 
     # Similar to MapWidget class (See gust.gui.ui.map_widget.py)
 
