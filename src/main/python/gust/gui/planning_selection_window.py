@@ -1,7 +1,7 @@
 """Logic for Flight Planning scheme selection"""
 from PyQt5.QtWidgets import QMessageBox, QDialog, QMainWindow
 from gust.gui.ui.planning_module import Ui_MainWindow
-from gust.gui import cmr_window
+from gust.gui import cmr_window, general_planning_window
 
 PLANNING_TYPES = ["General Planning", "CMR Planning"]
 
@@ -34,6 +34,12 @@ class PlanningSelectionWindow(QMainWindow, Ui_MainWindow):
             if self._cmrWindow is None:
                 self._cmrWindow = cmr_window.CmrWindow(self.ctx, parent=self)
             self._cmrWindow.show()
+        elif sel_type == "General Planning":
+            if self._generalWindow is None:
+                self._generalWindow = general_planning_window.GeneralPlanningWindow(
+                    self.ctx, parent=self
+                )
+            self._generalWindow.show()
 
     def setupUi(self, mainWindow):
         """Sets up the user interface."""

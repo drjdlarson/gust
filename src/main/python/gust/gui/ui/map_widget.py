@@ -354,6 +354,30 @@ class MapHelper:
         self.mode = mode
         self.ctx = ctx
 
+    @staticmethod
+    def remove_coord_from_wplist(wplist, coords2remove):
+        """
+        Remove the coordinate from a list of waypoints.
+
+        Parameters
+        ----------
+        wplist : list
+            List of tuple waypoints.
+        coords2remove : list
+            List of tuple waypoints to be removed
+
+        Returns
+        -------
+        new_wp_list : list
+            New List of tuple waypoints
+        """
+
+        new_wp_list = []
+        for wp in wplist:
+            if wp not in coords2remove:
+                new_wp_list.append(wp)
+        return new_wp_list
+
     def remove_all_models(self):
         """Removes all models of map elements for the vehicle from the map"""
         self.marker_model.removeMarker(self.name)

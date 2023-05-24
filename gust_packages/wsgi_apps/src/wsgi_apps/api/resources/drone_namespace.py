@@ -192,9 +192,12 @@ class UploadWP(Resource):
                     "msg": "Unable to add waypoint info to the database",
                 }
 
-        # put other mission types here
+        elif mission_type == conn_settings.GEN:
+            return self.send_upload_msg(upload_info)
+
+        # put other mission types here.
         # elif mission_type ==
-            ##############
+        ###############
 
         else:
             return {"success": False, "msg": "Invalid Mission Type"}
