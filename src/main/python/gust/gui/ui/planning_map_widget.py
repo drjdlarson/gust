@@ -56,6 +56,7 @@ class PlanningMapWidget(QtQuickWidgets.QQuickWidget):
             else:
                 self.line_model.change_line_color("yellow_grid", "transparent")
 
+                
     def change_waypoints_line_state(self, val, wpcolor=None):
         """
         Change the visibility of flight path lines on the map
@@ -149,6 +150,7 @@ class PlanningMapWidget(QtQuickWidgets.QQuickWidget):
     def form_line_model_name(self, color):
         """Returns string 'color_name'."""
         return "{}_wp".format(color)
+
 
 class Lines(QAbstractListModel):
     """A helper class to create lines in the map"""
