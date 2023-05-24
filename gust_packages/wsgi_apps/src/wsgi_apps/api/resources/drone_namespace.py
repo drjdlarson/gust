@@ -193,8 +193,10 @@ class UploadWP(Resource):
                 }
 
         # put other mission types here
-        # elif mission_type ==
-            ##############
+        elif mission_type == conn_settings.GEN:
+            # TODO: do this tomorrow.
+
+            return {"success": False, "msg": "WSGI is working..."}
 
         else:
             return {"success": False, "msg": "Invalid Mission Type"}

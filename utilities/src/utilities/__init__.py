@@ -38,6 +38,7 @@ class ConnSettings:
 
     # Mission Plan Type
     CMR = "cmr_planning"
+    GEN = "general_planning"
 
     # CMR Process
     # CMR QProcess' UDP socket is started on this port.
