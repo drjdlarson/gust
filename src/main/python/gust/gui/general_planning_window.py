@@ -1,11 +1,12 @@
 """Logic for General Planning Window"""
 
 import requests
-import pathlib
+import random
 from PyQt5 import QtGui, QtCore
 from PyQt5.QtCore import pyqtSlot
 from PyQt5.QtWidgets import (
     QMainWindow,
+    QCheckBox,
     QMessageBox,
     QFileDialog,
     QTableWidgetItem,
@@ -15,10 +16,16 @@ from PyQt5.QtWidgets import (
 from utilities import ConnSettings as conn_settings
 from gust.gui.ui.general_planning import Ui_MainWindow
 from wsgi_apps.api.url_bases import BASE, DRONE
+from gust.gui.ui.map_widget import MapHelper
 
 URL_BASE = "http://localhost:8000/{}/".format(BASE)
 DRONE_BASE = "{}{}/".format(URL_BASE, DRONE)
 FILES = ["home", "pos", "spos", "rtl_pos"]
+
+# picked up random colors from QML colors type
+# https://doc.qt.io/qt-6/qml-color.html
+ALL_COLORS = ['aqua', 'yellow', 'blue', 'darkgoldenrod', 'darkorange', 'red', 'green',
+          'sienna', 'wheat', 'fuchsia']
 
 class GeneralPlanningWindow(QMainWindow, Ui_MainWindow):
     """Main Interface for general planning window."""
@@ -28,8 +35,10 @@ class GeneralPlanningWindow(QMainWindow, Ui_MainWindow):
 
         self.ctx = ctx
         self.setupUi(self)
-        self.loaded_mission_names = {}
+        self.loaded_mission_wps = {}
         self.file_names = {}
+        self.mission_colors = {}
+        self.cb = {}
 
         # event connections
         self.pushButton_load_file.clicked.connect(self.clicked_load_file)
@@ -56,14 +65,62 @@ class GeneralPlanningWindow(QMainWindow, Ui_MainWindow):
 
             # For each selected file
             for fname in fnames:
+                self.load_mission_file(fname)
 
-                # getting the file name excluding the full path and extension name
-                mission_name = (fname.split('/')[-1]).split('.')[0]
-                self.file_names[mission_name] = fname
-                self.read_pos_from_file(fname, mission_name)
 
-                # populating the missions table
-                self.add_row_in_missions(mission_name)
+    def load_mission_file(self, filename):
+        """Tasks to perform when a mission file is loaded"""
+
+        # getting the file name excluding the full path and extension name
+        mission_name = (filename.split('/')[-1]).split('.')[0]
+        self.file_names[mission_name] = filename
+
+        # assign a color to the loaded mission
+        self.assign_color_to_the_mission(mission_name)
+
+        # reading the XYZ and command from the file.
+        self.loaded_mission_wps[mission_name] = self.read_pos_from_file(filename)
+
+        # populating the missions table
+        self.add_row_in_missions(mission_name)
+
+        # add the mission to the map
+        self.add_mission_to_map(mission_name)
+
+        # add checkboxes for map visibility
+        self.add_checkbox_for_mission(mission_name)
+
+    def add_checkbox_for_mission(self, mission):
+        """Add Checkbox for each mission to change visibility in the map"""
+        self.cb[mission] = QCheckBox(mission)
+        self.cb[mission].setTristate(False)
+        self.cb[mission].setCheckState(True)
+        self.cb[mission].stateChanged.connect(self.checkbox_state_changed)
+        self.horizontalLayout_checkboxes.addWidget(self.cb[mission])
+
+    def checkbox_state_changed(self):
+        print("state is changed...")
+        # TODO: finish this up
+
+
+    def add_mission_to_map(self, mission):
+        """Displays the loaded mission on the map"""
+
+        # Only picking the (X, Y) values
+        coords = [self.loaded_mission_wps[mission][index][:2] for index in
+                  range(len((self.loaded_mission_wps[mission])))]
+
+        # Remove the waypoints with (x,y) == (0.0, 0.0), (1,0, 1.0) from showing in map
+        coordinates = MapHelper.remove_coord_from_wplist(coords, [(0.0, 0.0), (1.0, 1.0)])
+
+        # display on the map
+        self.widget_planning_map.add_waypoint_lines(coordinates, self.mission_colors[mission])
+
+
+    def assign_color_to_the_mission(self, mission_name):
+        """Assigns a color to the loaded mission"""
+        available_colors = [i for i in ALL_COLORS if i not in self.mission_colors.values()]
+        self.mission_colors[mission_name] = random.choice(available_colors)
 
     def add_row_in_missions(self, mission):
         """Adding the new mission name in the table"""
@@ -74,7 +131,7 @@ class GeneralPlanningWindow(QMainWindow, Ui_MainWindow):
 
         # First column: Mission name
         item = QTableWidgetItem(mission)
-        item.setTextAlignment(QtCore.Qt.AlignCenter)
+        item.setBackground(QtGui.QColor(self.mission_colors[mission]))
         self.tableWidget_missions.setItem(rowPos, 0, item)
 
         # Second column: dropdown for vehicle selection
@@ -91,7 +148,7 @@ class GeneralPlanningWindow(QMainWindow, Ui_MainWindow):
         remove_button.clicked.connect(self.remove_mission)
         self.tableWidget_missions.setCellWidget(rowPos, 3, remove_button)
 
-    def read_pos_from_file(self, file_name, mission_name):
+    def read_pos_from_file(self, file_name):
         """
         Read the mission file and save positions in the loaded_mission_names dict.
 
@@ -99,12 +156,11 @@ class GeneralPlanningWindow(QMainWindow, Ui_MainWindow):
         ----------
         file_name : str
             File path for the mission file
-        mission_name : str
-            Name of the mission
 
         Returns
         -------
-
+        wps : list
+            List of tuples containing (X, Y, Z, MAV_CMD)
         """
         wps = []
         with open(file_name) as f:
@@ -120,9 +176,7 @@ class GeneralPlanningWindow(QMainWindow, Ui_MainWindow):
                     ln_z = float(linearray[10])
                     ln_command = int(linearray[3])
                     wps.append((ln_x, ln_y, ln_z, ln_command))
-
-        # adding the pos list as a value in loaded_mission_names
-        self.loaded_mission_names[mission_name] = wps
+        return wps
 
     @pyqtSlot()
     def mission_upload(self):
@@ -130,9 +184,9 @@ class GeneralPlanningWindow(QMainWindow, Ui_MainWindow):
         upload_button = self.sender()
 
         if upload_button:
-            selected_row = self.tableWidget_missions.indexAt(upload_button.pos()).row()
-            sel_vehicle_name = self.tableWidget_missions.cellWidget(selected_row, 1).currentText()
-            sel_mission_name = self.tableWidget_missions.item(selected_row, 0).text()
+            sel_row = self.tableWidget_missions.indexAt(upload_button.pos()).row()
+            sel_vehicle_name = self.tableWidget_missions.cellWidget(sel_row, 1).currentText()
+            sel_mission_name = self.tableWidget_missions.item(sel_row, 0).text()
 
             print("uploading {} to {}".format(sel_mission_name, sel_vehicle_name))
 
@@ -172,10 +226,11 @@ class GeneralPlanningWindow(QMainWindow, Ui_MainWindow):
             selected_row = self.tableWidget_missions.indexAt(remove_button.pos()).row()
             discon_name = self.tableWidget_missions.item(selected_row, 0).text()
             self.tableWidget_missions.removeRow(selected_row)
-            del self.loaded_mission_names[discon_name]
+            del self.loaded_mission_wps[discon_name]
+            del self.mission_colors[discon_name]
 
             # Just delete everything from the table
-            self.tableWidget_waypoints.clear()
+            self.tableWidget_waypoints.setRowCount(0)
 
 
     def get_connected_vehicles(self):
@@ -187,12 +242,12 @@ class GeneralPlanningWindow(QMainWindow, Ui_MainWindow):
         """Event connection when any cell is clicked on the missions table"""
 
         # Clear the table first
-        self.tableWidget_waypoints.clear()
+        self.tableWidget_waypoints.setRowCount(0)
 
         # finding the name of selected vehicle. Row is passed by the event connection.
         selected_mission = self.tableWidget_missions.item(row, 0).text()
 
-        for wp in self.loaded_mission_names[selected_mission]:
+        for wp in self.loaded_mission_wps[selected_mission]:
             current_rows = self.tableWidget_waypoints.rowCount()
             self.tableWidget_waypoints.insertRow(current_rows)
 
