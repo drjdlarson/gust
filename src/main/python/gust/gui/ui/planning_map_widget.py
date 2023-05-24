@@ -56,16 +56,42 @@ class PlanningMapWidget(QtQuickWidgets.QQuickWidget):
             else:
                 self.line_model.change_line_color("yellow_grid", "transparent")
 
-    def change_waypoints_line_state(self, val):
-        """Change the visibility of flight path lines on the map"""
+    def change_waypoints_line_state(self, val, wpcolor=None):
+        """
+        Change the visibility of flight path lines on the map
 
-        if self._waypoint_line_names:
-            for name in self._waypoint_line_names:
-                color = name.split("_")[0]
-                if val == 1:
-                    self.line_model.change_line_color(name, color)
-                else:
-                    self.line_model.change_line_color(name, "transparent")
+        Parameters
+        ----------
+        val : int (0 or 1)
+            1 will make it visible, 0 will hide the line
+        wpcolor : str (optional)
+            Color associated with the waypoints
+            If wpcolor is not provided, visibility is changed to val for all
+            waypoints (example: CMR planning window).
+
+        Returns
+        -------
+
+        """
+
+        if wpcolor is None:
+            if self._waypoint_line_names:
+                for name in self._waypoint_line_names:
+                    color = name.split("_")[0]
+                    self.change_waypoints_visibility(name, color, val)
+
+        # Changing visibility for individual plans
+        else:
+            model_name = self.form_line_model_name(wpcolor)
+            self.change_waypoints_visibility(model_name, wpcolor, val)
+
+    def change_waypoints_visibility(self, name, color, val):
+        """Change the visibility of waypoint model to val"""
+        if val == 1:
+            self.line_model.change_line_color(name, color)
+        else:
+            self.line_model.change_line_color(name, "transparent")
+
 
     def add_grid_lines(self, coordinates):
         """
@@ -113,9 +139,16 @@ class PlanningMapWidget(QtQuickWidgets.QQuickWidget):
         wp_line.setColor(color)
         qcoordinates = [QtPositioning.QGeoCoordinate(*ii) for ii in coordinates]
         wp_line.setPath(qcoordinates)
-        self.line_model.addLine("{}_wp".format(color), wp_line)
-        self._waypoint_line_names.append("{}_wp".format(color))
+        self.line_model.addLine(self.form_line_model_name(color), wp_line)
+        self._waypoint_line_names.append(self.form_line_model_name(color))
 
+    def remove_line_from_map(self, wpcolor):
+        """Removes the line models associated with the color"""
+        self.line_model.remove_line(self.form_line_model_name(wpcolor))
+
+    def form_line_model_name(self, color):
+        """Returns string 'color_name'."""
+        return "{}_wp".format(color)
 
 class Lines(QAbstractListModel):
     """A helper class to create lines in the map"""
@@ -204,3 +237,10 @@ class LineModel(QAbstractListModel):
         if name in self.object_names:
             ind = self.index(self.object_names.index(name), 0)
             self.setData(ind, new_color, LineModel.ColorRole)
+
+    def remove_line(self, name):
+        row_index = self.object_names.index(name)
+        self.beginRemoveRows(QModelIndex(), row_index, row_index)
+        del self._lines[row_index]
+        self.endRemoveRows()
+        self.object_names.remove(name)

@@ -2,7 +2,7 @@
 
 import requests
 import random
-from PyQt5 import QtGui, QtCore
+from PyQt5 import QtGui
 from PyQt5.QtCore import pyqtSlot
 from PyQt5.QtWidgets import (
     QMainWindow,
@@ -24,8 +24,8 @@ FILES = ["home", "pos", "spos", "rtl_pos"]
 
 # picked up random colors from QML colors type
 # https://doc.qt.io/qt-6/qml-color.html
-ALL_COLORS = ['aqua', 'yellow', 'blue', 'darkgoldenrod', 'darkorange', 'red', 'green',
-          'sienna', 'wheat', 'fuchsia']
+ALL_COLORS = ['aqua', 'yellow', 'blue', 'darkcyan', 'darkorange', 'red', 'green',
+          'sienna', 'darkslateblue', 'fuchsia']
 
 class GeneralPlanningWindow(QMainWindow, Ui_MainWindow):
     """Main Interface for general planning window."""
@@ -73,34 +73,55 @@ class GeneralPlanningWindow(QMainWindow, Ui_MainWindow):
 
         # getting the file name excluding the full path and extension name
         mission_name = (filename.split('/')[-1]).split('.')[0]
-        self.file_names[mission_name] = filename
 
-        # assign a color to the loaded mission
-        self.assign_color_to_the_mission(mission_name)
+        # Avoid missions with duplicate names
+        if mission_name not in self.loaded_mission_wps.keys():
 
-        # reading the XYZ and command from the file.
-        self.loaded_mission_wps[mission_name] = self.read_pos_from_file(filename)
+            # saving the filepath (required to send it to ConnServer.)
+            self.file_names[mission_name] = filename
 
-        # populating the missions table
-        self.add_row_in_missions(mission_name)
+            # assign a color to the loaded mission
+            self.mission_colors[mission_name] = self.assign_color_to_the_mission(mission_name)
 
-        # add the mission to the map
-        self.add_mission_to_map(mission_name)
+            # reading the XYZ and command from the file.
+            self.loaded_mission_wps[mission_name] = self.read_pos_from_file(filename)
 
-        # add checkboxes for map visibility
-        self.add_checkbox_for_mission(mission_name)
+            # populating the missions table
+            self.add_row_in_missions(mission_name)
+
+            # add the mission to the map
+            self.add_mission_to_map(mission_name)
+
+            # add checkboxes for map visibility
+            self.add_checkbox_for_mission(mission_name)
+
+        else:
+            msg = "{} name already exists".format(mission_name)
+            self.display_message(QMessageBox.Warning, msg)
 
     def add_checkbox_for_mission(self, mission):
         """Add Checkbox for each mission to change visibility in the map"""
+
         self.cb[mission] = QCheckBox(mission)
-        self.cb[mission].setTristate(False)
+        self.cb[mission].setTristate(True)
         self.cb[mission].setCheckState(True)
         self.cb[mission].stateChanged.connect(self.checkbox_state_changed)
         self.horizontalLayout_checkboxes.addWidget(self.cb[mission])
 
+
+    @pyqtSlot()
     def checkbox_state_changed(self):
-        print("state is changed...")
-        # TODO: finish this up
+        """Hide or display the waypoints for selected mission"""
+
+        sel_checkbox_object = self.sender()
+        # finding the mission name using checkbox' name
+        sel_wp_color = self.mission_colors[sel_checkbox_object.text()]
+
+        # change the state
+        if sel_checkbox_object.isChecked():
+            self.widget_planning_map.change_waypoints_line_state(1, sel_wp_color)
+        else:
+            self.widget_planning_map.change_waypoints_line_state(0, sel_wp_color)
 
 
     def add_mission_to_map(self, mission):
@@ -120,7 +141,7 @@ class GeneralPlanningWindow(QMainWindow, Ui_MainWindow):
     def assign_color_to_the_mission(self, mission_name):
         """Assigns a color to the loaded mission"""
         available_colors = [i for i in ALL_COLORS if i not in self.mission_colors.values()]
-        self.mission_colors[mission_name] = random.choice(available_colors)
+        return random.choice(available_colors)
 
     def add_row_in_missions(self, mission):
         """Adding the new mission name in the table"""
@@ -181,6 +202,8 @@ class GeneralPlanningWindow(QMainWindow, Ui_MainWindow):
     @pyqtSlot()
     def mission_upload(self):
         """Uploads the mission to the selected row."""
+
+        # finding the button object that was clicked
         upload_button = self.sender()
 
         if upload_button:
@@ -199,21 +222,14 @@ class GeneralPlanningWindow(QMainWindow, Ui_MainWindow):
 
             upload = requests.get(url).json()
 
-            msgBox = QMessageBox()
             if upload["success"]:
-                msgBox.setIcon(QMessageBox.Information)
-                msgBox.setText(
-                    "Uploaded {} waypoints to {}".format(sel_mission_name, sel_vehicle_name)
-                )
-                msgBox.exec()
+                msg = "Uploaded {} waypoints to {}".format(sel_mission_name, sel_vehicle_name)
+                self.display_message(QMessageBox.Information, msg)
             else:
-                msgBox.setIcon(QMessageBox.Warning)
-                msgBox.setText(
-                    "Unable to upload {} waypoints to {}:: {:s}".format(
+                msg = "Unable to upload {} waypoints to {}:: {:s}".format(
                         sel_mission_name, sel_vehicle_name, upload["msg"]
                     )
-                )
-                msgBox.exec()
+                self.display_message(QMessageBox.Warning, msg)
 
 
     @pyqtSlot()
@@ -226,12 +242,21 @@ class GeneralPlanningWindow(QMainWindow, Ui_MainWindow):
             selected_row = self.tableWidget_missions.indexAt(remove_button.pos()).row()
             discon_name = self.tableWidget_missions.item(selected_row, 0).text()
             self.tableWidget_missions.removeRow(selected_row)
-            del self.loaded_mission_wps[discon_name]
-            del self.mission_colors[discon_name]
+
+            # removing checkboxes
+            self.horizontalLayout_checkboxes.removeWidget(self.cb[discon_name])
 
             # Just delete everything from the table
             self.tableWidget_waypoints.setRowCount(0)
 
+            # delete mission from the map
+            self.widget_planning_map.remove_line_from_map(self.mission_colors[discon_name])
+
+            # delete other saved stuff.
+            del self.loaded_mission_wps[discon_name]
+            del self.mission_colors[discon_name]
+            del self.file_names[discon_name]
+            self.cb[discon_name] = None
 
     def get_connected_vehicles(self):
         """Find a list of currently connected vehicles."""
@@ -280,3 +305,10 @@ class GeneralPlanningWindow(QMainWindow, Ui_MainWindow):
             self.tableWidget_missions.cellWidget(row_num, 1).clear()
             self.tableWidget_missions.cellWidget(row_num, 1).addItems(connected_vehicles)
 
+
+    def display_message(self, type, msg):
+        """Display the message on a separate box"""
+        msgBox = QMessageBox()
+        msgBox.setIcon(type)
+        msgBox.setText(msg)
+        msgBox.exec()
