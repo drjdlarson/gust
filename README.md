@@ -1,48 +1,50 @@
-# gust
-GCS for Uncrewed Swarms and Teams (GUST)
+GUST
+====
 
-# Setup
-You should be able to pip install the gust package and get most of this, be sure to do that after pip installing the custom fork of fbs so the newer version of PyInstaller is used (may need the -U flag when installing gust). You will need to manually install pyqt5-tools. Otherwise, this requires
+![gust_logo](https://github.com/drjdlarson/gust/assets/77820053/0d991c48-7aa3-46ff-84f1-f5d03a14ff9f)
 
-- python 3.7
-- PyQt5
-- PyQt5-tools
-- flask
-- flask-restx
-- requests
-- gunicorn (linux/mac) and/or waitress (windows)
+The Ground Control Station (GCS) for Uncrewed Swarms and Teams (GUST) is an application developed by the Laboratory for Autonomy, GNC, and Estimation Research (LAGER) at The University of Alabama. GUST offers comprehensive planning, tracking, command, and control capabilities of an uncrewed swarm for teaming operations. It utilizes the standard MAVLink protocol to communicate with the swarm agents, enabling compatibility with various uncrewed autonomous systems such as Ardupilot based flight computers and Bolder Flight Systems. Full-stack development of GUST was done primarily based on PyQt5 framework. Its software architecture is designed to be modular for easy integration of external plugins and software packages. The GUST application runs inside a docker container making it compatible with any operating system with docker. It is also deployed on a ruggedized ground station box for LAGER’s outdoor survey and remote sensing operations with Uncrewed Aircraft Systems (UAS). 
 
- This should all work in either a virtual environment or a conda environment (everything installed with pip). For freezing (packaging) and creating installer files a custom fork of fbs is required (TODO: setup actual fork and link it here).
+Major Features:
+- Capable of relaying real-time telemetry from all connected vehicles to a single Graphical User Interface (GUI) for convenient monitoring. 
+- Easy integration of external plugins and tools.   
+- Includes a Target tracking module with a GUI to configure and display real time tracking information from different sensors (example: ZED).  
+- Includes a Planning module to design flight paths for individual vehicles or cooperative maneuvers for a swarm.  
+- Provides ability for the ground station operator to command and control each vehicle for some specific tasks or during emergencies.  
+- Storage of flight data from all vehicles for future analysis.  
 
-# Converting UI files
-A helper script `convert_ui_files.py` has been included to automatically convert all \*.ui files to \*.py files. This assumes that pyuic5 is installed and the \*.ui files are in the standard location.
+DEV Setup
+=========
+Write about dev container setup.
 
-# Helpful commands
-To get the qt designer run `qt5-tools designer`
+Usage
+=====
+Write about deplyoment in hardware and installation process.
 
-# Docker Compose
-See <https://www.stereolabs.com/docs/docker/building-arm-container-on-x86/> for multi-arch containers
-and <https://github.com/tldr-pages/tldr/blob/master/pages/common/docker-compose.md> for docker-compose commands
+API Reference
+=============
+Put a link to the API reference. 
+- Flowcharts.
+- documentation from docstrings.
+- Instructions on how to add maps, icons, colors.
+- Instructions on using designer and converting to python. 
+- Instructions on using Ardupilot SIL. 
 
-The **lager_sensors** repo must be cloned inside gust at the root level for the docker containers, this is because the repo is private and this is easier than dealing with ssh keys in the conatainers.
 
-Install QEMU for hardware emulation with `sudo apt-get install qemu binfmt-support qemu-user-static`
-
-Run `docker run --rm --privileged multiarch/qemu-user-static --reset -p yes` to activate the emulation (should only need to be done once?).
-
-See <https://discuss.ardupilot.org/t/ardupilot-and-docker-part-1/90532> for ardupilot docker info
-=======
-
+    
 Cite
 ====
 Please cite the framework as follows
 
-.. code-block:: bibtex
+```bibtex
 
-    @Misc{gncpy,
+    @Misc{gust,
     author       = {Jordan D. Larson and Aabhash Bhandari and Ryan W. Thomas},
     howpublished = {Web page},
     title        = {{GUST}: A {G}round control station (GCS) for {U}ncrewed {S}warms and {T}eams},
     year         = {2022},
     url          = {https://github.com/drjdlarson/gust},
     }
+
+```
+    
