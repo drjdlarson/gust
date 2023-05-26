@@ -30,17 +30,21 @@ Put a link to the API reference.
 - Instructions on using designer and converting to python. 
 - Instructions on using Ardupilot SIL. 
 
+
+    
 Cite
 ====
 Please cite the framework as follows
 
-.. code-block:: bibtex
+```bibtex
 
-    @Misc{gncpy,
+    @Misc{gust,
     author       = {Jordan D. Larson and Aabhash Bhandari and Ryan W. Thomas},
     howpublished = {Web page},
     title        = {{GUST}: A {G}round control station (GCS) for {U}ncrewed {S}warms and {T}eams},
     year         = {2022},
     url          = {https://github.com/drjdlarson/gust},
     }
-..
+
+```
+    
