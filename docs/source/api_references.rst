@@ -2,8 +2,8 @@ GUST API References
 *******************
 
 All Packages for GUST:
-
-* GUST main : Handles user interface related elements (For both Frontend and Backend)
+----------------------
+* GUST main : Handles user interface related elements (For both Frontend and Backend).
 * WSGI App : Handles web requests for communication between GUST main and the backend / database.
 * Radio Manager : Handles MAVLink communication with a vehicle or a SIL
 * Zed Manager : Handles communication with the Zed cameras.

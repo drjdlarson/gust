@@ -35,15 +35,21 @@ extensions = [
     "sphinx.ext.todo",
     "sphinx.ext.viewcode",
     "sphinxcontrib.apidoc",
+    "sphinx.ext.autosectionlabel",
 ]
 
 templates_path = ['_templates']
 exclude_patterns = []
 
+# Todo configuration
+todo_include_todos = True
+todo_link_only = True
+
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 
 html_theme = 'sphinx_rtd_theme'
+html_theme_options = {'style_nav_header_background': '#9e1b32'}
 html_logo = "images/gust_logo.svg"
 html_show_sourcelink = False
 html_baseurl = "https://github.com/drjdlarson/gust"
