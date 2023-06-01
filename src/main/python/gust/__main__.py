@@ -95,7 +95,7 @@ def main():
     register_sigterm(window)
     register_sigint(window)
 
-    plug_readme = appctxt.get_resource('plugins/README.md')
+    plug_readme = appctxt.get_resource('plugins/README.rst')
     pluginMonitor.plugin_dir = os.path.dirname(plug_readme)
 
     exit_code = appctxt.app.exec_()      # 2. Invoke appctxt.app.exec_()

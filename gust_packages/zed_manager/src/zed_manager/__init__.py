@@ -1,3 +1,4 @@
+"""Handles communication with Zed"""
 import time
 import logging
 import utilities.database as database
