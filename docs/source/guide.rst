@@ -11,6 +11,10 @@ Software Architecture
 * Frontend includes all the UI design from QtDesigner and logic for all UI windows. To interact with the backend / database, it sends HTTP requests to WSGI App. These requests are sent as URLs formatted with requested information / commands. The HTTP requests typically return a dict to the Frontend that can be displayed in the UI with appropriate formatting.
 * WSGI App routes the HTTP requests to specific classes (in wsgi_apps/api/resources/) to perform certain tasks based on the requests' URL.
 * Dashed ellipses in above diagram represent components that spawn separate sub-processes. Start / end of these subprocesses are handled by the backend. All these processes have access to the common database.
+* radio_manager package handles all communication with the vehicle radios. It includes methods to connect, send, and receive MAVLink messages from the vehicle using dronekit's API.
+
+    * Note : Each radio_manager process is linked to a unique vehicle and is only responsible for communicating with that vehicle. These radio_manager processes run independently enabling multiple vehicle connection.
+
 * All processes are capable of sending messages to the backend via UDP sockets (handled by gust/conn_manager).
 * sqlite is used for database. All processes write information to the database, and WSGI app extracts it from the database for frontend display.
 
@@ -41,10 +45,10 @@ Vehicle connection/disconnection
     * Note : Disconnection also works the same way. Information flows from Frontend -> WSGI apps -> ConnServer and back for response message. For disconnection, only the vehicle name is passed. When ConnServer receives the disconnection message, it kills the radio_manager process associated with the vehicle.
 
 
-Starting Ardupilot SIL on host
-##############################
+Starting Ardupilot SIL
+######################
 
-#. Running an Ardupilot SIL requires a compiled executable file on resources/base/sil_manager. (Currently only supporting Arducopter)
+#. Running an Ardupilot SIL requires a compiled executable on resources/base/sil_manager. (Currently only supporting Arducopter)
 #. Once pushbutton_sil is clicked, it opens the StartSILWindow.
 #. User can select different options for the SIL. Similar to ConWindow, it creates a URL for HTTP request and sends it to WSGI App.
 
@@ -60,14 +64,30 @@ Starting Ardupilot SIL on host
 MAVLink commands from user to vehicle
 #####################################
 
-* Step 1
-* Step 2
+#. MAVLink messages from the vehicle such as vehicle state are constantly pulled by RadioManager. This telemetry data is stored in the common database.
+#. FrontendWindow.update_request() method requests the telemetry data from the database in a constant interval using a helper DataManager class.
+#. DataManager sends the HTTP requests to the WSGI App. WSGI App includes classes to handle telemetry data requests.
+#. These classes include a 'params' attribute which is a list of all the parameters (or vehicle states) that class can request. It pulls the latest value stored for each of the params in the database tables.
+
+    * Note : The strings in the params list are hardcoded in the database side as well. Basically, these params are the headers for the tables in database. So, please do not change these 'params' if you are not sure what you are doing.
+
+#. The return from the database is packaged as a dict including values for all requested parameters for all vehicles.
+#. This dict is passed to the frontend window as a return of the HTTP request.
+#. Frontend window's DataManager class reorganizes the received dicts into a single dict containing all telemetry data for all vehicles. Once this is done, it emits a signal which is caught by the FrontendWindow.update_frame() method.
+#. FrontendWindow.update_frame() updates the UI everytime new data is received from the DataManager.
+
 
 Backend data handling by ConnServer
 ###################################
 
-* Step 1
-* Step 2
+#. At the beginning of the program, the backend starts ConnServer as a thread. ConnServer includes a UDP server socket that constantly listens to messages from other processes.
+#. If a message is received from a socket client, it tries to determine the message type.
+
+    * Note : All UDP socket messages used in GUST are always sent with a 'message_type'. Message types are defined in utilities.ConnSettings.
+
+#. Based on the message_type, ConnServer forwards the message to appropriate methods as arguments.
+#. It can also send response to the UDP socket clients.
+
 
 Instructions
 ============
@@ -75,8 +95,30 @@ Instructions
 Building new UI windows with QtDesigner
 #######################################
 
-* Step 1
-* Step 2
+#. The UI for all windows are designed using QtDesigner. Open Designer app by running
+
+.. code-block::
+
+    Designer
+
+#. Design your UI. Please be consistent with the naming of Qt objects with current style (i.e. include Qt object type in the name).
+
+    * Example : If adding a pushbutton (QPushButton) to open a file, name it ``pushButton_openfile``. If adding a dropdown (QComboBox) to display available colors, name it ``comboBox_colors``.
+
+#. Once you save the file, go to the terminal (inside gust's root directory) and run the python script to convert UI files to python files.
+
+.. code-block::
+
+    python convert_ui_files.py
+
+#. The python files with the same name will be saved in gust.gui.ui directory. You should be able to run the converted python file to preview the UI (just like in Designer).
+
+    * Note : Never make any edits to any of the autogenerated python files.
+
+#. To write logic for the new window, create a new python file in gust.gui. Import the autogenerated python file and create a new class for the window inheriting from the UI class in the autogenerated python file. This gives you access to all the UI elements in the new gust.gui file (See examples).
+
+    * Note : This is done to keep the code for window's logic and UI aspects separate. This just makes things cleaner as we have so many windows for gust.
+
 
 Add more areas in the map
 #########################
