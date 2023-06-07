@@ -44,11 +44,10 @@ Write about deplyoment in hardware and installation process.
 
 API Reference
 =============
-Documentation of GUST including the API references are saved in docs/build. To open the documentation locally, download the build folder and open build/html/index.html on any browser.
 
 To generate new documentation after edits, run the ``build_documentation.bash`` script in /build_scripts.
 
-To open the documentation online with github, `click here <docs/build/index.html>`_.
+
 
 Cite
 ====

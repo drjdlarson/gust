@@ -6,9 +6,9 @@ LABEL description="Dev Environment for GUST."
 ARG USER_UID=1000
 ARG USER_GID=1000
 
-RUN apt-get update \
-    && apt-get install -y --no-install-recommends software-properties-common \
-    && rm -rf /var/lib/apt/lists/*
+RUN apt-get update 
+RUN apt-get install -y --no-install-recommends software-properties-common 
+RUN rm -rf /var/lib/apt/lists/*
 RUN add-apt-repository -y ppa:deadsnakes/ppa
     
 
@@ -22,7 +22,10 @@ RUN apt-get update \
     python3-dev \
     build-essential \
     wget \
+    python3-pyproj \
     && rm -rf /var/lib/apt/lists/*
+
+RUN apt-get update && apt-get install ffmpeg libsm6 libxext6  -y
 
 RUN update-alternatives --install /usr/bin/python python /usr/bin/python3 2 \
     && update-alternatives --install /usr/bin/python python /usr/bin/python3.7 1 \
@@ -48,11 +51,12 @@ RUN python -m pip install \
     flask-restx \
     gunicorn 
 
-RUN wget https://bootstrap.pypa.io/get-pip.py \
-    && python get-pip.py
 
 COPY entrypoint.bash /
 RUN chmod +x /entrypoint.bash
-WORKDIR /workspace
+WORKDIR /workspaces
+
 ENTRYPOINT ["/bin/bash", "-c", "/entrypoint.bash"]
+
+
 
