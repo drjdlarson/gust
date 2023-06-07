@@ -52,11 +52,14 @@ RUN python -m pip install \
     gunicorn 
 
 
-COPY entrypoint.bash /
-RUN chmod +x /entrypoint.bash
+COPY entrypoint.sh /
+RUN chmod +x /entrypoint.sh
 WORKDIR /workspaces
 
-ENTRYPOINT ["/bin/bash", "-c", "/entrypoint.bash"]
+# ENTRYPOINT ["/bin/bash", "-c", "/entrypoint.bash"]
 
+ENTRYPOINT [ "/entrypoint.sh" ]
+CMD ["sleep", "infinity"]
+# ENTRYPOINT [ "/bin/bash" ]
 
 
