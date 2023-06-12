@@ -3,10 +3,10 @@
 {
 	"name": "gust-dev",
 	"build": {
-        "dockerfile": "Dockerfile"
-    },
+        "dockerfile": "Dockerfile",
+	},
 
-	"overrideCommand": false,
+	// "overrideCommand": false,
 	
 	"customizations": {
 		"vscode": {

@@ -1,4 +1,4 @@
-FROM ubuntu:bionic
+FROM python:3.7
 
 LABEL maintainer="lager_gcs@outlook.com"
 LABEL description="Dev Environment for GUST."
@@ -6,39 +6,16 @@ LABEL description="Dev Environment for GUST."
 ARG USER_UID=1000
 ARG USER_GID=1000
 
-RUN apt-get update 
-RUN apt-get install -y --no-install-recommends software-properties-common 
-RUN rm -rf /var/lib/apt/lists/*
-RUN add-apt-repository -y ppa:deadsnakes/ppa
-    
+RUN apt-get update && apt-get install ffmpeg libsm6 libxext6 libxcb-xinerama0 libxcb-cursor0 -y
+RUN apt-get install '^libxcb.*-dev' libx11-xcb-dev libglu1-mesa-dev libxrender-dev libxi-dev libxkbcommon-dev libxkbcommon-x11-dev -y
 
-RUN apt-get update \
-    && apt-get install -y --no-install-recommends \
-    git \
-    ruby \
-    ruby-dev \
-    rubygems \
-    python3.7 \
-    python3-dev \
-    build-essential \
-    wget \
-    python3-pyproj \
-    && rm -rf /var/lib/apt/lists/*
+RUN pip uninstall opencv-python
+RUN pip install opencv-python-headless
 
-RUN apt-get update && apt-get install ffmpeg libsm6 libxext6  -y
-
-RUN update-alternatives --install /usr/bin/python python /usr/bin/python3 2 \
-    && update-alternatives --install /usr/bin/python python /usr/bin/python3.7 1 \
-    && update-alternatives  --set python /usr/bin/python3.7
-
-RUN wget https://bootstrap.pypa.io/get-pip.py \
-    && python get-pip.py
-
-# Packages required for gust
-RUN python -m pip install \
+RUN pip install \
+    wheel \
     numpy \
     PyQt5 \
-    pyinstaller==4.9 \
     requests \
     werkzeug==2.0.3 \
     pyserial \
@@ -49,17 +26,16 @@ RUN python -m pip install \
     PyQt5-Tools \
     flask \
     flask-restx \
-    gunicorn 
+    gunicorn
 
 
-COPY entrypoint.sh /
-RUN chmod +x /entrypoint.sh
+COPY entrypoint.bash workspaces/
+RUN chmod +x /workspaces/entrypoint.bash
 WORKDIR /workspaces
 
-# ENTRYPOINT ["/bin/bash", "-c", "/entrypoint.bash"]
+# ENTRYPOINT ["/entrypoint.bash"]
+# CMD ["sleep", "infinity"]
 
-ENTRYPOINT [ "/entrypoint.sh" ]
-CMD ["sleep", "infinity"]
-# ENTRYPOINT [ "/bin/bash" ]
-
-
+# ENTRYPOINT ["/bin/bash"]
+# ENTRYPOINT [ "/bin/bash", "-c", "/entrypoint.bash" ]
+CMD [./"entrypoint.bash"]
