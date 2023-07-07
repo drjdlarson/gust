@@ -1,7 +1,6 @@
 #!/bin/bash
 
-echo "running the entrypoint script..."
-mkdir testing_dir
+echo "Running the entrypoint script..."
 
 # installing the zed and fbs packages
 pip install /workspaces/gust/repos/fbs/
@@ -15,5 +14,8 @@ pip install /workspaces/gust/gust_packages/radio_manager/
 # overriding what fbs installs
 pip install pyinstaller==4.9
 
-exec "$@"
-# /bin/bash
+# clear all the outputs from above scripts
+clear
+
+# leave the terminal open
+/bin/bash

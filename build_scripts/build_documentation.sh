@@ -11,7 +11,7 @@ Help()
 	echo
         echo "Syntax release_gust.sh [-h|-o]"
         echo "-h	Print the help text."
-        echo "-o	Open the final documentation (index.html) in Firefox browser"
+        echo "-o	Open the final documentation (index.html) in Chrome browser"
         echo
 }
 
@@ -19,11 +19,11 @@ Help()
 ############################################################
 # Process the input options. Add options as needed.        #
 ############################################################
-display_in_firefox=false
+display_in_browser=false
 while getopts ":ho" option; do
 	case $option in
 		o) # skip dependencies
-			display_in_firefox=true
+			display_in_browser=true
 			;;
 		h) # help
 			Help
@@ -43,11 +43,11 @@ done
 echo "Building documentation ..."
 
 echo "Clearing previous documentation files"
-rm -rf ./docs/build
-rm -rf ./docs/source/packages_api
-rm -rf ./docs/source/_static
-rm -rf ./docs/source/_templates
-rm -rf ./docs/source/_autosummary
+rm -rf ./docs/build/
+rm -rf ./docs/source/packages_api/
+rm -rf ./docs/source/_static/
+rm -rf ./docs/source/_templates/
+rm -rf ./docs/source/_autosummary/
 
 mkdir ./docs/source/packages_api
 
@@ -71,6 +71,6 @@ cd ./docs
 make clean
 make html
 
-if [ "$display_in_firefox" = true ] ; then
-  firefox build/html/index.html
+if [ "$display_in_browser" = true ] ; then
+  google-chrome file:///workspaces/gust/docs/build/html/index.html --no-sandbox
 fi
