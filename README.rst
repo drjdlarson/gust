@@ -27,7 +27,41 @@ DEV Setup
 ..
     BEGIN DEV SETUP INCLUDE
 
-Write about dev container setup.
+Prerequisites
+#############
+
+It is recommended to use Visual Studio Code with Docker Dev Container extension for development of GUST. Development containers allow the full toolchain to be automatically setup on most any machine capable of running Docker. 
+
+* Docker and VS Code: For information and instructions on setting up dev-container, see `here <https://code.visualstudio.com/docs/devcontainers/containers>`__ for an overview, `here <https://stackoverflow.com/questions/71402603/vs-code-in-docker-container-is-there-a-way-to-automatically-install-extensions>`__ for auto installing extensions in the container and `here <https://pspdfkit.com/blog/2020/visual-studio-code-cpp-docker/>`__ for an example setup. The provided dev container also has useful extensions installed to ease development.
+
+* Git : For getting started with git, see `here <https://git-scm.com/book/en/v2/Getting-Started-Installing-Git>`__. If working on Windows, it is recommended to use some emulation tool such as `git Bash <https://www.educative.io/answers/how-to-install-git-bash-in-windows>`__ for using git in command-line interface. Further, it is recommended to add your SSH key to the ssh-agent for authentication. Instructions for checking for existing ssh keys, generating new keys, and adding to github are `here <https://docs.github.com/en/authentication/connecting-to-github-with-ssh/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent>`__.
+
+
+Instructions
+############
+
+#. Clone the repo.
+
+    .. code-block:: 
+
+        git clone git@github.com:drjdlarson/gust.git
+        git submodule init 
+        git submodule update
+
+#. Open VS code and navigate to the cloned directory. At this point, VS code should prompt to 'Reopen in Container', click yes. If the prompt doesn't show up, you can go to the command palette and type "Reopen in Container". Now your terminal within VS Code will be running commands within the container but the files you are editing/creating will be accessible from your local machine's file browser.
+
+    * Note: First setup will take some time to setup. After the container starts running, it runs one script to setup some additional stuff (See Dockerfile and .devcontainer.json). 
+    * Note: At this point, your working-directory should be "/workspaces/gust/" in your terminal. 
+    * Note: You can still use git commands locally (outside the container).
+
+#. At this point, dev environment should be ready for further work. Run the following command to make sure a window shows up. 
+
+    .. code-block:: 
+
+        ./run_gust.bash
+
+
+See API reference for overview, software architecture, guide, and documentation of packages before starting development with GUST. 
 
 ..
     END DEV SETUP INCLUDE
@@ -42,12 +76,17 @@ Write about deplyoment in hardware and installation process.
 ..
     END USAGE INCLUDE
 
+
 API Reference
 =============
 
-To generate new documentation after edits, run the ``build_documentation.bash`` script in /build_scripts.
+To generate new documentation, run the script. 
 
+.. code-block:: 
 
+    ./build_scripts/build_documentation.sh -o
+
+If running inside dev container, this should open the documentation in Google Chrome. 
 
 Cite
 ====

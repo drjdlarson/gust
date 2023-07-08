@@ -10,7 +10,12 @@
 		"vscode": {
 			"extensions": [
 				// python tools
-				"ms-python.python"
+				"ms-python.python",
+				"lextudio.restructuredtext",
+				"KevinRose.vsc-python-indent",
+				"aaraon-bond.better-comments",
+				"njpwerner.autodocstring",
+				"swyddfa.esbonio"
 			]
 		}
 	},
