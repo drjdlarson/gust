@@ -22,6 +22,30 @@ Major Features:
 ..
     END INTRO INCLUDE
 
+
+Overview
+========
+
+.. image:: docs/source/images/gust_schematic.png
+
+..
+    BEGIN OVERVIEW INCLUDE
+
+* Frontend includes all the UI design from QtDesigner and logic for all UI windows. To interact with the backend / database, it sends HTTP requests to WSGI App. These requests are sent as URLs formatted with requested information / commands. The HTTP requests typically return a dict to the Frontend that can be displayed in the UI with appropriate formatting.
+* WSGI App routes the HTTP requests to specific classes (in wsgi_apps/api/resources/) to perform certain tasks based on the requests' URL.
+* Dashed ellipses in above diagram represent components that spawn separate sub-processes. Start / end of these subprocesses are handled by the backend. All these processes have access to the common database.
+* radio_manager package handles all communication with the vehicle radios. It includes methods to connect, send, and receive MAVLink messages from the vehicle using dronekit's API.
+
+    * Note : Each radio_manager process is linked to a unique vehicle and is only responsible for communicating with that vehicle. These radio_manager processes run independently enabling multiple vehicle connection.
+
+* All processes are capable of sending messages to the backend via UDP sockets (handled by gust/conn_manager).
+* sqlite is used for database. All processes write information to the database, and WSGI app extracts it from the database for frontend display.
+
+..
+    END OVERVIEW INCLUDE
+
+
+
 DEV Setup
 =========
 ..
@@ -36,6 +60,14 @@ It is recommended to use Visual Studio Code with Docker Dev Container extension 
 
 * Git : For getting started with git, see `here <https://git-scm.com/book/en/v2/Getting-Started-Installing-Git>`__. If working on Windows, it is recommended to use some emulation tool such as `git Bash <https://www.educative.io/answers/how-to-install-git-bash-in-windows>`__ for using git in command-line interface. Further, it is recommended to add your SSH key to the ssh-agent for authentication. Instructions for checking for existing ssh keys, generating new keys, and adding to github are `here <https://docs.github.com/en/authentication/connecting-to-github-with-ssh/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent>`__.
 
+* For Windows, run this git command to use Unix style line endings. (Required for the shell scripts. See `here <https://unix.stackexchange.com/a/626437>`__)
+
+    .. code-block:: 
+
+        git config --global core.autocrlf false 
+
+
+
 
 Instructions
 ############
@@ -45,6 +77,7 @@ Instructions
     .. code-block:: 
 
         git clone git@github.com:drjdlarson/gust.git
+        cd gust
         git submodule init 
         git submodule update
 

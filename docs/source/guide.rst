@@ -7,16 +7,9 @@ Software Architecture
 
 .. image:: images/gust_schematic.png
 
-
-* Frontend includes all the UI design from QtDesigner and logic for all UI windows. To interact with the backend / database, it sends HTTP requests to WSGI App. These requests are sent as URLs formatted with requested information / commands. The HTTP requests typically return a dict to the Frontend that can be displayed in the UI with appropriate formatting.
-* WSGI App routes the HTTP requests to specific classes (in wsgi_apps/api/resources/) to perform certain tasks based on the requests' URL.
-* Dashed ellipses in above diagram represent components that spawn separate sub-processes. Start / end of these subprocesses are handled by the backend. All these processes have access to the common database.
-* radio_manager package handles all communication with the vehicle radios. It includes methods to connect, send, and receive MAVLink messages from the vehicle using dronekit's API.
-
-    * Note : Each radio_manager process is linked to a unique vehicle and is only responsible for communicating with that vehicle. These radio_manager processes run independently enabling multiple vehicle connection.
-
-* All processes are capable of sending messages to the backend via UDP sockets (handled by gust/conn_manager).
-* sqlite is used for database. All processes write information to the database, and WSGI app extracts it from the database for frontend display.
+.. include:: ../../README.rst
+    :start-after: BEGIN OVERVIEW INCLUDE
+    :end-before: END OVERVIEW INCLUDE
 
 Data Flow
 =========

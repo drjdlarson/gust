@@ -7,6 +7,8 @@ ARG USER_UID=1000
 ARG USER_GID=1000
 
 ENV QT_QUICK_BACKEND=software
+ENV DISPLAY=:$DISPLAY
+
 
 # workarounds for all the required tools 
 RUN apt-get update && apt-get install ffmpeg libsm6 libxext6 libxcb-xinerama0 libxcb-cursor0 -y
