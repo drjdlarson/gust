@@ -14,6 +14,7 @@ Help()
 	echo "-c	Build the cmr manager helper executable before running."
 	echo "-z	Build the zed manager helper executable before running."
 	echo "-s	Build the Ardupilot sil helper executable before running."
+	echo "-s	Build the documentation before running."
 
 	echo
 }
@@ -28,6 +29,7 @@ while getopts ":hawrczs" option; do
 			${scriptDir}/build_cmr_manager.sh
 			${scriptDir}/build_zed_manager.sh
 			${scriptDir}/build_sil.sh
+			${scriptDir}/build_documentation.sh
 			;;
 		w) # build wsgi app
 			${scriptDir}/build_wsgi.sh
@@ -43,6 +45,9 @@ while getopts ":hawrczs" option; do
 			;;
 	  s) # build zed manager
 			${scriptDir}/build_sil.sh
+			;;
+	  d) # build documentation
+	    ${scriptDir}/build_documentation.sh
 			;;
 		h) # display help
 			Help

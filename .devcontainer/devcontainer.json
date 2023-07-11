@@ -4,21 +4,22 @@
 	"name": "gust-dev",
 	"build": {
         "dockerfile": "Dockerfile"
-    },
+	},
+	"overrideCommand": true,
 	"customizations": {
 		"vscode": {
 			"extensions": [
 				// python tools
-				"ms-python.python"
+				"ms-python.python",
+				"lextudio.restructuredtext",
+				"KevinRose.vsc-python-indent",
+				"aaraon-bond.better-comments",
+				"njpwerner.autodocstring",
+				"swyddfa.esbonio"
 			]
 		}
-	}
-
-	// Use 'postCreateCommand' to run commands after the container is created.
-	// "postCreateCommand": "bash scripts/install-dev-tools.bash"
-
-	// Configure tool-specific properties.
-	// "customizations": {},
+	},
+	"postStartCommand": "/bin/bash -c ../../entrypoint.bash"
 
 	// Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
 	// "remoteUser": "root"

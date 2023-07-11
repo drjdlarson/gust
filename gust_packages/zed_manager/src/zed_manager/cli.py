@@ -1,3 +1,4 @@
+"""Entry point of zed-manager process: Handles communication with Zed."""
 import sys
 import signal
 import time

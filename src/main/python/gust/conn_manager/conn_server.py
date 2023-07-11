@@ -1,4 +1,4 @@
-"""Process for handling multi-process communication and connections"""
+"""Process for handling inter-process communication and connections"""
 import json
 import platform
 import logging
