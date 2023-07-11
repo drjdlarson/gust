@@ -7,8 +7,6 @@ ARG USER_UID=1000
 ARG USER_GID=1000
 
 ENV QT_QUICK_BACKEND=software
-ENV DISPLAY=:$DISPLAY
-
 
 # workarounds for all the required tools 
 RUN apt-get update && apt-get install ffmpeg libsm6 libxext6 libxcb-xinerama0 libxcb-cursor0 -y
@@ -43,7 +41,7 @@ RUN pip install \
     sphinxcontrib-jsmath \
     sphinxcontrib-qthelp \
     sphinxcontrib-serializinghtml
-     
+
 # Google Chrome to view the generated documentation
 RUN apt-get install -y wget
 RUN wget -q https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
