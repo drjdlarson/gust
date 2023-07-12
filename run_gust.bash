@@ -8,7 +8,7 @@ Help()
 	echo
 	echo "Syntax run_gust.sh [-h|-b]"
 	echo "-h	Print the help text."
-	echo "-a	Build all the helper executables before running."
+	echo "-a	Build all the helper executables before running (except SIL)."
 	echo "-w	Build the wsgi app helper executable before running."
 	echo "-r	Build the radio_manager helper executable before running."
 	echo "-c	Build the cmr manager helper executable before running."
@@ -28,7 +28,6 @@ while getopts ":hawrczs" option; do
 			${scriptDir}/build_radio_manager.sh
 			${scriptDir}/build_cmr_manager.sh
 			${scriptDir}/build_zed_manager.sh
-			${scriptDir}/build_sil.sh
 			${scriptDir}/build_documentation.sh
 			;;
 		w) # build wsgi app

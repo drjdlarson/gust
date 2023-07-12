@@ -435,6 +435,7 @@ class ConnServer:
 
         err = ""
         sil_name = received_info["sil_name"]
+        vehicle_type = received_info["vehicle_type"]
 
         # choose a random available TCP port to start a SIL Process
         cls._sil_tcp_port[sil_name] = random.choice(cls.available_tcp_ports)
@@ -445,12 +446,16 @@ class ConnServer:
 
         # Based on the received_info["vehicle_type"], select the appropriate program to run.
         # Needs an executable program in the Resources for this to run.
-        # Currently only supporting Arducopter.
-        # See gust/build_scripts/build_sil.h for an example of how to add more.
-        # once other SIL executable is added, update the line below to not
-        # hardcode "arducopter"
-        program = ctx.get_resource("sil_manager/arducopter")
-        param_filepath = ctx.get_resource("sil_manager/copter.parm")
+        # See Guide on documentation to see how to get these executables
+        program = ctx.get_resource("sil_manager/{}".format(vehicle_type))
+
+        if vehicle_type == "arducopter":
+            defaults_file_str = "copter.parm"
+        elif vehicle_type == "arduplane":
+            defaults_file_str = "plane-jet.parm"
+        else:
+            return False, "Vehicle Type invalid"
+        param_filepath = ctx.get_resource("sil_manager/{}".format(defaults_file_str))
 
         # Starting a SIL process similar to Radio Processes (See above)
         args = [
