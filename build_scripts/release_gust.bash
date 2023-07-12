@@ -50,12 +50,6 @@ if [ "$skip" = false ] ; then
 	./build_radio_manager.sh
 	./build_cmr_manager.sh
 	./build_zed_manager.sh
-	if [ ${useDocker} == true ]
-	then
-	  ./build_sil.sh -d
-	else
-	  ./build_sil.sh
-	fi
 fi
 
 cd ..
