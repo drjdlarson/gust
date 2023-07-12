@@ -122,8 +122,29 @@ Add more areas in the map
 Adding more Ardupilot SIL models
 ################################
 
-* Step 1
-* Step 2
+To run a SITL with GUST, it needs a binary executable from Ardupilot. For that, you need to have Ardupilot SITL setup locally on your device and we can basically copy the executable from your local device to GUST.
+
+You can follow the instructions for setting up Ardupilot SITL `here <https://ardupilot.org/dev/docs/SITL-setup-landingpage.html>`__. Instructions for setting up the build environment on Linux machine is `here <https://ardupilot.org/dev/docs/building-setup-linux.html#building-setup-linux>`__. 
+
+To generate the binary files, you can run 
+
+.. code-block::
+
+    cd ardupilot/Arducopter
+    sim_vehicle.py --no-mavproxy
+
+The binary files will be located in :code:`ardupilot/build/sitl/bin/`.
+
+Once the executable files are created, simply run the script :code:`./build_scripts/build_ardupilot_sil.sh` by passing absolute path of ardupilot's root directory. It basically copies the executables and puts them inside GUST's resources.
+
+For example, on GUST's root directory, run
+
+.. code-block::
+
+    ./build_scripts/build_ardupilot_sil.sh -p /home/lagerprocessor/Projects/ardupilot
+
+Now, you should be able to run SITL with GUST normally. If you need to add new vehicle type, just run the sim_vehicle.py inside respective directory and it should generate the executable file. You'll also need to modify the build_ardupilot_sil.sh script to copy the new executable.
+
 
 Adding more colors for vehicles
 ###############################

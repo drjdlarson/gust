@@ -45,8 +45,14 @@ echo "Building Ardupilot SIL and copying files to resources"
 rm -rf ./src/main/resources/base/sil_manager
 mkdir ./src/main/resources/base/sil_manager
 
+echo "Copying ArduCopter Stuff"
 cp $path/build/sitl/bin/arducopter ./src/main/resources/base/sil_manager
 cp $path/Tools/autotest/default_params/copter.parm ./src/main/resources/base/sil_manager
+
+echo "Copying ArduPlane Stuff"
+cp $path/build/sitl/bin/arduplane ./src/main/resources/base/sil_manager
+cp $path/Tools/autotest/default_params/plane-jet.parm ./src/main/resources/base/sil_manager
+
 rm -rf ./terrain/
 rm -rf ./logs/
 
