@@ -12,7 +12,7 @@ Help()
         echo "Syntax release_gust.sh [-h|-s|-d]"
         echo "-h	Print the help text."
         echo "-s	Skip building the dependencies (e.g. WGSI apps, radio manager etc.)"
-        echo "-d	Flag to pass when being run inside a Docker container"
+        echo "-l	Flag to pass when being run locally. Edit the CONDA_PREFIX variable for this case"
         echo
 }
 
@@ -21,7 +21,7 @@ Help()
 # Process the input options. Add options as needed.        #
 ############################################################
 skip=false
-useDocker=false
+useDocker=true
 while getopts ":hsd" option; do
 	case $option in
 		s) # skip dependencies
@@ -30,8 +30,8 @@ while getopts ":hsd" option; do
 		h) # help
 			Help
 			exit;;
-		d) # use docker container version
-			useDocker=true
+		l) # copy the geoservices files using local paths
+			useDocker=false
 			;;
 		\?) # invalid
 			echo "Error: Invalid option"
@@ -62,8 +62,10 @@ fbs freeze
 mkdir ./target/gust/PyQt5/Qt5/plugins/geoservices/
 if [ ${useDocker} == true ]
 then
-  echo "TODO: Need to copy PyQt5/Qt5/plugins/geoservices/libqtgeoservices_osm.so -> ./target/gust/PyQt5/Qt5/plugins/geoservices/"
-  echo "TODO: Need to copy PyQt5/Qt5/plugins/geoservices/libqtgeoservices_itemsoverlay.so -> ./target/gust/PyQt5/Qt5/plugins/geoservices/"
+	echo "Copying the geoservices files inside docker container"
+	# hardcoded the paths to work while running this script inside docker container
+	cp /usr/local/lib/python3.7/site-packages/PyQt5/Qt5/plugins/geoservices/libqtgeoservices_osm.so /workspaces/gust/target/gust/PyQt5/Qt5/plugins/geoservices/
+	cp /usr/local/lib/python3.7/site-packages/PyQt5/Qt5/plugins/geoservices/libqtgeoservices_itemsoverlay.so /workspaces/gust/target/gust/PyQt5/Qt5/plugins/geoservices/	
 else
   #cp ${CONDA_PREFIX}/bin/gunicorn ./target/gust/
   # hardcode these paths to docker path
