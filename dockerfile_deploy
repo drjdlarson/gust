@@ -1,0 +1,27 @@
+FROM python:3.7
+# FROM jlesage/baseimage-gui:ubuntu-20.04
+
+
+LABEL maintainer="lager_gcs@outlook.com"
+LABEL description="Develop docker image for hardware deployment of GUST."
+
+ARG USER_UID=1000
+ARG USER_GID=1000
+
+# to fix the libGL issue
+# workarounds for all the required tools 
+RUN apt-get update && apt-get install ffmpeg libsm6 libxext6 libxcb-xinerama0 libxcb-cursor0 -y
+RUN apt-get install '^libxcb.*-dev' libx11-xcb-dev libglu1-mesa-dev libxrender-dev libxi-dev libxkbcommon-dev libxkbcommon-x11-dev -y
+RUN apt-get install -y mesa-utils libgl1-mesa-glx
+
+# for fuser command
+RUN apt-get update
+RUN apt-get install psmisc
+
+# QEMU stuff for multi-arch deployment
+RUN apt-get install qemu binfmt-support qemu-user-static
+
+COPY target/gust1.2.0.deb /
+RUN dpkg -i --force-architecture /gust1.2.0.deb
+
+ENTRYPOINT ["/bin/bash"]
