@@ -12,8 +12,9 @@ DEV Setup
     :start-after: BEGIN DEV SETUP INCLUDE
     :end-before: END DEV SETUP INCLUDE
 
-Usage
-=====
+Install and Usage
+=================
+
 .. include:: ../../README.rst
     :start-after: BEGIN USAGE INCLUDE
     :end-before: END USAGE INCLUDE

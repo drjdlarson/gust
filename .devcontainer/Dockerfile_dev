@@ -13,12 +13,16 @@ RUN apt-get update && apt-get install ffmpeg libsm6 libxext6 libxcb-xinerama0 li
 RUN apt-get install '^libxcb.*-dev' libx11-xcb-dev libglu1-mesa-dev libxrender-dev libxi-dev libxkbcommon-dev libxkbcommon-x11-dev -y
 RUN apt-get install -y mesa-utils libgl1-mesa-glx
 
+# for fuser command
+RUN apt-get install psmisc
+
 # Packages required for GUST
 RUN pip install \
     wheel \
     numpy \
     PyQt5 \
     requests \
+    pyinstaller==4.9 \
     werkzeug==2.0.3 \
     pyserial \
     scipy \
@@ -41,7 +45,7 @@ RUN pip install \
     sphinxcontrib-jsmath \
     sphinxcontrib-qthelp \
     sphinxcontrib-serializinghtml
-
+    
 # Google Chrome to view the generated documentation
 RUN apt-get install -y wget
 RUN wget -q https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb

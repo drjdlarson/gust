@@ -8,22 +8,12 @@ from typing import Tuple
 from pathlib import Path
 
 
-VERSION_FILE = os.path.join(os.path.dirname(__file__), "pyproject.toml")
-
-
-def get_active_branch_name():
-    head_dir = Path(".") / ".git" / "HEAD"
-    with head_dir.open("r") as f:
-        content = f.read().splitlines()
-
-    for line in content:
-        if line[0:4] == "ref:":
-            return line.partition("refs/heads/")[2]
+DOCKER_INFO_FILE = "/workspaces/gust/src/build/settings/base.json"
 
 
 def define_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(
-        description="Automatically create and push tag so CI/CD pipeline publishes a release"
+        description="Automatically package GUST and push to github"
     )
 
     choices = ("major", "minor", "patch")
@@ -41,27 +31,16 @@ def define_parser() -> argparse.ArgumentParser:
         help="Flag indicating if incrementing the version should be skipped. "
         + "If this is passed then the type is irrelevant.",
     )
-
-    default = "Automatic release"
-    p.add_argument(
-        "-m",
-        "--message",
-        type=str,
-        default=default,
-        help="Message for the release (Doesn't seem to be used in CI/CD). The default is: {:s}".format(
-            default
-        ),
-    )
-
+    
     return p
 
 
 def get_match(line: str):
-    return re.search('version\s*=\s*"(\d+).(\d+).(\d+)"', line)
+    return re.search('"version\s*":\s*"(\d+).(\d+).(\d+)"', line)
 
 
 def get_version() -> Tuple[int, int, int]:
-    with open(VERSION_FILE, "r") as fin:
+    with open(DOCKER_INFO_FILE, "r") as fin:
         for line in fin:
             matched = get_match(line)
             if matched:
@@ -70,42 +49,35 @@ def get_version() -> Tuple[int, int, int]:
                 patch = int(matched.groups()[2])
                 return major, minor, patch
 
-    raise RuntimeError("Failed to extract version from {:s}".format(VERSION_FILE))
+    raise RuntimeError("Failed to extract version from {:s}".format(DOCKER_INFO_FILE))
 
 
 def set_version(major: int, minor: int, patch: int):
-    tmp_file = VERSION_FILE + ".tmp"
-    with open(VERSION_FILE, "r") as fin:
+    tmp_file = DOCKER_INFO_FILE + ".tmp"
+    with open(DOCKER_INFO_FILE, "r") as fin:
         with open(tmp_file, "w") as fout:
             for line in fin:
                 matched = get_match(line)
                 if matched:
                     ind = line.find('"')
-                    new_line = line[:ind] + '"{:d}.{:d}.{:d}"\n'.format(
+                    new_line = line[:ind] + '"version": "{:d}.{:d}.{:d}",\n'.format(
                         major, minor, patch
                     )
                     fout.write(new_line)
                 else:
                     fout.write(line)
 
-    os.replace(tmp_file, VERSION_FILE)
+    os.replace(tmp_file, DOCKER_INFO_FILE)
 
 
 if __name__ == "__main__":
+    
     args = define_parser().parse_args()
 
     major, minor, patch = get_version()
     print("Current version: {:d}.{:d}.{:d}".format(major, minor, patch))
 
-    cur_branch = get_active_branch_name()
-    if cur_branch.lower() != "main":
-        print(
-            "WARN: Not on main branch ({:s}), checkout to main branch for release".format(
-                cur_branch
-            )
-        )
-        sys.exit(-1)
-
+    # setting the new version number
     if not args.skip_increment:
         if args.type == "major":
             major += 1
@@ -120,19 +92,19 @@ if __name__ == "__main__":
             raise RuntimeError("Invalid type: {} should not be here".format(args.type))
 
         set_version(major, minor, patch)
-
     else:
         print("Skipping incrementing of version number!")
 
-    # version_str = "v{:d}.{:d}.{:d}".format(major, minor, patch)
-    # print("Releasing version: {:s}".format(version_str[1:]))
+    version_str = "v{:d}.{:d}.{:d}".format(major, minor, patch)
+    print("Releasing version: {:s}".format(version_str[1:]))
 
-    # if not args.skip_increment:
-    #     cmd_str = "git add -u && git commit -m 'bump version' && git push"
-    #     subprocess.run(cmd_str, shell=True)
+    # running the release_gust script
+    # this packages the software and creates a .deb
+    print("Packaging GUST using fbs...\n\n")
+    cmd_str = "cd ./build_scripts && ./release_gust.bash"
+    subprocess.run(cmd_str, shell=True)
 
-    # cmd_str = "git tag -a {:s} -m '{:s}'".format(version_str, args.message)
-    # subprocess.run(cmd_str, shell=True)
+    print("")
+    print("\n\n Package Created. GUST is ready to be deployed. Exit the docker container and run deploy_gust.py script to deploy the docker image.")
 
-    # cmd_str = "git push origin {:s}".format(version_str)
-    # subprocess.run(cmd_str, shell=True)
+

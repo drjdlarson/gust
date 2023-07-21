@@ -33,13 +33,13 @@ done
 
 echo "Building zed manager app ..."
 
-rm -r ./src/main/resources/base/zed_manager
-mkdir ./src/main/resources/base/zed_manager
+rm -r ../src/main/resources/base/zed_manager
+mkdir ../src/main/resources/base/zed_manager
 
 pyinstaller --onefile --noconfirm --noupx --clean \
 	-n zed_manager \
-	-p ./gust_packages/zed_manager \
-	--distpath ./src/main/resources/base/zed_manager \
-	--workpath ./gust_packages/zed_manager/build \
-	--specpath ./gust_packages/zed_manager \
-	gust_packages/zed_manager/src/zed_manager/cli.py
+	-p ../gust_packages/zed_manager \
+	--distpath ../src/main/resources/base/zed_manager \
+	--workpath ../gust_packages/zed_manager/build \
+	--specpath ../gust_packages/zed_manager \
+	../gust_packages/zed_manager/src/zed_manager/cli.py

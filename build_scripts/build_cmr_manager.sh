@@ -33,19 +33,19 @@ done
 
 echo "Building CMR manager app ..."
 
-rm -r ./src/main/resources/base/cmr_manager
-mkdir ./src/main/resources/base/cmr_manager
+rm -r ../src/main/resources/base/cmr_manager
+mkdir ../src/main/resources/base/cmr_manager
 
 pyinstaller --onefile --noconfirm --noupx --clean \
 	-n cmr_manager \
-	-p ./gust_packages/cmr_manager \
+	-p ../gust_packages/cmr_manager \
 	--hidden-import lxml \
 	--hidden-import lxml.etree \
 	--hidden-import urllib2 \
 	--hidden-import urlparse \
 	--collect-all pymavlink \
 	--collect-all dronekit \
-	--distpath ./src/main/resources/base/cmr_manager \
-	--workpath ./gust_packages/cmr_manager/build \
-	--specpath ./gust_packages/cmr_manager \
-	gust_packages/cmr_manager/src/cmr_manager/cli.py
+	--distpath ../src/main/resources/base/cmr_manager \
+	--workpath ../gust_packages/cmr_manager/build \
+	--specpath ../gust_packages/cmr_manager \
+	../gust_packages/cmr_manager/src/cmr_manager/cli.py

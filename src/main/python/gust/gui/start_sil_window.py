@@ -9,8 +9,7 @@ URL_BASE = "http://localhost:8000/{}/".format(BASE)
 DRONE_BASE = "{}{}/".format(URL_BASE, DRONE)
 
 # Add to this list to add more available Ardupilot Vehicle Types
-VEHICLES = ["ArduCopter"]
-
+VEHICLES = ["ArduCopter", "ArduPlane"]
 
 class StartSILWindow(QDialog, Ui_Dialog):
 
@@ -70,7 +69,7 @@ class StartSILWindow(QDialog, Ui_Dialog):
             return
 
         # SIL vehicle type
-        url += "&vehicle_type={}".format(self.vehicle_type)
+        url += "&vehicle_type={}".format(self.vehicle_type.lower())
 
         # getting location information for where to start the SIL vehicle
         if self.custom_home:

@@ -3,7 +3,7 @@
 {
 	"name": "gust-dev",
 	"build": {
-        "dockerfile": "Dockerfile"
+        "dockerfile": "Dockerfile_dev"
 	},
 	"overrideCommand": true,
 	"customizations": {
@@ -15,7 +15,7 @@
 				"KevinRose.vsc-python-indent",
 				"aaraon-bond.better-comments",
 				"njpwerner.autodocstring",
-				"swyddfa.esbonio"
+				"tht13.rst-vscode"
 			]
 		}
 	},

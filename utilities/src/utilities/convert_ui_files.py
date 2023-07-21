@@ -1,4 +1,8 @@
-"""Automates converting *.ui files from the GUI to *.py files."""
+"""
+Automates converting *.ui files from the GUI to *.py files.
+Must be run inside the docker container
+
+"""
 from os.path import splitext
 from glob import glob
 import ntpath
@@ -6,7 +10,7 @@ import subprocess
 
 
 PROGRAM = 'pyuic5'
-UI_DIR = 'src/main/python/gust/gui/ui'
+UI_DIR = '/workspaces/gust/src/main/python/gust/gui/ui'
 
 
 def path_leaf(path):
