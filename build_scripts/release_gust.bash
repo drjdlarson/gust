@@ -7,8 +7,8 @@ Help()
 {
         echo "Create release of GUST and build dependencies automatically."
         echo
-	echo "Assumes it is called from the build_scripts directory."
-	echo
+		echo "Assumes it is called from the build_scripts directory."
+		echo
         echo "Syntax release_gust.sh [-h|-s|-d]"
         echo "-h	Print the help text."
         echo "-s	Skip building the dependencies (e.g. WGSI apps, radio manager etc.)"

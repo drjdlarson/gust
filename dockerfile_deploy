@@ -1,6 +1,4 @@
 FROM python:3.7
-# FROM jlesage/baseimage-gui:ubuntu-20.04
-
 
 LABEL maintainer="lager_gcs@outlook.com"
 LABEL description="Develop docker image for hardware deployment of GUST."
@@ -15,13 +13,13 @@ RUN apt-get install '^libxcb.*-dev' libx11-xcb-dev libglu1-mesa-dev libxrender-d
 RUN apt-get install -y mesa-utils libgl1-mesa-glx
 
 # for fuser command
-RUN apt-get update
 RUN apt-get install psmisc
 
 # QEMU stuff for multi-arch deployment
-RUN apt-get install qemu binfmt-support qemu-user-static
+# RUN apt-get install qemu binfmt-support qemu-user-static
 
-COPY target/gust1.2.0.deb /
-RUN dpkg -i --force-architecture /gust1.2.0.deb
+COPY target/*.deb /
+COPY kill_server /
+RUN dpkg -i --force-architecture /*.deb
 
-ENTRYPOINT ["/bin/bash"]
+ENTRYPOINT ["/bin/bash", "-c", "gust & gust & /bin/bash"]

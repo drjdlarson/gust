@@ -88,11 +88,11 @@ Instructions
 Building new UI windows with QtDesigner
 #######################################
 
-#. The UI for all windows are designed using QtDesigner. Open Designer app by running
+#. The UI for all windows are designed using QtDesigner. You can use the Designer app inside the docker container. Open Designer app by running
 
 .. code-block::
 
-    Designer
+    qt5-tools designer
 
 #. Design your UI. Please be consistent with the naming of Qt objects with current style (i.e. include Qt object type in the name).
 
@@ -102,7 +102,7 @@ Building new UI windows with QtDesigner
 
 .. code-block::
 
-    python convert_ui_files.py
+    python utilities/src/utilities/convert_ui_files.py
 
 #. The python files with the same name will be saved in gust.gui.ui directory. You should be able to run the converted python file to preview the UI (just like in Designer).
 
