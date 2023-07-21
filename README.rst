@@ -99,12 +99,40 @@ See API reference for overview, software architecture, guide, and documentation 
 ..
     END DEV SETUP INCLUDE
 
-Usage
-=====
+Install and Usage
+=================
+
 ..
     BEGIN USAGE INCLUDE
 
-Write about deplyoment in hardware and installation process.
+The image with installed GUST package is published in DockerHub under `ualager <https://hub.docker.com/repository/docker/ualager/gust-lager/general>`__. The user can pull the image and open a container using the image. The container should open the software automaticallly and no other steps are necessary.
+
+Prerequisites
+#############
+
+* Docker: You must have Docker Daemon running before running the gust-image. You can verify that it is working by running the command :code:`docker run hello-world`. If not, follow the instructions `here <https://docs.docker.com/engine/install/>`__ to install docker engine. 
+
+* Manage host names on the list of machines from which the X server accepts connections. For that, run the following commands, 
+    
+    .. code-block::
+
+        xhost +local:host
+        xhost +local:docker
+
+
+Instructions
+############
+
+#. Open terminal and run 
+
+    .. code-block::
+
+        docker run --rm -it --network host -e DISPLAY=$DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix ualager/gust-lager:v2.0.0
+    
+* Note: Here we are setting the DISPLAY environment variable and mounting X-server volume in the container to make the display compatible (See `here <https://leimao.github.io/blog/Docker-Container-GUI-Display/>`__)
+
+This should open two GUST windows. First, start the server on one of them. If there are no errors while starting the server, then open Client on the second window. If the server fails to start, try running :code:`./kill_server` in the container terminal. 
+
 
 ..
     END USAGE INCLUDE
@@ -115,9 +143,9 @@ API Reference
 
 To generate new documentation, run the script. 
 
-.. code-block:: 
+    .. code-block:: 
 
-    ./build_scripts/build_documentation.sh -o
+        cd ./build_scripts && ./build_documentation.sh -o
 
 If running inside dev container, this should open the documentation in Google Chrome. 
 
@@ -137,6 +165,7 @@ Please cite the framework as follows
     year         = {2022},
     url          = {https://github.com/drjdlarson/gust},
     }
+
 
 ..
     END CITE INCLUDE

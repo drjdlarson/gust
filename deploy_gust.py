@@ -1,11 +1,10 @@
+"""Automatically build the docker image and push to DockerHub"""
 import os
 import subprocess
 import argparse
-import sys
 import re
 
 from typing import Tuple
-from pathlib import Path
 
 VERSION_FILE = os.path.join(os.path.dirname(__file__), "src/build/settings/base.json")
 DOCKER_USERNAME = "ualager"

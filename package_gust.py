@@ -31,17 +31,6 @@ def define_parser() -> argparse.ArgumentParser:
         help="Flag indicating if incrementing the version should be skipped. "
         + "If this is passed then the type is irrelevant.",
     )
-
-    default = "Automatic release"
-    p.add_argument(
-        "-m",
-        "--message",
-        type=str,
-        default=default,
-        help="Message for the release (Doesn't seem to be used in CI/CD). The default is: {:s}".format(
-            default
-        ),
-    )
     
     return p
 
@@ -116,6 +105,6 @@ if __name__ == "__main__":
     subprocess.run(cmd_str, shell=True)
 
     print("")
-    print("\n\n Package Created. GUST is ready to be deployed. Exit the docker container and run INSSSSSSSERT HERE script to deploy the docker image.")
+    print("\n\n Package Created. GUST is ready to be deployed. Exit the docker container and run deploy_gust.py script to deploy the docker image.")
 
 

@@ -50,6 +50,7 @@ if [ "$skip" = false ] ; then
 	./build_radio_manager.sh
 	./build_cmr_manager.sh
 	./build_zed_manager.sh
+	./build_documentation.sh
 fi
 
 cd ..

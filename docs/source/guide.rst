@@ -81,6 +81,27 @@ Backend data handling by ConnServer
 #. Based on the message_type, ConnServer forwards the message to appropriate methods as arguments.
 #. It can also send response to the UDP socket clients.
 
+Database Structure
+==================
+
+GUST is currently using a sqlite database to store all data. Methods for interacting with the database are included in the Utilities package in :code:`utilities/src/utilities/database.py`. And the sqlite database file is stored in :code:`src/main/resources/base/gust_database.sqlite`. The database can be accessed by all subprocesses.
+
+The database is started when the Server is opened. It contains 4 main tables when it is first started. Check the database.py file to get more details on the specifics of the string. 
+
+#. PluginCollection: This stores information about external plugins with GUST.
+
+#. drone_collection: Stores information for all drones connected to GUST. 
+
+#. locations: Stores information about saved locations. This can be configured in :code:`src/main/resources/base/locations.txt`.
+
+#. zed_collection: Stores information about the connected ZEDs.
+
+Once a new ZED or a vehicle is connected, a new table is created. These new tables store the data coming from the source. 
+
+    * Note: Each Drone connection creates 4 new tables and are named using Enums. These 4 tables store all the telemetry data from the vehicle. DONOT change the strings in the database files if you are unsure, because these strings are called by other packages (wsgi_apps and radio_manager).
+
+    * Note: Each Zed connection creates a table to store all the data being received. 
+
 
 Instructions
 ============
@@ -90,9 +111,9 @@ Building new UI windows with QtDesigner
 
 #. The UI for all windows are designed using QtDesigner. You can use the Designer app inside the docker container. Open Designer app by running
 
-.. code-block::
+    .. code-block::
 
-    qt5-tools designer
+        qt5-tools designer
 
 #. Design your UI. Please be consistent with the naming of Qt objects with current style (i.e. include Qt object type in the name).
 
@@ -100,9 +121,9 @@ Building new UI windows with QtDesigner
 
 #. Once you save the file, go to the terminal (inside gust's root directory) and run the python script to convert UI files to python files.
 
-.. code-block::
+    .. code-block::
 
-    python utilities/src/utilities/convert_ui_files.py
+        python utilities/src/utilities/convert_ui_files.py
 
 #. The python files with the same name will be saved in gust.gui.ui directory. You should be able to run the converted python file to preview the UI (just like in Designer).
 
@@ -128,10 +149,10 @@ You can follow the instructions for setting up Ardupilot SITL `here <https://ard
 
 To generate the binary files, you can run 
 
-.. code-block::
+    .. code-block::
 
-    cd ardupilot/Arducopter
-    sim_vehicle.py --no-mavproxy
+        cd ardupilot/Arducopter
+        sim_vehicle.py --no-mavproxy
 
 The binary files will be located in :code:`ardupilot/build/sitl/bin/`.
 
@@ -139,11 +160,29 @@ Once the executable files are created, simply run the script :code:`./build_scri
 
 For example, on GUST's root directory, run
 
-.. code-block::
+    .. code-block::
 
-    ./build_scripts/build_ardupilot_sil.sh -p /home/lagerprocessor/Projects/ardupilot
+        ./build_scripts/build_ardupilot_sil.sh -p /home/lagerprocessor/Projects/ardupilot
 
 Now, you should be able to run SITL with GUST normally. If you need to add new vehicle type, just run the sim_vehicle.py inside respective directory and it should generate the executable file. You'll also need to modify the build_ardupilot_sil.sh script to copy the new executable.
+
+
+Packaging and deploying GUST
+############################
+
+GUST is packaged using the fbs tool. fbs is included as a submodule inside the GUST repo. It creates a :code:`*.deb` package for GUST. For compatibility among different host machines, docker is used to deploy the software. A docker image is created that stores the .deb package and installs it. The image can be pulled from DockerHub by any device and can be run. Follow these steps to package and deploy the software. 
+
+#. Once you have added a feature and want to make a release, merge the feature branch to the main branch and push to remote. You will follow the remaining steps while on the main branch.
+
+#. Run the python script :code:`package_gust.py` with appropriate arguments. You should set the version of the new package. Run :code:`python package_gust.py --help` to see the argument options. 
+
+    *. Note: This script creates a new version tag for the software (defined in :code:`src/build/settings/base.json`) and runs the :code:`build_scripts/release_gust.bash` script creating a :code:`*.deb` package for GUST. 
+
+    *. Note: Check :code:`target/` directory. It should include a :code:`*.deb` file and also an installed gust directory. You should be able to run it with :code:`target/gust/gust` in the terminal. 
+
+#. Run the python script :code:`deploy_gust.py` with ualager's DockerHub password as argument. It build the docker image and publishes it to DockerHub repository. 
+
+You should be able to see the published image `here <https://hub.docker.com/repository/docker/ualager/gust-lager/general>`__. You can follow the instructions in the Install and Usage section to verify the functionality of the deployed software. 
 
 
 Adding more colors for vehicles

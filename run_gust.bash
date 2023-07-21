@@ -1,7 +1,5 @@
 #!/bin/bash
 
-scriptDir=./build_scripts
-
 Help()
 {
 	echo "Run GUST for debugging and build dependencies automatically."
@@ -24,11 +22,13 @@ Help()
 while getopts ":hawrczs" option; do
 	case $option in
 		a) # build all helping executables
-			${scriptDir}/build_wsgi.sh
-			${scriptDir}/build_radio_manager.sh
-			${scriptDir}/build_cmr_manager.sh
-			${scriptDir}/build_zed_manager.sh
-			${scriptDir}/build_documentation.sh
+			cd ./build_scripts
+			./build_wsgi.sh
+			./build_radio_manager.sh
+			./build_cmr_manager.sh
+			./build_zed_manager.sh
+			./build_documentation.sh
+			cd ..
 			;;
 		w) # build wsgi app
 			${scriptDir}/build_wsgi.sh
