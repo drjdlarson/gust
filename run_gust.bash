@@ -31,22 +31,34 @@ while getopts ":hawrczs" option; do
 			cd ..
 			;;
 		w) # build wsgi app
-			${scriptDir}/build_wsgi.sh
+		  cd ./build_scripts
+			./build_wsgi.sh
+			cd ..
 			;;
 		r) # build radio manager
-			${scriptDir}/build_radio_manager.sh
+			cd ./build_scripts
+			./build_radio_manager.sh
+			cd ..
 			;;
 		c) # build cmr manager
-			${scriptDir}/build_cmr_manager.sh
+		  cd ./build_scripts
+			./build_cmr_manager.sh
+			cd ..
 			;;
 		z) # build zed manager
-			${scriptDir}/build_zed_manager.sh
+			cd ./build_scripts
+			./build_zed_manager.sh
+			cd ..
 			;;
 	  s) # build zed manager
-			${scriptDir}/build_sil.sh
+			cd ./build_scripts
+			./build_sil.sh
+			cd ..
 			;;
 	  d) # build documentation
-	    ${scriptDir}/build_documentation.sh
+	    cd ./build_scripts
+	    ./build_documentation.sh
+			cd ..
 			;;
 		h) # display help
 			Help
