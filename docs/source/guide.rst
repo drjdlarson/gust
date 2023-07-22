@@ -184,6 +184,7 @@ GUST is packaged using the fbs tool. fbs is included as a submodule inside the G
 
 You should be able to see the published image `here <https://hub.docker.com/repository/docker/ualager/gust-lager/general>`__. You can follow the instructions in the Install and Usage section to verify the functionality of the deployed software. 
 
+After you are done packaging and deploying, check :code:`git status`. If you bumped the version, :code:`src/build/settings/base.json` file will have changes in :code:`version` string. In main branch, just add, commit, and push the new change. You can also create a tag in github with description.
 
 Adding more colors for vehicles
 ###############################
