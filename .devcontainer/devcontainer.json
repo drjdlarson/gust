@@ -21,7 +21,8 @@
 		}
 	},
 	"mounts": [
-		"source=/dev,target=/dev,type=bind,consistency=cached"
+		"source=/dev,target=/dev,type=bind,consistency=cached",
+		"source=${localEnv:HOME}${localEnv:USERPROFILE}/Documents,target=/Documents,type=bind,consistency=cached"
 	],
 	"postStartCommand": "/bin/bash -c ../../entrypoint.bash"
 
