@@ -127,9 +127,9 @@ Instructions
 
     .. code-block::
 
-        docker run --rm -it --network host -e DISPLAY=$DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix ualager/gust-lager:v2.0.0
+        docker run --rm -it --network host --privileged -e DISPLAY=$DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix -v /dev:/dev ualager/gust-lager:v2.0.0
     
-* Note: Here we are setting the DISPLAY environment variable and mounting X-server volume in the container to make the display compatible (See `here <https://leimao.github.io/blog/Docker-Container-GUI-Display/>`__)
+* Note: Here we are setting the DISPLAY environment variable and mounting X-server volume in the container to make the display compatible (See `here <https://leimao.github.io/blog/Docker-Container-GUI-Display/>`__). Also, we give the container access to all devices on host and mount the /dev volume for USB ports (used by radio connections).
 
 This should open two GUST windows. First, start the server on one of them. If there are no errors while starting the server, then open Client on the second window. If the server fails to start, try running :code:`./kill_server` in the container terminal. 
 

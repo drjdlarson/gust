@@ -6,6 +6,7 @@
         "dockerfile": "Dockerfile_dev"
 	},
 	"overrideCommand": true,
+	"runArgs": ["--privileged"],
 	"customizations": {
 		"vscode": {
 			"extensions": [
@@ -19,6 +20,9 @@
 			]
 		}
 	},
+	"mounts": [
+		"source=/dev,target=/dev,type=bind,consistency=cached"
+	],
 	"postStartCommand": "/bin/bash -c ../../entrypoint.bash"
 
 	// Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
