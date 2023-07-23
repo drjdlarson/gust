@@ -103,7 +103,12 @@ if __name__ == "__main__":
     print("Packaging GUST using fbs...\n\n")
     cmd_str = "cd ./build_scripts && ./release_gust.bash"
     subprocess.run(cmd_str, shell=True)
-
+    
+    # copying documentation to Documents
+    print("Copying documentation to Documents/")
+    cmd_str = "cp -R ./docs/build/ /Documents/gust_{}_doc/".format(version_str)
+    subprocess.run(cmd_str, shell=True)
+    
     print("")
     print("\n\n Package Created. GUST is ready to be deployed. Exit the docker container and run deploy_gust.py script to deploy the docker image.")
 
