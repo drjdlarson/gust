@@ -13,7 +13,7 @@ DOCKER_INFO_FILE = "/workspaces/gust/src/build/settings/base.json"
 
 def define_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(
-        description="Automatically package GUST and push to github"
+        description="Automatically package GUST and create an installer"
     )
 
     choices = ("major", "minor", "patch")
