@@ -178,9 +178,9 @@ GUST is packaged using the fbs tool. fbs is included as a submodule inside the G
 
 #. Run the python script :code:`package_gust.py` with appropriate arguments. You should set the version of the new package. Run :code:`python package_gust.py --help` to see the argument options. 
 
-    *. Note: This script creates a new version tag for the software (defined in :code:`src/build/settings/base.json`) and runs the :code:`build_scripts/release_gust.bash` script creating a :code:`*.deb` package for GUST. 
+    * Note: This script creates a new version tag for the software (defined in :code:`src/build/settings/base.json`) and runs the :code:`build_scripts/release_gust.bash` script creating a :code:`*.deb` package for GUST. 
 
-    *. Note: Check :code:`target/` directory. It should include a :code:`*.deb` file and also an installed gust directory. You should be able to run it with :code:`target/gust/gust` in the terminal. 
+    * Note: Check :code:`target/` directory. It should include a :code:`*.deb` file and also an installed gust directory. You should be able to run it with :code:`target/gust/gust` in the terminal. 
 
 #. Run the python script :code:`deploy_gust.py` with ualager's DockerHub password as argument. It build the docker image and publishes it to DockerHub repository. 
 
