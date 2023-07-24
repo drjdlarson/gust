@@ -29,7 +29,9 @@ Vehicle connection/disconnection
 #. This request is sent to WSGI App which routes the request to ConnInfo class in wsgi_apps/api/resources/drone_namespace
 #. ConnInfo class takes all parameters from the received URL and packages into a dictionary. It adds the new connection information in the database and create all necessary tables.
 #. Once the vehicle is added to database, it sends the packaged dictionary to ConnServer which is listening to messages on a UDP server socket. To do this, the dictionary is formatted a certain way using utilities.send_info_to_udp_server().
-#. When ConnServer receives this message, it spawns a new RadioManager's QProcess for the radio connection. It passes all received information such as name, port, color, baud as arguments to the process. The entrypoint of this new process is radio_manager/cli. Based on received arguments, the radio_manager process starts a dronekit connection with the vehicle.
+#. When ConnServer receives this message, it spawns a new RadioManager's QProcess for the radio connection. It passes all received information such as name, port, color, baud as arguments to the process. The entrypoint of this new process is radio_manager/cli. Based on received arguments, the radio_manager process starts a dronekit connection with the vehicle. A timeout is also used in the dronekit connection to make sure we wait enough. (Connections with Ardupilot using Dragonlink takes a couple of minutes in some cases.)
+
+    * Note : The dronekit connection string currently used is :code:`radio = dronekit.connect(port, baud=baudrate, timeout=200, heartbeat_timeout=200, wait_ready=True)`
 
     * Note : ConnServer assigns a unique UDP address to each radio_manager process. When the process is started, it starts a UDP server socket on that address so that each radio_manager can also be a message listener. This allows other UDP clients (typically ConnServer) to send messages to the radio_manager process.
 

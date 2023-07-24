@@ -726,7 +726,7 @@ if __name__ == "__main__":
     name = args.name
     port = args.port
     color = args.color
-    baud = args.baud
+    baudrate = args.baud
     udp_port = args.udp_port
 
 
@@ -765,7 +765,7 @@ if __name__ == "__main__":
     else:
         try:
             # connect to MAVLink using dronekit.
-            radio = dronekit.connect(port, wait_ready=True)
+            radio = dronekit.connect(port, baud=baudrate, timeout=200, heartbeat_timeout=200, wait_ready=True)
         except:
             sys.exit(-1)
 
