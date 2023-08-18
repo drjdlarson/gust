@@ -31,7 +31,7 @@ class PlanningMapWidget(QtQuickWidgets.QQuickWidget):
             temp_map_file = QFile(temp_path + "/temp_planning_map.qml")
             with open(qml_file, 'rt') as fin:
                 with open(temp_path + "/temp_planning_map.qml", 'wt') as fout:
-                    replacing_str = [("MAP_FilledByMapWidget", resource_path + "/offline_folders/"),
+                    replacing_str = [("MAP_FilledByMapWidget", "/Documents/gust_resources/offline_folders/"),
                                       ("CACHE_FilledByMapWidget", temp_path + "/")]
                     lines = fin.readlines()
                     text = ''.join(lines)

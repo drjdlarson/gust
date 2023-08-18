@@ -120,7 +120,7 @@ Prerequisites
         xhost +local:docker
 
 
-Instructions
+Installation
 ############
 
 #. Open terminal and run 
@@ -135,7 +135,12 @@ Instructions
 
 This should open two GUST windows. First, start the server on one of them. If there are no errors while starting the server, then open Client on the second window. If the server fails to start, try running :code:`./kill_server` in the container terminal. 
 
+Post-Installation
+#################
 
+GUST can use offline satellite images for the map. Get the offline map tiles and save them inside :code:`/Documents/gust_resources/offline_folders` before use. If the maps are not saved in the correct location, GUST map widget will display blank. Note that it can also be configured to use other online map plugins such as OSM. Also, see guide for instructions on adding more areas on the map. 
+ 
+ 
 ..
     END USAGE INCLUDE
 

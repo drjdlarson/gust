@@ -377,10 +377,6 @@ class ConnServer:
 
             succ = cls._radios[name].waitForStarted()
             
-            # wait for a while. Dronekit connection in radiomanager has a timeout of 200s as of v2.0.2. 
-            logger.info("Sleeping for 10s. Wait until Dronekit Connection is established. It has a connection timeout of 200s.")
-            time.sleep(10)
-            
             if not succ:
                 err = "Failed to start Radio process"
                 logger.warning(err)

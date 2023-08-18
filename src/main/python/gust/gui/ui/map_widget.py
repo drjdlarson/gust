@@ -74,7 +74,7 @@ class MapWidget(QtQuickWidgets.QQuickWidget):
                     replacing_str = [
                         (
                             "MAP_FilledByMapWidget",
-                            resource_path + "/offline_folders/",
+                            "/Documents/gust_resources/offline_folders/",
                         ),
                         ("CACHE_FilledByMapWidget", temp_path + "/"),
                     ]
