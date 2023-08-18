@@ -127,7 +127,7 @@ Installation
 
     .. code-block::
 
-        docker run --rm -it --network host --privileged -e DISPLAY=$DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix -v /dev:/dev -v /home/${USER}/Documents:/Documents ualager/gust-lager:v2.0.2
+        docker run --rm -it --network host --privileged -e DISPLAY=$DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix -v /dev:/dev -v /home/${USER}/Documents:/Documents ualager/gust-lager:v2.0.3
     
 * Note: Here we are setting the DISPLAY environment variable and mounting X-server volume in the container to make the display compatible (See `here <https://leimao.github.io/blog/Docker-Container-GUI-Display/>`__). 
 * Note: We give the container access to all devices on host and mount the /dev volume for USB ports (used by radio connections).

@@ -2,6 +2,6 @@
     "app_name": "gust",
     "author": "Laboratory for Autonomy GNC and Estimation Research (LAGER)",
     "main_module": "src/main/python/gust/__main__.py",
-    "version": "2.0.2",
+    "version": "2.0.3",
     "extra_pyinstaller_args": ["--onedir" ]
 }
