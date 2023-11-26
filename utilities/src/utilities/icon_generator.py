@@ -20,6 +20,7 @@ RGB = [
 ]
 FILES = ["home", "pos", "spos", "rtl_pos", "waypoint"]
 
+
 def prepare_icon(file, req_rgb, save_name):
     """
     Prepares map icons for each vehicle
@@ -64,11 +65,10 @@ def prepare_icon(file, req_rgb, save_name):
 # all_pix = prepare_icon("circle2.png", (0, 240, 0), "dummy_one.png")
 
 if __name__ == "__main__":
-
     sep_path = os.getcwd().split("/gust/")
     path = "{}/gust/src/main/resources/base/map_widget/".format(sep_path[0])
 
-    for (color, rgb) in zip(COLORS, RGB):
+    for color, rgb in zip(COLORS, RGB):
         for file in FILES:
             # location of the files from FILES
             filename = "{}{}.png".format(path, file)

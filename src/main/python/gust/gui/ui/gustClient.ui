@@ -772,8 +772,11 @@ background-color: rgb(85, 87, 83);</string>
             <property name="frameShadow">
              <enum>QFrame::Sunken</enum>
             </property>
+            <property name="smallDecimalPoint">
+             <bool>true</bool>
+            </property>
             <property name="digitCount">
-             <number>3</number>
+             <number>4</number>
             </property>
             <property name="segmentStyle">
              <enum>QLCDNumber::Flat</enum>

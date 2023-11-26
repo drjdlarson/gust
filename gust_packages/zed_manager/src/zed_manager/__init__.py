@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 logger.addHandler(logging.NullHandler())
 
 
-class ZedHandler():
+class ZedHandler:
     def __init__(self, debug=False):
         super().__init__()
         self.update_rates = {}
@@ -26,7 +26,9 @@ class ZedHandler():
             zlogger.setLevel(logging.INFO)
             ch.setLevel(logging.INFO)
 
-        formatter = logging.Formatter('[zed-manager] %(levelname)s %(asctime)s - %(message)s')
+        formatter = logging.Formatter(
+            "[zed-manager] %(levelname)s %(asctime)s - %(message)s"
+        )
         ch.setFormatter(formatter)
 
         zlogger.addHandler(ch)
@@ -38,7 +40,6 @@ class ZedHandler():
         if zedManager.connect_to_cameras(filename=info["filename"]):
             self.hac_dist[name] = info["hac_dist"]
             self.update_rates[name] = info["update_rate"]
-
 
             return {"success": True, "info": ""}
         else:

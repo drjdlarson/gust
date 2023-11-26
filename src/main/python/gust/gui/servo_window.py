@@ -3,6 +3,7 @@ from PyQt5 import QtWidgets, QtCore
 from PyQt5.QtWidgets import QApplication, QMainWindow
 from gust.gui.ui.generic_channels import Ui_MainWindow
 
+
 class ServoWindow(QMainWindow, Ui_MainWindow):
     """Main interface for the servo channels window"""
 
@@ -86,8 +87,8 @@ class ServoWindow(QMainWindow, Ui_MainWindow):
         super().setupUi(mainWindow)
 
 
-if __name__ == '__main__':
-    app =QApplication(sys.argv)
+if __name__ == "__main__":
+    app = QApplication(sys.argv)
     myApp = ServoWindow()
     myApp.show()
 
@@ -96,4 +97,4 @@ if __name__ == '__main__':
     try:
         sys.exit(app.exec_())
     except SystemExit:
-        print('Closing Window...')
+        print("Closing Window...")

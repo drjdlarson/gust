@@ -18,6 +18,7 @@ import gust.conn_manager.conn_server as conn_server
 
 logger = logging.getLogger(__name__)
 
+
 class BackendWindow(QMainWindow, Ui_BackendWindow):
     """Main interface for the backend window."""
 

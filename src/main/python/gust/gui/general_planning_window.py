@@ -24,8 +24,19 @@ FILES = ["home", "pos", "spos", "rtl_pos"]
 
 # picked up random colors from QML colors type
 # https://doc.qt.io/qt-6/qml-color.html
-ALL_COLORS = ['aqua', 'yellow', 'blue', 'darkcyan', 'darkorange', 'red', 'green',
-          'sienna', 'darkslateblue', 'fuchsia']
+ALL_COLORS = [
+    "aqua",
+    "yellow",
+    "blue",
+    "darkcyan",
+    "darkorange",
+    "red",
+    "green",
+    "sienna",
+    "darkslateblue",
+    "fuchsia",
+]
+
 
 class GeneralPlanningWindow(QMainWindow, Ui_MainWindow):
     """Main Interface for general planning window."""
@@ -67,21 +78,21 @@ class GeneralPlanningWindow(QMainWindow, Ui_MainWindow):
             for fname in fnames:
                 self.load_mission_file(fname)
 
-
     def load_mission_file(self, filename):
         """Tasks to perform when a mission file is loaded"""
 
         # getting the file name excluding the full path and extension name
-        mission_name = (filename.split('/')[-1]).split('.')[0]
+        mission_name = (filename.split("/")[-1]).split(".")[0]
 
         # Avoid missions with duplicate names
         if mission_name not in self.loaded_mission_wps.keys():
-
             # saving the filepath (required to send it to ConnServer.)
             self.file_names[mission_name] = filename
 
             # assign a color to the loaded mission
-            self.mission_colors[mission_name] = self.assign_color_to_the_mission(mission_name)
+            self.mission_colors[mission_name] = self.assign_color_to_the_mission(
+                mission_name
+            )
 
             # reading the XYZ and command from the file.
             self.loaded_mission_wps[mission_name] = self.read_pos_from_file(filename)
@@ -108,7 +119,6 @@ class GeneralPlanningWindow(QMainWindow, Ui_MainWindow):
         self.cb[mission].stateChanged.connect(self.checkbox_state_changed)
         self.horizontalLayout_checkboxes.addWidget(self.cb[mission])
 
-
     @pyqtSlot()
     def checkbox_state_changed(self):
         """Hide or display the waypoints for selected mission"""
@@ -123,24 +133,30 @@ class GeneralPlanningWindow(QMainWindow, Ui_MainWindow):
         else:
             self.widget_planning_map.change_waypoints_line_state(0, sel_wp_color)
 
-
     def add_mission_to_map(self, mission):
         """Displays the loaded mission on the map"""
 
         # Only picking the (X, Y) values
-        coords = [self.loaded_mission_wps[mission][index][:2] for index in
-                  range(len((self.loaded_mission_wps[mission])))]
+        coords = [
+            self.loaded_mission_wps[mission][index][:2]
+            for index in range(len((self.loaded_mission_wps[mission])))
+        ]
 
         # Remove the waypoints with (x,y) == (0.0, 0.0), (1,0, 1.0) from showing in map
-        coordinates = MapHelper.remove_coord_from_wplist(coords, [(0.0, 0.0), (1.0, 1.0)])
+        coordinates = MapHelper.remove_coord_from_wplist(
+            coords, [(0.0, 0.0), (1.0, 1.0)]
+        )
 
         # display on the map
-        self.widget_planning_map.add_waypoint_lines(coordinates, self.mission_colors[mission])
-
+        self.widget_planning_map.add_waypoint_lines(
+            coordinates, self.mission_colors[mission]
+        )
 
     def assign_color_to_the_mission(self, mission_name):
         """Assigns a color to the loaded mission"""
-        available_colors = [i for i in ALL_COLORS if i not in self.mission_colors.values()]
+        available_colors = [
+            i for i in ALL_COLORS if i not in self.mission_colors.values()
+        ]
         return random.choice(available_colors)
 
     def add_row_in_missions(self, mission):
@@ -208,7 +224,9 @@ class GeneralPlanningWindow(QMainWindow, Ui_MainWindow):
 
         if upload_button:
             sel_row = self.tableWidget_missions.indexAt(upload_button.pos()).row()
-            sel_vehicle_name = self.tableWidget_missions.cellWidget(sel_row, 1).currentText()
+            sel_vehicle_name = self.tableWidget_missions.cellWidget(
+                sel_row, 1
+            ).currentText()
             sel_mission_name = self.tableWidget_missions.item(sel_row, 0).text()
 
             print("uploading {} to {}".format(sel_mission_name, sel_vehicle_name))
@@ -223,14 +241,15 @@ class GeneralPlanningWindow(QMainWindow, Ui_MainWindow):
             upload = requests.get(url).json()
 
             if upload["success"]:
-                msg = "Uploaded {} waypoints to {}".format(sel_mission_name, sel_vehicle_name)
+                msg = "Uploaded {} waypoints to {}".format(
+                    sel_mission_name, sel_vehicle_name
+                )
                 self.display_message(QMessageBox.Information, msg)
             else:
                 msg = "Unable to upload {} waypoints to {}:: {:s}".format(
-                        sel_mission_name, sel_vehicle_name, upload["msg"]
-                    )
+                    sel_mission_name, sel_vehicle_name, upload["msg"]
+                )
                 self.display_message(QMessageBox.Warning, msg)
-
 
     @pyqtSlot()
     def remove_mission(self):
@@ -250,7 +269,9 @@ class GeneralPlanningWindow(QMainWindow, Ui_MainWindow):
             self.tableWidget_waypoints.setRowCount(0)
 
             # delete mission from the map
-            self.widget_planning_map.remove_line_from_map(self.mission_colors[discon_name])
+            self.widget_planning_map.remove_line_from_map(
+                self.mission_colors[discon_name]
+            )
 
             # delete other saved stuff.
             del self.loaded_mission_wps[discon_name]
@@ -293,7 +314,6 @@ class GeneralPlanningWindow(QMainWindow, Ui_MainWindow):
             item = QTableWidgetItem(str(wp[3]))
             self.tableWidget_waypoints.setItem(current_rows, 3, item)
 
-
     def clicked_refresh(self):
         """Event connection when the refresh button is clicked"""
 
@@ -303,8 +323,9 @@ class GeneralPlanningWindow(QMainWindow, Ui_MainWindow):
         # Show the connected vehicles in all dropdowns.
         for row_num in range(self.tableWidget_missions.rowCount()):
             self.tableWidget_missions.cellWidget(row_num, 1).clear()
-            self.tableWidget_missions.cellWidget(row_num, 1).addItems(connected_vehicles)
-
+            self.tableWidget_missions.cellWidget(row_num, 1).addItems(
+                connected_vehicles
+            )
 
     def display_message(self, type, msg):
         """Display the message on a separate box"""

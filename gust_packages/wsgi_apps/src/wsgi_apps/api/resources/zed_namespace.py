@@ -46,6 +46,7 @@ conParse.add_argument("updateHz", default=1, type=float)
 @ZED_NS.route("/connect")
 class ConnInfo(Resource):
     """Handles connection with ZED"""
+
     @ZED_NS.expect(conParse)
     def get(self):
         cf = ConfigSet()

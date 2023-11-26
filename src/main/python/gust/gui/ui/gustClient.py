@@ -15,7 +15,9 @@ class Ui_MainWindow_main(object):
     def setupUi(self, MainWindow_main):
         MainWindow_main.setObjectName("MainWindow_main")
         MainWindow_main.resize(1324, 1118)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
+        sizePolicy = QtWidgets.QSizePolicy(
+            QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding
+        )
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(MainWindow_main.sizePolicy().hasHeightForWidth())
@@ -59,7 +61,9 @@ class Ui_MainWindow_main(object):
         MainWindow_main.setStyleSheet("")
         MainWindow_main.setTabShape(QtWidgets.QTabWidget.Rounded)
         self.widget_main = QtWidgets.QWidget(MainWindow_main)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
+        sizePolicy = QtWidgets.QSizePolicy(
+            QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding
+        )
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.widget_main.sizePolicy().hasHeightForWidth())
@@ -76,10 +80,14 @@ class Ui_MainWindow_main(object):
         self.line_2.setObjectName("line_2")
         self.horizontalLayout_2.addWidget(self.line_2)
         self.verticalWidget = QtWidgets.QWidget(self.widget_main)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Preferred)
+        sizePolicy = QtWidgets.QSizePolicy(
+            QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Preferred
+        )
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.verticalWidget.sizePolicy().hasHeightForWidth())
+        sizePolicy.setHeightForWidth(
+            self.verticalWidget.sizePolicy().hasHeightForWidth()
+        )
         self.verticalWidget.setSizePolicy(sizePolicy)
         self.verticalWidget.setMinimumSize(QtCore.QSize(480, 1050))
         self.verticalWidget.setMaximumSize(QtCore.QSize(480, 16777215))
@@ -90,7 +98,9 @@ class Ui_MainWindow_main(object):
         self.verticalLayout.setSpacing(10)
         self.verticalLayout.setObjectName("verticalLayout")
         self.widget_hud = pyG5AIWidget(self.verticalWidget)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
+        sizePolicy = QtWidgets.QSizePolicy(
+            QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed
+        )
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.widget_hud.sizePolicy().hasHeightForWidth())
@@ -99,19 +109,26 @@ class Ui_MainWindow_main(object):
         self.widget_hud.setMaximumSize(QtCore.QSize(480, 360))
         self.widget_hud.setObjectName("widget_hud")
         self.verticalLayout.addWidget(self.widget_hud)
-        spacerItem = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
+        spacerItem = QtWidgets.QSpacerItem(
+            20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding
+        )
         self.verticalLayout.addItem(spacerItem)
         self.label_seluav = QtWidgets.QLabel(self.verticalWidget)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.MinimumExpanding, QtWidgets.QSizePolicy.MinimumExpanding)
+        sizePolicy = QtWidgets.QSizePolicy(
+            QtWidgets.QSizePolicy.MinimumExpanding,
+            QtWidgets.QSizePolicy.MinimumExpanding,
+        )
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.label_seluav.sizePolicy().hasHeightForWidth())
         self.label_seluav.setSizePolicy(sizePolicy)
         self.label_seluav.setMinimumSize(QtCore.QSize(0, 50))
         self.label_seluav.setMaximumSize(QtCore.QSize(16777215, 50))
-        self.label_seluav.setStyleSheet("background-color: rgba(0,0,0,0);\n"
-"color: rgb(0, 0, 0);\n"
-"font: 75 20pt \"URW Bookman L\";")
+        self.label_seluav.setStyleSheet(
+            "background-color: rgba(0,0,0,0);\n"
+            "color: rgb(0, 0, 0);\n"
+            'font: 75 20pt "URW Bookman L";'
+        )
         self.label_seluav.setAlignment(QtCore.Qt.AlignCenter)
         self.label_seluav.setObjectName("label_seluav")
         self.verticalLayout.addWidget(self.label_seluav)
@@ -128,14 +145,18 @@ class Ui_MainWindow_main(object):
         font = QtGui.QFont()
         font.setPointSize(13)
         self.label_ekf.setFont(font)
-        self.label_ekf.setAlignment(QtCore.Qt.AlignLeading|QtCore.Qt.AlignLeft|QtCore.Qt.AlignVCenter)
+        self.label_ekf.setAlignment(
+            QtCore.Qt.AlignLeading | QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter
+        )
         self.label_ekf.setObjectName("label_ekf")
         self.horizontalLayout_5.addWidget(self.label_ekf)
         self.label_status = QtWidgets.QLabel(self.verticalWidget)
         font = QtGui.QFont()
         font.setPointSize(13)
         self.label_status.setFont(font)
-        self.label_status.setAlignment(QtCore.Qt.AlignRight|QtCore.Qt.AlignTrailing|QtCore.Qt.AlignVCenter)
+        self.label_status.setAlignment(
+            QtCore.Qt.AlignRight | QtCore.Qt.AlignTrailing | QtCore.Qt.AlignVCenter
+        )
         self.label_status.setObjectName("label_status")
         self.horizontalLayout_5.addWidget(self.label_status)
         self.verticalLayout.addLayout(self.horizontalLayout_5)
@@ -145,7 +166,9 @@ class Ui_MainWindow_main(object):
         self.line_5.setObjectName("line_5")
         self.verticalLayout.addWidget(self.line_5)
         self.formLayout_3 = QtWidgets.QWidget(self.verticalWidget)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Preferred)
+        sizePolicy = QtWidgets.QSizePolicy(
+            QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Preferred
+        )
         sizePolicy.setHorizontalStretch(1)
         sizePolicy.setVerticalStretch(1)
         sizePolicy.setHeightForWidth(self.formLayout_3.sizePolicy().hasHeightForWidth())
@@ -155,14 +178,20 @@ class Ui_MainWindow_main(object):
         self.formLayout_3.setStyleSheet("")
         self.formLayout_3.setObjectName("formLayout_3")
         self.formLayout_5 = QtWidgets.QFormLayout(self.formLayout_3)
-        self.formLayout_5.setFieldGrowthPolicy(QtWidgets.QFormLayout.ExpandingFieldsGrow)
+        self.formLayout_5.setFieldGrowthPolicy(
+            QtWidgets.QFormLayout.ExpandingFieldsGrow
+        )
         self.formLayout_5.setLabelAlignment(QtCore.Qt.AlignCenter)
-        self.formLayout_5.setFormAlignment(QtCore.Qt.AlignHCenter|QtCore.Qt.AlignTop)
+        self.formLayout_5.setFormAlignment(QtCore.Qt.AlignHCenter | QtCore.Qt.AlignTop)
         self.formLayout_5.setHorizontalSpacing(50)
         self.formLayout_5.setObjectName("formLayout_5")
-        spacerItem1 = QtWidgets.QSpacerItem(114, 13, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
+        spacerItem1 = QtWidgets.QSpacerItem(
+            114, 13, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding
+        )
         self.formLayout_5.setItem(0, QtWidgets.QFormLayout.FieldRole, spacerItem1)
-        spacerItem2 = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
+        spacerItem2 = QtWidgets.QSpacerItem(
+            20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding
+        )
         self.formLayout_5.setItem(1, QtWidgets.QFormLayout.FieldRole, spacerItem2)
         self.lcdNumber_altitude = QtWidgets.QLCDNumber(self.formLayout_3)
         self.lcdNumber_altitude.setMinimumSize(QtCore.QSize(80, 40))
@@ -174,16 +203,20 @@ class Ui_MainWindow_main(object):
         font.setWeight(9)
         self.lcdNumber_altitude.setFont(font)
         self.lcdNumber_altitude.setLayoutDirection(QtCore.Qt.LeftToRight)
-        self.lcdNumber_altitude.setStyleSheet("color: rgb(243, 243, 243);\n"
-"font: 75 14pt \"Ubuntu Condensed\";\n"
-"background-color: rgb(85, 87, 83);")
+        self.lcdNumber_altitude.setStyleSheet(
+            "color: rgb(243, 243, 243);\n"
+            'font: 75 14pt "Ubuntu Condensed";\n'
+            "background-color: rgb(85, 87, 83);"
+        )
         self.lcdNumber_altitude.setFrameShape(QtWidgets.QFrame.NoFrame)
         self.lcdNumber_altitude.setFrameShadow(QtWidgets.QFrame.Sunken)
         self.lcdNumber_altitude.setSmallDecimalPoint(False)
         self.lcdNumber_altitude.setDigitCount(3)
         self.lcdNumber_altitude.setSegmentStyle(QtWidgets.QLCDNumber.Flat)
         self.lcdNumber_altitude.setObjectName("lcdNumber_altitude")
-        self.formLayout_5.setWidget(2, QtWidgets.QFormLayout.LabelRole, self.lcdNumber_altitude)
+        self.formLayout_5.setWidget(
+            2, QtWidgets.QFormLayout.LabelRole, self.lcdNumber_altitude
+        )
         self.lcdNumber_vspeed = QtWidgets.QLCDNumber(self.formLayout_3)
         self.lcdNumber_vspeed.setMinimumSize(QtCore.QSize(80, 40))
         font = QtGui.QFont()
@@ -194,21 +227,29 @@ class Ui_MainWindow_main(object):
         font.setWeight(9)
         self.lcdNumber_vspeed.setFont(font)
         self.lcdNumber_vspeed.setLayoutDirection(QtCore.Qt.LeftToRight)
-        self.lcdNumber_vspeed.setStyleSheet("color: rgb(243, 243, 243);\n"
-"font: 75 14pt \"Ubuntu Condensed\";\n"
-"background-color: rgb(85, 87, 83);")
+        self.lcdNumber_vspeed.setStyleSheet(
+            "color: rgb(243, 243, 243);\n"
+            'font: 75 14pt "Ubuntu Condensed";\n'
+            "background-color: rgb(85, 87, 83);"
+        )
         self.lcdNumber_vspeed.setFrameShape(QtWidgets.QFrame.NoFrame)
         self.lcdNumber_vspeed.setFrameShadow(QtWidgets.QFrame.Sunken)
         self.lcdNumber_vspeed.setSmallDecimalPoint(False)
         self.lcdNumber_vspeed.setDigitCount(3)
         self.lcdNumber_vspeed.setSegmentStyle(QtWidgets.QLCDNumber.Flat)
         self.lcdNumber_vspeed.setObjectName("lcdNumber_vspeed")
-        self.formLayout_5.setWidget(2, QtWidgets.QFormLayout.FieldRole, self.lcdNumber_vspeed)
+        self.formLayout_5.setWidget(
+            2, QtWidgets.QFormLayout.FieldRole, self.lcdNumber_vspeed
+        )
         self.label_altitude = QtWidgets.QLabel(self.formLayout_3)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Preferred)
+        sizePolicy = QtWidgets.QSizePolicy(
+            QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Preferred
+        )
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.label_altitude.sizePolicy().hasHeightForWidth())
+        sizePolicy.setHeightForWidth(
+            self.label_altitude.sizePolicy().hasHeightForWidth()
+        )
         self.label_altitude.setSizePolicy(sizePolicy)
         font = QtGui.QFont()
         font.setFamily("Waree")
@@ -218,16 +259,22 @@ class Ui_MainWindow_main(object):
         font.setWeight(9)
         self.label_altitude.setFont(font)
         self.label_altitude.setStatusTip("")
-        self.label_altitude.setStyleSheet("background-color: rgba(0,0,0,0);\n"
-"font: 75 15pt \"Waree\";\n"
-"color: rgb(0, 0, 0);\n"
-"")
+        self.label_altitude.setStyleSheet(
+            "background-color: rgba(0,0,0,0);\n"
+            'font: 75 15pt "Waree";\n'
+            "color: rgb(0, 0, 0);\n"
+            ""
+        )
         self.label_altitude.setFrameShape(QtWidgets.QFrame.NoFrame)
         self.label_altitude.setAlignment(QtCore.Qt.AlignCenter)
         self.label_altitude.setObjectName("label_altitude")
-        self.formLayout_5.setWidget(3, QtWidgets.QFormLayout.LabelRole, self.label_altitude)
+        self.formLayout_5.setWidget(
+            3, QtWidgets.QFormLayout.LabelRole, self.label_altitude
+        )
         self.label_vspeed = QtWidgets.QLabel(self.formLayout_3)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Preferred)
+        sizePolicy = QtWidgets.QSizePolicy(
+            QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Preferred
+        )
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.label_vspeed.sizePolicy().hasHeightForWidth())
@@ -240,17 +287,25 @@ class Ui_MainWindow_main(object):
         font.setWeight(9)
         self.label_vspeed.setFont(font)
         self.label_vspeed.setStatusTip("")
-        self.label_vspeed.setStyleSheet("background-color: rgba(0,0,0,0);\n"
-"font: 75 15pt \"Waree\";\n"
-"color: rgb(0, 0, 0);\n"
-"")
+        self.label_vspeed.setStyleSheet(
+            "background-color: rgba(0,0,0,0);\n"
+            'font: 75 15pt "Waree";\n'
+            "color: rgb(0, 0, 0);\n"
+            ""
+        )
         self.label_vspeed.setFrameShape(QtWidgets.QFrame.NoFrame)
         self.label_vspeed.setAlignment(QtCore.Qt.AlignCenter)
         self.label_vspeed.setObjectName("label_vspeed")
-        self.formLayout_5.setWidget(3, QtWidgets.QFormLayout.FieldRole, self.label_vspeed)
-        spacerItem3 = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
+        self.formLayout_5.setWidget(
+            3, QtWidgets.QFormLayout.FieldRole, self.label_vspeed
+        )
+        spacerItem3 = QtWidgets.QSpacerItem(
+            20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding
+        )
         self.formLayout_5.setItem(4, QtWidgets.QFormLayout.FieldRole, spacerItem3)
-        spacerItem4 = QtWidgets.QSpacerItem(114, 13, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
+        spacerItem4 = QtWidgets.QSpacerItem(
+            114, 13, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding
+        )
         self.formLayout_5.setItem(5, QtWidgets.QFormLayout.FieldRole, spacerItem4)
         self.lcdNumber_airspeed = QtWidgets.QLCDNumber(self.formLayout_3)
         self.lcdNumber_airspeed.setMinimumSize(QtCore.QSize(80, 40))
@@ -262,15 +317,19 @@ class Ui_MainWindow_main(object):
         font.setWeight(9)
         self.lcdNumber_airspeed.setFont(font)
         self.lcdNumber_airspeed.setLayoutDirection(QtCore.Qt.LeftToRight)
-        self.lcdNumber_airspeed.setStyleSheet("color: rgb(243, 243, 243);\n"
-"font: 75 14pt \"Ubuntu Condensed\";\n"
-"background-color: rgb(85, 87, 83);")
+        self.lcdNumber_airspeed.setStyleSheet(
+            "color: rgb(243, 243, 243);\n"
+            'font: 75 14pt "Ubuntu Condensed";\n'
+            "background-color: rgb(85, 87, 83);"
+        )
         self.lcdNumber_airspeed.setFrameShape(QtWidgets.QFrame.NoFrame)
         self.lcdNumber_airspeed.setFrameShadow(QtWidgets.QFrame.Sunken)
         self.lcdNumber_airspeed.setDigitCount(3)
         self.lcdNumber_airspeed.setSegmentStyle(QtWidgets.QLCDNumber.Flat)
         self.lcdNumber_airspeed.setObjectName("lcdNumber_airspeed")
-        self.formLayout_5.setWidget(6, QtWidgets.QFormLayout.LabelRole, self.lcdNumber_airspeed)
+        self.formLayout_5.setWidget(
+            6, QtWidgets.QFormLayout.LabelRole, self.lcdNumber_airspeed
+        )
         self.lcdNumber_heading = QtWidgets.QLCDNumber(self.formLayout_3)
         self.lcdNumber_heading.setMinimumSize(QtCore.QSize(80, 40))
         font = QtGui.QFont()
@@ -281,20 +340,28 @@ class Ui_MainWindow_main(object):
         font.setWeight(9)
         self.lcdNumber_heading.setFont(font)
         self.lcdNumber_heading.setLayoutDirection(QtCore.Qt.LeftToRight)
-        self.lcdNumber_heading.setStyleSheet("color: rgb(243, 243, 243);\n"
-"font: 75 14pt \"Ubuntu Condensed\";\n"
-"background-color: rgb(85, 87, 83);")
+        self.lcdNumber_heading.setStyleSheet(
+            "color: rgb(243, 243, 243);\n"
+            'font: 75 14pt "Ubuntu Condensed";\n'
+            "background-color: rgb(85, 87, 83);"
+        )
         self.lcdNumber_heading.setFrameShape(QtWidgets.QFrame.NoFrame)
         self.lcdNumber_heading.setFrameShadow(QtWidgets.QFrame.Sunken)
         self.lcdNumber_heading.setDigitCount(3)
         self.lcdNumber_heading.setSegmentStyle(QtWidgets.QLCDNumber.Flat)
         self.lcdNumber_heading.setObjectName("lcdNumber_heading")
-        self.formLayout_5.setWidget(6, QtWidgets.QFormLayout.FieldRole, self.lcdNumber_heading)
+        self.formLayout_5.setWidget(
+            6, QtWidgets.QFormLayout.FieldRole, self.lcdNumber_heading
+        )
         self.label_airspeed = QtWidgets.QLabel(self.formLayout_3)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Preferred)
+        sizePolicy = QtWidgets.QSizePolicy(
+            QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Preferred
+        )
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.label_airspeed.sizePolicy().hasHeightForWidth())
+        sizePolicy.setHeightForWidth(
+            self.label_airspeed.sizePolicy().hasHeightForWidth()
+        )
         self.label_airspeed.setSizePolicy(sizePolicy)
         font = QtGui.QFont()
         font.setFamily("Waree")
@@ -304,19 +371,27 @@ class Ui_MainWindow_main(object):
         font.setWeight(9)
         self.label_airspeed.setFont(font)
         self.label_airspeed.setStatusTip("")
-        self.label_airspeed.setStyleSheet("background-color: rgba(0,0,0,0);\n"
-"font: 75 15pt \"Waree\";\n"
-"color: rgb(0, 0, 0);\n"
-"")
+        self.label_airspeed.setStyleSheet(
+            "background-color: rgba(0,0,0,0);\n"
+            'font: 75 15pt "Waree";\n'
+            "color: rgb(0, 0, 0);\n"
+            ""
+        )
         self.label_airspeed.setFrameShape(QtWidgets.QFrame.NoFrame)
         self.label_airspeed.setAlignment(QtCore.Qt.AlignCenter)
         self.label_airspeed.setObjectName("label_airspeed")
-        self.formLayout_5.setWidget(7, QtWidgets.QFormLayout.LabelRole, self.label_airspeed)
+        self.formLayout_5.setWidget(
+            7, QtWidgets.QFormLayout.LabelRole, self.label_airspeed
+        )
         self.label_heading = QtWidgets.QLabel(self.formLayout_3)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Preferred)
+        sizePolicy = QtWidgets.QSizePolicy(
+            QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Preferred
+        )
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.label_heading.sizePolicy().hasHeightForWidth())
+        sizePolicy.setHeightForWidth(
+            self.label_heading.sizePolicy().hasHeightForWidth()
+        )
         self.label_heading.setSizePolicy(sizePolicy)
         font = QtGui.QFont()
         font.setFamily("Waree")
@@ -326,17 +401,25 @@ class Ui_MainWindow_main(object):
         font.setWeight(9)
         self.label_heading.setFont(font)
         self.label_heading.setStatusTip("")
-        self.label_heading.setStyleSheet("background-color: rgba(0,0,0,0);\n"
-"font: 75 15pt \"Waree\";\n"
-"color: rgb(0, 0, 0);\n"
-"")
+        self.label_heading.setStyleSheet(
+            "background-color: rgba(0,0,0,0);\n"
+            'font: 75 15pt "Waree";\n'
+            "color: rgb(0, 0, 0);\n"
+            ""
+        )
         self.label_heading.setFrameShape(QtWidgets.QFrame.NoFrame)
         self.label_heading.setAlignment(QtCore.Qt.AlignCenter)
         self.label_heading.setObjectName("label_heading")
-        self.formLayout_5.setWidget(7, QtWidgets.QFormLayout.FieldRole, self.label_heading)
-        spacerItem5 = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
+        self.formLayout_5.setWidget(
+            7, QtWidgets.QFormLayout.FieldRole, self.label_heading
+        )
+        spacerItem5 = QtWidgets.QSpacerItem(
+            20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding
+        )
         self.formLayout_5.setItem(8, QtWidgets.QFormLayout.FieldRole, spacerItem5)
-        spacerItem6 = QtWidgets.QSpacerItem(114, 13, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
+        spacerItem6 = QtWidgets.QSpacerItem(
+            114, 13, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding
+        )
         self.formLayout_5.setItem(9, QtWidgets.QFormLayout.FieldRole, spacerItem6)
         self.lcdNumber_voltage = QtWidgets.QLCDNumber(self.formLayout_3)
         self.lcdNumber_voltage.setMinimumSize(QtCore.QSize(80, 40))
@@ -348,15 +431,20 @@ class Ui_MainWindow_main(object):
         font.setWeight(9)
         self.lcdNumber_voltage.setFont(font)
         self.lcdNumber_voltage.setLayoutDirection(QtCore.Qt.LeftToRight)
-        self.lcdNumber_voltage.setStyleSheet("color: rgb(243, 243, 243);\n"
-"font: 75 14pt \"Ubuntu Condensed\";\n"
-"background-color: rgb(85, 87, 83);")
+        self.lcdNumber_voltage.setStyleSheet(
+            "color: rgb(243, 243, 243);\n"
+            'font: 75 14pt "Ubuntu Condensed";\n'
+            "background-color: rgb(85, 87, 83);"
+        )
         self.lcdNumber_voltage.setFrameShape(QtWidgets.QFrame.NoFrame)
         self.lcdNumber_voltage.setFrameShadow(QtWidgets.QFrame.Sunken)
-        self.lcdNumber_voltage.setDigitCount(3)
+        self.lcdNumber_voltage.setSmallDecimalPoint(True)
+        self.lcdNumber_voltage.setDigitCount(4)
         self.lcdNumber_voltage.setSegmentStyle(QtWidgets.QLCDNumber.Flat)
         self.lcdNumber_voltage.setObjectName("lcdNumber_voltage")
-        self.formLayout_5.setWidget(10, QtWidgets.QFormLayout.LabelRole, self.lcdNumber_voltage)
+        self.formLayout_5.setWidget(
+            10, QtWidgets.QFormLayout.LabelRole, self.lcdNumber_voltage
+        )
         self.lcdNumber_current = QtWidgets.QLCDNumber(self.formLayout_3)
         self.lcdNumber_current.setMinimumSize(QtCore.QSize(80, 40))
         font = QtGui.QFont()
@@ -367,20 +455,28 @@ class Ui_MainWindow_main(object):
         font.setWeight(9)
         self.lcdNumber_current.setFont(font)
         self.lcdNumber_current.setLayoutDirection(QtCore.Qt.LeftToRight)
-        self.lcdNumber_current.setStyleSheet("color: rgb(243, 243, 243);\n"
-"font: 75 14pt \"Ubuntu Condensed\";\n"
-"background-color: rgb(85, 87, 83);")
+        self.lcdNumber_current.setStyleSheet(
+            "color: rgb(243, 243, 243);\n"
+            'font: 75 14pt "Ubuntu Condensed";\n'
+            "background-color: rgb(85, 87, 83);"
+        )
         self.lcdNumber_current.setFrameShape(QtWidgets.QFrame.NoFrame)
         self.lcdNumber_current.setFrameShadow(QtWidgets.QFrame.Sunken)
         self.lcdNumber_current.setDigitCount(3)
         self.lcdNumber_current.setSegmentStyle(QtWidgets.QLCDNumber.Flat)
         self.lcdNumber_current.setObjectName("lcdNumber_current")
-        self.formLayout_5.setWidget(10, QtWidgets.QFormLayout.FieldRole, self.lcdNumber_current)
+        self.formLayout_5.setWidget(
+            10, QtWidgets.QFormLayout.FieldRole, self.lcdNumber_current
+        )
         self.label_voltage = QtWidgets.QLabel(self.formLayout_3)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Preferred)
+        sizePolicy = QtWidgets.QSizePolicy(
+            QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Preferred
+        )
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.label_voltage.sizePolicy().hasHeightForWidth())
+        sizePolicy.setHeightForWidth(
+            self.label_voltage.sizePolicy().hasHeightForWidth()
+        )
         self.label_voltage.setSizePolicy(sizePolicy)
         font = QtGui.QFont()
         font.setFamily("Waree")
@@ -390,19 +486,27 @@ class Ui_MainWindow_main(object):
         font.setWeight(9)
         self.label_voltage.setFont(font)
         self.label_voltage.setStatusTip("")
-        self.label_voltage.setStyleSheet("background-color: rgba(0,0,0,0);\n"
-"font: 75 15pt \"Waree\";\n"
-"color: rgb(0, 0, 0);\n"
-"")
+        self.label_voltage.setStyleSheet(
+            "background-color: rgba(0,0,0,0);\n"
+            'font: 75 15pt "Waree";\n'
+            "color: rgb(0, 0, 0);\n"
+            ""
+        )
         self.label_voltage.setFrameShape(QtWidgets.QFrame.NoFrame)
         self.label_voltage.setAlignment(QtCore.Qt.AlignCenter)
         self.label_voltage.setObjectName("label_voltage")
-        self.formLayout_5.setWidget(11, QtWidgets.QFormLayout.LabelRole, self.label_voltage)
+        self.formLayout_5.setWidget(
+            11, QtWidgets.QFormLayout.LabelRole, self.label_voltage
+        )
         self.label_current = QtWidgets.QLabel(self.formLayout_3)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Preferred)
+        sizePolicy = QtWidgets.QSizePolicy(
+            QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Preferred
+        )
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.label_current.sizePolicy().hasHeightForWidth())
+        sizePolicy.setHeightForWidth(
+            self.label_current.sizePolicy().hasHeightForWidth()
+        )
         self.label_current.setSizePolicy(sizePolicy)
         font = QtGui.QFont()
         font.setFamily("Waree")
@@ -412,17 +516,25 @@ class Ui_MainWindow_main(object):
         font.setWeight(9)
         self.label_current.setFont(font)
         self.label_current.setStatusTip("")
-        self.label_current.setStyleSheet("background-color: rgba(0,0,0,0);\n"
-"font: 75 15pt \"Waree\";\n"
-"color: rgb(0, 0, 0);\n"
-"")
+        self.label_current.setStyleSheet(
+            "background-color: rgba(0,0,0,0);\n"
+            'font: 75 15pt "Waree";\n'
+            "color: rgb(0, 0, 0);\n"
+            ""
+        )
         self.label_current.setFrameShape(QtWidgets.QFrame.NoFrame)
         self.label_current.setAlignment(QtCore.Qt.AlignCenter)
         self.label_current.setObjectName("label_current")
-        self.formLayout_5.setWidget(11, QtWidgets.QFormLayout.FieldRole, self.label_current)
-        spacerItem7 = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
+        self.formLayout_5.setWidget(
+            11, QtWidgets.QFormLayout.FieldRole, self.label_current
+        )
+        spacerItem7 = QtWidgets.QSpacerItem(
+            20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding
+        )
         self.formLayout_5.setItem(12, QtWidgets.QFormLayout.FieldRole, spacerItem7)
-        spacerItem8 = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
+        spacerItem8 = QtWidgets.QSpacerItem(
+            20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding
+        )
         self.formLayout_5.setItem(13, QtWidgets.QFormLayout.FieldRole, spacerItem8)
         self.verticalLayout.addWidget(self.formLayout_3)
         self.line_4 = QtWidgets.QFrame(self.verticalWidget)
@@ -446,27 +558,35 @@ class Ui_MainWindow_main(object):
         font.setItalic(False)
         font.setWeight(50)
         self.pushButton_tune.setFont(font)
-        self.pushButton_tune.setStyleSheet("background-color: rgb(48,132,70);\n"
-"color: rgb(255, 255, 255);\n"
-"font: 12pt \"Umpush\";")
+        self.pushButton_tune.setStyleSheet(
+            "background-color: rgb(48,132,70);\n"
+            "color: rgb(255, 255, 255);\n"
+            'font: 12pt "Umpush";'
+        )
         self.pushButton_tune.setObjectName("pushButton_tune")
         self.gridLayout_3.addWidget(self.pushButton_tune, 2, 0, 1, 1)
         self.pushButton_planning = QtWidgets.QPushButton(self.gridlayout_functions)
-        self.pushButton_planning.setStyleSheet("background-color: rgb(48,132,70);\n"
-"color: rgb(255, 255, 255);\n"
-"font: 12pt \"Umpush\";")
+        self.pushButton_planning.setStyleSheet(
+            "background-color: rgb(48,132,70);\n"
+            "color: rgb(255, 255, 255);\n"
+            'font: 12pt "Umpush";'
+        )
         self.pushButton_planning.setObjectName("pushButton_planning")
         self.gridLayout_3.addWidget(self.pushButton_planning, 2, 1, 1, 1)
         self.pushButton_sensors = QtWidgets.QPushButton(self.gridlayout_functions)
-        self.pushButton_sensors.setStyleSheet("background-color: rgb(48,132,70);\n"
-"color: rgb(255, 255, 255);\n"
-"font: 12pt \"Umpush\";")
+        self.pushButton_sensors.setStyleSheet(
+            "background-color: rgb(48,132,70);\n"
+            "color: rgb(255, 255, 255);\n"
+            'font: 12pt "Umpush";'
+        )
         self.pushButton_sensors.setObjectName("pushButton_sensors")
         self.gridLayout_3.addWidget(self.pushButton_sensors, 1, 0, 1, 1)
         self.pushButton_commands = QtWidgets.QPushButton(self.gridlayout_functions)
-        self.pushButton_commands.setStyleSheet("background-color: rgb(48,132,70);\n"
-"color: rgb(255, 255, 255);\n"
-"font: 12pt \"Umpush\";")
+        self.pushButton_commands.setStyleSheet(
+            "background-color: rgb(48,132,70);\n"
+            "color: rgb(255, 255, 255);\n"
+            'font: 12pt "Umpush";'
+        )
         self.pushButton_commands.setObjectName("pushButton_commands")
         self.gridLayout_3.addWidget(self.pushButton_commands, 1, 1, 1, 1)
         self.verticalLayout.addWidget(self.gridlayout_functions)
@@ -486,23 +606,29 @@ class Ui_MainWindow_main(object):
         self.horizontalLayout_4.setObjectName("horizontalLayout_4")
         self.pushButton_RTL = QtWidgets.QPushButton(self.horizontalWidget)
         self.pushButton_RTL.setMinimumSize(QtCore.QSize(90, 50))
-        self.pushButton_RTL.setStyleSheet("background-color: rgb(187,30,16);\n"
-"color: rgb(255, 255, 255);\n"
-"font: 75 20pt \"Padauk Book [PYRS]\";")
+        self.pushButton_RTL.setStyleSheet(
+            "background-color: rgb(187,30,16);\n"
+            "color: rgb(255, 255, 255);\n"
+            'font: 75 20pt "Padauk Book [PYRS]";'
+        )
         self.pushButton_RTL.setObjectName("pushButton_RTL")
         self.horizontalLayout_4.addWidget(self.pushButton_RTL)
         self.pushButton_engineOff = QtWidgets.QPushButton(self.horizontalWidget)
         self.pushButton_engineOff.setMinimumSize(QtCore.QSize(150, 50))
-        self.pushButton_engineOff.setStyleSheet("background-color: rgb(187,30,16);\n"
-"color: rgb(255, 255, 255);\n"
-"font: 75 20pt \"Padauk Book [PYRS]\";")
+        self.pushButton_engineOff.setStyleSheet(
+            "background-color: rgb(187,30,16);\n"
+            "color: rgb(255, 255, 255);\n"
+            'font: 75 20pt "Padauk Book [PYRS]";'
+        )
         self.pushButton_engineOff.setObjectName("pushButton_engineOff")
         self.horizontalLayout_4.addWidget(self.pushButton_engineOff)
         self.pushButton_disarm = QtWidgets.QPushButton(self.horizontalWidget)
         self.pushButton_disarm.setMinimumSize(QtCore.QSize(90, 50))
-        self.pushButton_disarm.setStyleSheet("background-color: rgb(187,30,16);\n"
-"color: rgb(255, 255, 255);\n"
-"font: 75 20pt \"Padauk Book [PYRS]\";")
+        self.pushButton_disarm.setStyleSheet(
+            "background-color: rgb(187,30,16);\n"
+            "color: rgb(255, 255, 255);\n"
+            'font: 75 20pt "Padauk Book [PYRS]";'
+        )
         self.pushButton_disarm.setObjectName("pushButton_disarm")
         self.horizontalLayout_4.addWidget(self.pushButton_disarm)
         self.verticalLayout.addWidget(self.horizontalWidget)
@@ -536,20 +662,26 @@ class Ui_MainWindow_main(object):
         font.setItalic(False)
         font.setWeight(50)
         self.pushButton_addvehicle.setFont(font)
-        self.pushButton_addvehicle.setStyleSheet("background-color: rgb(48,132,70);\n"
-"color: rgb(255, 255, 255);\n"
-"font: 14pt \"Umpush\";")
+        self.pushButton_addvehicle.setStyleSheet(
+            "background-color: rgb(48,132,70);\n"
+            "color: rgb(255, 255, 255);\n"
+            'font: 14pt "Umpush";'
+        )
         self.pushButton_addvehicle.setObjectName("pushButton_addvehicle")
         self.horizontalLayout.addWidget(self.pushButton_addvehicle)
         self.pushButton_sil = QtWidgets.QPushButton(self.widget_main)
         self.pushButton_sil.setMinimumSize(QtCore.QSize(150, 0))
         self.pushButton_sil.setMaximumSize(QtCore.QSize(16777215, 30))
-        self.pushButton_sil.setStyleSheet("background-color: rgb(48,132,70);\n"
-"color: rgb(255, 255, 255);\n"
-"font: 14pt \"Umpush\";")
+        self.pushButton_sil.setStyleSheet(
+            "background-color: rgb(48,132,70);\n"
+            "color: rgb(255, 255, 255);\n"
+            'font: 14pt "Umpush";'
+        )
         self.pushButton_sil.setObjectName("pushButton_sil")
         self.horizontalLayout.addWidget(self.pushButton_sil)
-        spacerItem9 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
+        spacerItem9 = QtWidgets.QSpacerItem(
+            40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum
+        )
         self.horizontalLayout.addItem(spacerItem9)
         self.comboBox_saved_locations = QtWidgets.QComboBox(self.widget_main)
         self.comboBox_saved_locations.setMinimumSize(QtCore.QSize(90, 25))
@@ -614,7 +746,12 @@ class Ui_MainWindow_main(object):
     def retranslateUi(self, MainWindow_main):
         _translate = QtCore.QCoreApplication.translate
         MainWindow_main.setWindowTitle(_translate("MainWindow_main", "MainWindow"))
-        self.widget_main.setToolTip(_translate("MainWindow_main", "<html><head/><body><p align=\"center\"><br/></p></body></html>"))
+        self.widget_main.setToolTip(
+            _translate(
+                "MainWindow_main",
+                '<html><head/><body><p align="center"><br/></p></body></html>',
+            )
+        )
         self.label_seluav.setText(_translate("MainWindow_main", "VEHICLE NAME"))
         self.label_vehicle_type.setText(_translate("MainWindow_main", "VEHICLE TYPE"))
         self.label_ekf.setText(_translate("MainWindow_main", "EKF STATUS"))
@@ -632,7 +769,9 @@ class Ui_MainWindow_main(object):
         self.pushButton_RTL.setText(_translate("MainWindow_main", "RTL"))
         self.pushButton_engineOff.setText(_translate("MainWindow_main", "Engine OFF"))
         self.pushButton_disarm.setText(_translate("MainWindow_main", "Disarm"))
-        self.pushButton_addvehicle.setText(_translate("MainWindow_main", "Add a Vehicle"))
+        self.pushButton_addvehicle.setText(
+            _translate("MainWindow_main", "Add a Vehicle")
+        )
         self.pushButton_sil.setText(_translate("MainWindow_main", "SIL"))
         self.pushButton_refresh_map.setText(_translate("MainWindow_main", "Refresh"))
         self.tableWidget.setSortingEnabled(True)
@@ -656,12 +795,15 @@ class Ui_MainWindow_main(object):
         item.setText(_translate("MainWindow_main", "ENGINE"))
         item = self.tableWidget.horizontalHeaderItem(10)
         item.setText(_translate("MainWindow_main", "DISCONNECT"))
+
+
 from gust.gui.ui.attitude_ind_widget import pyG5AIWidget
 from gust.gui.ui.map_widget import MapWidget
 
 
 if __name__ == "__main__":
     import sys
+
     app = QtWidgets.QApplication(sys.argv)
     MainWindow_main = QtWidgets.QMainWindow()
     ui = Ui_MainWindow_main()

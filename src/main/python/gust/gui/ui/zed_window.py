@@ -71,11 +71,15 @@ class Ui_ZedWindow(object):
         self.lineEdit_id = QtWidgets.QLineEdit(self.centralwidget)
         self.lineEdit_id.setObjectName("lineEdit_id")
         self.horizontalLayout_5.addWidget(self.lineEdit_id)
-        spacerItem = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
+        spacerItem = QtWidgets.QSpacerItem(
+            40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum
+        )
         self.horizontalLayout_5.addItem(spacerItem)
         self.gridLayout_3.addLayout(self.horizontalLayout_5, 0, 1, 1, 1)
         self.label = QtWidgets.QLabel(self.centralwidget)
-        self.label.setAlignment(QtCore.Qt.AlignLeading|QtCore.Qt.AlignLeft|QtCore.Qt.AlignTop)
+        self.label.setAlignment(
+            QtCore.Qt.AlignLeading | QtCore.Qt.AlignLeft | QtCore.Qt.AlignTop
+        )
         self.label.setObjectName("label")
         self.gridLayout_3.addWidget(self.label, 4, 0, 1, 1)
         self.horizontalLayout_15 = QtWidgets.QHBoxLayout()
@@ -83,7 +87,9 @@ class Ui_ZedWindow(object):
         self.lineEdit_tex_conf = QtWidgets.QLineEdit(self.centralwidget)
         self.lineEdit_tex_conf.setObjectName("lineEdit_tex_conf")
         self.horizontalLayout_15.addWidget(self.lineEdit_tex_conf)
-        spacerItem1 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
+        spacerItem1 = QtWidgets.QSpacerItem(
+            40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum
+        )
         self.horizontalLayout_15.addItem(spacerItem1)
         self.gridLayout_3.addLayout(self.horizontalLayout_15, 9, 1, 1, 1)
         self.label_3 = QtWidgets.QLabel(self.centralwidget)
@@ -121,7 +127,9 @@ class Ui_ZedWindow(object):
         self.lineEdit_conf = QtWidgets.QLineEdit(self.centralwidget)
         self.lineEdit_conf.setObjectName("lineEdit_conf")
         self.horizontalLayout_14.addWidget(self.lineEdit_conf)
-        spacerItem2 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
+        spacerItem2 = QtWidgets.QSpacerItem(
+            40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum
+        )
         self.horizontalLayout_14.addItem(spacerItem2)
         self.gridLayout_3.addLayout(self.horizontalLayout_14, 8, 1, 1, 1)
         self.horizontalLayout_4 = QtWidgets.QHBoxLayout()
@@ -178,7 +186,9 @@ class Ui_ZedWindow(object):
         self.lineEdit_name = QtWidgets.QLineEdit(self.centralwidget)
         self.lineEdit_name.setObjectName("lineEdit_name")
         self.horizontalLayout_6.addWidget(self.lineEdit_name)
-        spacerItem3 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
+        spacerItem3 = QtWidgets.QSpacerItem(
+            40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum
+        )
         self.horizontalLayout_6.addItem(spacerItem3)
         self.gridLayout_3.addLayout(self.horizontalLayout_6, 1, 1, 1, 1)
         self.label_25 = QtWidgets.QLabel(self.centralwidget)
@@ -189,7 +199,9 @@ class Ui_ZedWindow(object):
         self.lineEdit_update_rate = QtWidgets.QLineEdit(self.centralwidget)
         self.lineEdit_update_rate.setObjectName("lineEdit_update_rate")
         self.horizontalLayout_16.addWidget(self.lineEdit_update_rate)
-        spacerItem4 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
+        spacerItem4 = QtWidgets.QSpacerItem(
+            40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum
+        )
         self.horizontalLayout_16.addItem(spacerItem4)
         self.gridLayout_3.addLayout(self.horizontalLayout_16, 2, 1, 1, 1)
         self.verticalLayout_3.addLayout(self.gridLayout_3)
@@ -218,7 +230,9 @@ class Ui_ZedWindow(object):
         self.lineEdit_cal_minz.setObjectName("lineEdit_cal_minz")
         self.horizontalLayout_7.addWidget(self.lineEdit_cal_minz)
         self.gridLayout_5.addLayout(self.horizontalLayout_7, 0, 1, 1, 1)
-        spacerItem5 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
+        spacerItem5 = QtWidgets.QSpacerItem(
+            40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum
+        )
         self.gridLayout_5.addItem(spacerItem5, 0, 2, 1, 1)
         self.label_16 = QtWidgets.QLabel(self.groupBox)
         self.label_16.setObjectName("label_16")
@@ -261,7 +275,9 @@ class Ui_ZedWindow(object):
         self.lineEdit_cal_roll = QtWidgets.QLineEdit(self.groupBox)
         self.lineEdit_cal_roll.setObjectName("lineEdit_cal_roll")
         self.horizontalLayout_9.addWidget(self.lineEdit_cal_roll)
-        spacerItem6 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
+        spacerItem6 = QtWidgets.QSpacerItem(
+            40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum
+        )
         self.horizontalLayout_9.addItem(spacerItem6)
         self.gridLayout_5.addLayout(self.horizontalLayout_9, 2, 1, 1, 1)
         self.horizontalLayout_10 = QtWidgets.QHBoxLayout()
@@ -269,7 +285,9 @@ class Ui_ZedWindow(object):
         self.lineEdit_cal_pitch = QtWidgets.QLineEdit(self.groupBox)
         self.lineEdit_cal_pitch.setObjectName("lineEdit_cal_pitch")
         self.horizontalLayout_10.addWidget(self.lineEdit_cal_pitch)
-        spacerItem7 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
+        spacerItem7 = QtWidgets.QSpacerItem(
+            40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum
+        )
         self.horizontalLayout_10.addItem(spacerItem7)
         self.gridLayout_5.addLayout(self.horizontalLayout_10, 3, 1, 1, 1)
         self.horizontalLayout_11 = QtWidgets.QHBoxLayout()
@@ -277,15 +295,21 @@ class Ui_ZedWindow(object):
         self.lineEdit_cal_yaw = QtWidgets.QLineEdit(self.groupBox)
         self.lineEdit_cal_yaw.setObjectName("lineEdit_cal_yaw")
         self.horizontalLayout_11.addWidget(self.lineEdit_cal_yaw)
-        spacerItem8 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
+        spacerItem8 = QtWidgets.QSpacerItem(
+            40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum
+        )
         self.horizontalLayout_11.addItem(spacerItem8)
         self.gridLayout_5.addLayout(self.horizontalLayout_11, 4, 1, 1, 1)
         self.verticalLayout_3.addWidget(self.groupBox)
-        spacerItem9 = QtWidgets.QSpacerItem(20, 531, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
+        spacerItem9 = QtWidgets.QSpacerItem(
+            20, 531, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding
+        )
         self.verticalLayout_3.addItem(spacerItem9)
         self.horizontalLayout_3 = QtWidgets.QHBoxLayout()
         self.horizontalLayout_3.setObjectName("horizontalLayout_3")
-        spacerItem10 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
+        spacerItem10 = QtWidgets.QSpacerItem(
+            40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum
+        )
         self.horizontalLayout_3.addItem(spacerItem10)
         self.pushButton_reset = QtWidgets.QPushButton(self.centralwidget)
         self.pushButton_reset.setObjectName("pushButton_reset")
@@ -306,26 +330,39 @@ class Ui_ZedWindow(object):
         self.horizontalLayout.setSizeConstraint(QtWidgets.QLayout.SetMinimumSize)
         self.horizontalLayout.setObjectName("horizontalLayout")
         self.label_24 = QtWidgets.QLabel(self.centralwidget)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Minimum)
+        sizePolicy = QtWidgets.QSizePolicy(
+            QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Minimum
+        )
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.label_24.sizePolicy().hasHeightForWidth())
         self.label_24.setSizePolicy(sizePolicy)
-        self.label_24.setAlignment(QtCore.Qt.AlignLeading|QtCore.Qt.AlignLeft|QtCore.Qt.AlignVCenter)
+        self.label_24.setAlignment(
+            QtCore.Qt.AlignLeading | QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter
+        )
         self.label_24.setObjectName("label_24")
         self.horizontalLayout.addWidget(self.label_24)
         self.lineEdit_plot_rate = QtWidgets.QLineEdit(self.centralwidget)
-        self.lineEdit_plot_rate.setAlignment(QtCore.Qt.AlignLeading|QtCore.Qt.AlignLeft|QtCore.Qt.AlignVCenter)
+        self.lineEdit_plot_rate.setAlignment(
+            QtCore.Qt.AlignLeading | QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter
+        )
         self.lineEdit_plot_rate.setObjectName("lineEdit_plot_rate")
         self.horizontalLayout.addWidget(self.lineEdit_plot_rate)
-        spacerItem11 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
+        spacerItem11 = QtWidgets.QSpacerItem(
+            40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum
+        )
         self.horizontalLayout.addItem(spacerItem11)
         self.verticalLayout.addLayout(self.horizontalLayout)
         self.widget_graphs = GraphicsLayoutWidget(self.centralwidget)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.MinimumExpanding, QtWidgets.QSizePolicy.MinimumExpanding)
+        sizePolicy = QtWidgets.QSizePolicy(
+            QtWidgets.QSizePolicy.MinimumExpanding,
+            QtWidgets.QSizePolicy.MinimumExpanding,
+        )
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.widget_graphs.sizePolicy().hasHeightForWidth())
+        sizePolicy.setHeightForWidth(
+            self.widget_graphs.sizePolicy().hasHeightForWidth()
+        )
         self.widget_graphs.setSizePolicy(sizePolicy)
         self.widget_graphs.setMinimumSize(QtCore.QSize(0, 0))
         self.widget_graphs.setBaseSize(QtCore.QSize(0, 0))
@@ -389,12 +426,17 @@ class Ui_ZedWindow(object):
         self.pushButton_connect.setText(_translate("ZedWindow", "&Connect"))
         self.label_24.setText(_translate("ZedWindow", "Plotting Rate (Hz):"))
         self.menu_File.setTitle(_translate("ZedWindow", "&File"))
-        self.action_Open_configuration.setText(_translate("ZedWindow", "&Open configuration"))
+        self.action_Open_configuration.setText(
+            _translate("ZedWindow", "&Open configuration")
+        )
+
+
 from pyqtgraph import GraphicsLayoutWidget
 
 
 if __name__ == "__main__":
     import sys
+
     app = QtWidgets.QApplication(sys.argv)
     ZedWindow = QtWidgets.QMainWindow()
     ui = Ui_ZedWindow()

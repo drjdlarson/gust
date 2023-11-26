@@ -2,7 +2,15 @@
 
 import pathlib
 from PyQt5 import QtCore, QtPositioning, QtQuickWidgets
-from PyQt5.QtCore import QTemporaryDir, QFile, QAbstractListModel, Qt, QByteArray, QModelIndex, QVariant
+from PyQt5.QtCore import (
+    QTemporaryDir,
+    QFile,
+    QAbstractListModel,
+    Qt,
+    QByteArray,
+    QModelIndex,
+    QVariant,
+)
 
 
 class PlanningMapWidget(QtQuickWidgets.QQuickWidget):
@@ -11,8 +19,9 @@ class PlanningMapWidget(QtQuickWidgets.QQuickWidget):
     # Similar to MapWidget class (See gust.gui.ui.map_widget.py)
 
     def __init__(self, parent=None):
-        super(PlanningMapWidget, self).__init__(parent,
-                                                resizeMode=QtQuickWidgets.QQuickWidget.SizeRootObjectToView)
+        super(PlanningMapWidget, self).__init__(
+            parent, resizeMode=QtQuickWidgets.QQuickWidget.SizeRootObjectToView
+        )
         self._grid_line_names = []
         self._waypoint_line_names = []
 
@@ -21,7 +30,7 @@ class PlanningMapWidget(QtQuickWidgets.QQuickWidget):
 
         self.ctx = ctx
         qml_file = self.ctx.get_resource("cmr_planning/planning_map.qml")
-        resource_file = self.ctx.get_resource('map_widget/README')
+        resource_file = self.ctx.get_resource("map_widget/README")
         resource_path = str(pathlib.Path(resource_file).parent.resolve())
 
         self.temp_dir = QTemporaryDir()
@@ -29,12 +38,17 @@ class PlanningMapWidget(QtQuickWidgets.QQuickWidget):
         if self.temp_dir.isValid():
             temp_path = self.temp_dir.path()
             temp_map_file = QFile(temp_path + "/temp_planning_map.qml")
-            with open(qml_file, 'rt') as fin:
-                with open(temp_path + "/temp_planning_map.qml", 'wt') as fout:
-                    replacing_str = [("MAP_FilledByMapWidget", "/Documents/gust_resources/offline_folders/"),
-                                      ("CACHE_FilledByMapWidget", temp_path + "/")]
+            with open(qml_file, "rt") as fin:
+                with open(temp_path + "/temp_planning_map.qml", "wt") as fout:
+                    replacing_str = [
+                        (
+                            "MAP_FilledByMapWidget",
+                            "/Documents/gust_resources/offline_folders/",
+                        ),
+                        ("CACHE_FilledByMapWidget", temp_path + "/"),
+                    ]
                     lines = fin.readlines()
-                    text = ''.join(lines)
+                    text = "".join(lines)
                     for old, new in replacing_str:
                         text = text.replace(old, new)
                     fout.write(text)
@@ -56,7 +70,6 @@ class PlanningMapWidget(QtQuickWidgets.QQuickWidget):
             else:
                 self.line_model.change_line_color("yellow_grid", "transparent")
 
-                
     def change_waypoints_line_state(self, val, wpcolor=None):
         """
         Change the visibility of flight path lines on the map
@@ -92,7 +105,6 @@ class PlanningMapWidget(QtQuickWidgets.QQuickWidget):
             self.line_model.change_line_color(name, color)
         else:
             self.line_model.change_line_color(name, "transparent")
-
 
     def add_grid_lines(self, coordinates):
         """
@@ -233,7 +245,7 @@ class LineModel(QAbstractListModel):
     def flags(self, index):
         if not index.isValid():
             return Qt.ItemIsEnabled
-        return QAbstractListModel.flags(index)|Qt.ItemIsEditable
+        return QAbstractListModel.flags(index) | Qt.ItemIsEditable
 
     def change_line_color(self, name, new_color):
         if name in self.object_names:

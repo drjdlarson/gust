@@ -22,16 +22,20 @@ class CommandsManager(QMainWindow, Ui_MainWindow):
 
         self.vehicles = {}
         self.selected_name = None
+        self.selected_cmrA_name = None
+        self.selected_cmrB_name = None
 
         # event connections
         self.pushButton_refresh.clicked.connect(self.clicked_refresh)
         self.pushButton_select.clicked.connect(self.clicked_select)
+        self.pushButton_select_cmrA.clicked.connect(self.clicked_select_cmrA)
+        self.pushButton_select_cmrB.clicked.connect(self.clicked_select_cmrB)
         self.pushButton_mode.clicked.connect(self.clicked_set_mode)
         self.pushButton_arm.clicked.connect(self.clicked_arm)
         self.pushButton_disarm.clicked.connect(self.clicked_disarm)
         self.pushButton_takeoff.clicked.connect(self.clicked_takeoff)
-        self.pushButton_goto_next.clicked.connect(self.clicked_goto_next)
-        self.pushButton_rtl.clicked.connect(self.clicked_rtl)
+        self.pushButton_goto_next_single.clicked.connect(self.clicked_goto_next_single)
+        self.pushButton_goto_next_cmr.clicked.connect(self.clicked_goto_wp_cmr)
         self.comboBox_mode.addItems(FLIGHT_MODES)
 
     def clicked_refresh(self):
@@ -40,14 +44,25 @@ class CommandsManager(QMainWindow, Ui_MainWindow):
         url = "{}get_connected_drones_with_color".format(DRONE_BASE)
         self.vehicles = requests.get(url).json()
         self.comboBox_names.addItems(self.vehicles.keys())
+        self.comboBox_names_cmrA.addItems(self.vehicles.keys())
+        self.comboBox_names_cmrB.addItems(self.vehicles.keys())
 
     def clicked_select(self):
         """Selects a vehicle from the list of connected vehicles.
         Selected vehicle's name is displayed in the center.
         This step is required before performing any commands for the vehicle"""
-
         self.selected_name = self.comboBox_names.currentText()
         self.label_drone_name.setText(self.selected_name)
+
+    def clicked_select_cmrA(self):
+        """Selects first vehicle for CMR"""
+        self.selected_cmrA_name = self.comboBox_names_cmrA.currentText()
+        self.label_cmrA_name.setText(self.selected_cmrA_name)
+
+    def clicked_select_cmrB(self):
+        """Selects second vehicle for CMR"""
+        self.selected_cmrB_name = self.comboBox_names_cmrB.currentText()
+        self.label_cmrB_name.setText(self.selected_cmrB_name)
 
     def clicked_do_action(self):
         pass
@@ -79,10 +94,6 @@ class CommandsManager(QMainWindow, Ui_MainWindow):
     def clicked_set_mode(self):
         """Changes the flight mode based on the ComboBox selection"""
         self.set_flight_mode(self.comboBox_mode.currentText())
-
-    def clicked_rtl(self):
-        """Changes the flight mode to RTL"""
-        self.set_flight_mode("RTL")
 
     def set_flight_mode(self, mode):
         # Check if the selection is not empty
@@ -123,17 +134,14 @@ class CommandsManager(QMainWindow, Ui_MainWindow):
         else:
             self.show_message_box(False, "Vehicle not selected")
 
-    def clicked_goto_next(self):
-        """Commands the vehicle to proceed to the next waypoint.
-        Currently, sending this command for all connected vehicles (for CMR).
-        """
+    def clicked_goto_next_single(self):
+        """Commands the current vehicle to proceed to the next waypoint."""
 
-        for name in self.vehicles.keys():
-            url = "{}autopilot_cmd".format(DRONE_BASE)
-            url += "?name=" + name.replace(" ", "_")
-            url += "&cmd=" + conn_settings.GOTO_NEXT_WP
-            url += "&param=" + "0"
-            goto_next = requests.get(url).json()
+        url = "{}autopilot_cmd".format(DRONE_BASE)
+        url += "?name=" + self.selected_name.replace(" ", "_")
+        url += "&cmd=" + conn_settings.GOTO_NEXT_WP
+        url += "&param=" + self.spinBox_next_wp.value()
+        goto_next = requests.get(url).json()
 
         # Check if the selection is not empty
         # if self.selected_name is not None:
@@ -146,6 +154,22 @@ class CommandsManager(QMainWindow, Ui_MainWindow):
         #     self.show_message_box(goto_next["success"], goto_next["msg"])
         # else:
         #     self.show_message_box(goto_next["success"], goto_next["msg"])
+
+    def clicked_goto_wp_cmr(self):
+        """Commands both selected CMR vehicles to proceed to the given waypoint"""
+        cmr_wp = [
+            self.spinBox_cmrA_wp.value(),
+            self.spinBox_cmrB_wp.value(),
+        ]
+        # Send the wp command for both vehicles
+        for index, name in enumerate(
+            [self.selected_cmrA_name, self.selected_cmrB_name]
+        ):
+            url = "{}autopilot_cmd".format(DRONE_BASE)
+            url += "?name=" + name.replace(" ", "_")
+            url += "&cmd=" + conn_settings.GOTO_NEXT_WP
+            url += "&param=" + str(cmr_wp[index])
+            goto_wp = requests.get(url).json()
 
     def clicked_restart_mission(self):
         pass

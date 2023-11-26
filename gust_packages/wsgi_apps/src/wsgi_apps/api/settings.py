@@ -3,8 +3,9 @@ import os
 
 basedir = os.path.abspath(os.path.dirname(__file__))
 
-ENV = 'development'
-ENV_KEY = 'LAGER_GUST_API_ENV'
+ENV = "development"
+ENV_KEY = "LAGER_GUST_API_ENV"
+
 
 class Config:
     SECRET_KEY = os.environ.get("SECRET_KEY")

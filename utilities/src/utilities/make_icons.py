@@ -38,10 +38,8 @@ def make_png(fpath: str, size: int, outpath: str):
 def rescale_existing_png(fpath: str, size: int, outpath: str):
     out = path.join(outpath, "{:d}.png".format(size))
     print("Rescaling png: {}".format(out))
-    img = Image.open(fpath, 'rb').resize((size, size))
+    img = Image.open(fpath, "rb").resize((size, size))
     img.save(out)
-
-
 
 
 if __name__ == "__main__":

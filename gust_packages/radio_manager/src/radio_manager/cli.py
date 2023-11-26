@@ -33,6 +33,7 @@ _MAV_RADIO_UPDATE_RATE = 15
 
 # %% Custom Functions
 
+
 def get_distance_metres(aLocation1, aLocation2):
     """
     Get the distance between two positions.
@@ -106,6 +107,30 @@ def goto_next_wp(radio):
 
     """
     radio.commands.next = radio.commands.next + 1
+    succ = True
+    err = "Going to wp: {}".format(radio.commands.next)
+    return succ, err
+
+
+def goto_set_wp(wp_num, radio):
+    """
+    Command the vehicle to proceed to the given waypoint
+
+    Parameters
+    ----------
+    wp_num: int
+        Next Waypoint for the vehicle in AUTO mode
+    radio: dronekit's Vehicle object
+
+    Returns
+    -------
+    succ: bool
+        Success of the command
+    err: str
+        Response of the command (usually error message)
+
+    """
+    radio.commands.next = wp_num
     succ = True
     err = "Going to wp: {}".format(radio.commands.next)
     return succ, err
@@ -197,6 +222,7 @@ def arm_disarm(bool_val, radio):
         succ = False
         err = "Armed state is already {}".format(bool_val)
     return succ, err
+
 
 def upload_waypoints(received_signal, radio):
     """
@@ -402,7 +428,6 @@ def prepare_dummy_data():
     randint1 = random.randint(0, 1)
     gnss_fix1 = random.randint(1, 5)
 
-
     rate1 = {
         "rate": database.DroneRates.RATE1,
         "vals": {
@@ -483,9 +508,9 @@ def prepare_dummy_data():
             "m_time": current_time,
             "armed": random.choice([0, 1]),
             "flight_mode": random.choice(["STABILIZE", "GUIDED", "AUTO", "RTL"]),
-            "ekf_ok": random.choice([0,1]),
+            "ekf_ok": random.choice([0, 1]),
             "vehicle_type": 13,
-            "sys_status": 'STANDBY',
+            "sys_status": "STANDBY",
             "tof": randf222,
             "next_wp": randf222,
             "relay_sw": randint1,
@@ -498,11 +523,12 @@ def prepare_dummy_data():
 
 def prepare_data_from_mavlink(radio, rate1, rate2, rate3, rate4):
     """Populate the rate dicts with vehicle state using dronekit.
-    Ref:: https://dronekit-python.readthedocs.io/en/latest/guide/vehicle_state_and_parameters.html"""
+    Ref:: https://dronekit-python.readthedocs.io/en/latest/guide/vehicle_state_and_parameters.html
+    """
 
     current_time = get_current_time()
     for rate in (rate1, rate2, rate3, rate4):
-        rate['vals']['m_time'] = current_time
+        rate["vals"]["m_time"] = current_time
 
     ##########
     # RATE-1
@@ -559,7 +585,6 @@ def prepare_data_from_mavlink(radio, rate1, rate2, rate3, rate4):
     rate4["vals"]["relay_sw"] = 0
     rate4["vals"]["engine_sw"] = 0
 
-
     # Things I am not sure about currently
     rate2["vals"]["throttle"] = 0
     rate2["vals"]["alpha"] = 0
@@ -584,7 +609,6 @@ def check_for_signal(conn, radio):
 
     # Check if the radio connection is valid
     if radio is not None:
-
         # Check the message type
         if received_signal["type"] == conn_settings.UPLOAD_WP:
             succ, err = upload_waypoints(received_signal, radio)
@@ -628,8 +652,9 @@ def get_autopilot_command(received_signal, radio):
         succ, err = take_off(take_off_alt, radio)
 
     elif received_signal["cmd"] == conn_settings.GOTO_NEXT_WP:
-        logger.info("Going to the next waypoint")
-        succ, err = goto_next_wp(received_signal, radio)
+        next_wp = int(received_signal["param"])
+        logger.info("Going to the waypoint {}".format(next_wp))
+        succ, err = goto_set_wp(next_wp, radio)
 
     elif received_signal["cmd"] == conn_settings.SET_MODE:
         mode = received_signal["param"]
@@ -646,6 +671,7 @@ def get_autopilot_command(received_signal, radio):
 
 def get_current_time():
     return time.time()
+
 
 def define_parser():
     """Defining arguments that can be passed to RadioManager process."""
@@ -721,14 +747,12 @@ _handleable_sigs = (
 
 # %% Main function
 if __name__ == "__main__":
-
     args = define_parser().parse_args()
     name = args.name
     port = args.port
     color = args.color
     baudrate = args.baud
     udp_port = args.udp_port
-
 
     # Handling all the logging stuff
     ch = logging.StreamHandler()
@@ -760,12 +784,14 @@ if __name__ == "__main__":
             check_for_signal(sig_conn, None)
             all_data = prepare_dummy_data()
             res = database.write_values(all_data, name)
-            time.sleep(1/_DUMMY_DATA_UPDATE_RATE)
+            time.sleep(1 / _DUMMY_DATA_UPDATE_RATE)
 
     else:
         try:
             # connect to MAVLink using dronekit.
-            radio = dronekit.connect(port, baud=baudrate, timeout=200, heartbeat_timeout=200, wait_ready=True)
+            radio = dronekit.connect(
+                port, baud=baudrate, timeout=200, heartbeat_timeout=200, wait_ready=True
+            )
         except:
             sys.exit(-1)
 
@@ -790,18 +816,17 @@ if __name__ == "__main__":
 
         # Main Loop for retrieving MAVLink telemetry data
         while True:
-
             # Checking messages on UDP socket
             check_for_signal(sig_conn, radio)
 
             # populating rate data
             (rate1, rate2, rate3, rate4) = prepare_data_from_mavlink(
-                radio, rate1, rate2, rate3, rate4)
+                radio, rate1, rate2, rate3, rate4
+            )
             all_data = rate1, rate2, rate3, rate4
 
             # Writing to the database
             res = database.write_values(all_data, name)
 
             # 25Hz just considering the sleep time.
-            time.sleep(1/_MAV_RADIO_UPDATE_RATE)
-
+            time.sleep(1 / _MAV_RADIO_UPDATE_RATE)

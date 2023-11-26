@@ -6,15 +6,33 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>849</width>
-    <height>731</height>
+    <width>370</width>
+    <height>690</height>
    </rect>
+  </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>0</width>
+    <height>690</height>
+   </size>
+  </property>
+  <property name="maximumSize">
+   <size>
+    <width>370</width>
+    <height>790</height>
+   </size>
   </property>
   <property name="windowTitle">
    <string>MainWindow</string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <layout class="QVBoxLayout" name="verticalLayout_2">
+   <layout class="QVBoxLayout" name="verticalLayout_3" stretch="0,0,0,0,0,0,0,0,0,0,0,0,0,0,1">
     <item>
      <widget class="QLabel" name="label">
       <property name="font">
@@ -92,32 +110,9 @@
      </widget>
     </item>
     <item>
-     <spacer name="verticalSpacer_3">
-      <property name="orientation">
-       <enum>Qt::Vertical</enum>
-      </property>
-      <property name="sizeHint" stdset="0">
-       <size>
-        <width>20</width>
-        <height>40</height>
-       </size>
-      </property>
-     </spacer>
-    </item>
-    <item>
      <layout class="QFormLayout" name="formLayout">
       <item row="0" column="0">
        <widget class="QComboBox" name="comboBox_action">
-        <property name="minimumSize">
-         <size>
-          <width>120</width>
-          <height>0</height>
-         </size>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="0">
-       <widget class="QComboBox" name="comboBox_wp">
         <property name="minimumSize">
          <size>
           <width>120</width>
@@ -234,6 +229,28 @@
       <item row="5" column="0">
        <widget class="QLineEdit" name="lineEdit_takeoff_alt"/>
       </item>
+      <item row="1" column="0">
+       <widget class="QSpinBox" name="spinBox_next_wp">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>100</width>
+          <height>0</height>
+         </size>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>100</width>
+          <height>16777215</height>
+         </size>
+        </property>
+       </widget>
+      </item>
      </layout>
     </item>
     <item>
@@ -266,7 +283,7 @@
      </layout>
     </item>
     <item>
-     <widget class="QPushButton" name="pushButton_goto_next">
+     <widget class="QPushButton" name="pushButton_goto_next_single">
       <property name="font">
        <font>
         <pointsize>13</pointsize>
@@ -276,7 +293,7 @@
        <string notr="true">background-color: rgb(138, 226, 52);</string>
       </property>
       <property name="text">
-       <string>GO TO Next (All vehicles for LOITER_UNLIM)</string>
+       <string>GO TO Next (For selected vehicle)</string>
       </property>
      </widget>
     </item>
@@ -294,39 +311,170 @@
      </spacer>
     </item>
     <item>
-     <layout class="QVBoxLayout" name="verticalLayout">
+     <widget class="Line" name="line_2">
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QLabel" name="label_drone_CMR_title">
+      <property name="maximumSize">
+       <size>
+        <width>16777215</width>
+        <height>80</height>
+       </size>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>18</pointsize>
+       </font>
+      </property>
+      <property name="text">
+       <string>CMR Ops</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignCenter</set>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <layout class="QHBoxLayout" name="horizontalLayout_4">
       <item>
-       <widget class="QPushButton" name="pushButton_restart_mission">
-        <property name="font">
-         <font>
-          <pointsize>13</pointsize>
-         </font>
-        </property>
-        <property name="styleSheet">
-         <string notr="true">background-color: rgb(138, 226, 52);
-</string>
-        </property>
-        <property name="text">
-         <string>Restart Mission</string>
-        </property>
-       </widget>
+       <layout class="QVBoxLayout" name="verticalLayout_2">
+        <item>
+         <widget class="QComboBox" name="comboBox_names_cmrA">
+          <property name="maximumSize">
+           <size>
+            <width>120</width>
+            <height>16777215</height>
+           </size>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="pushButton_select_cmrA">
+          <property name="maximumSize">
+           <size>
+            <width>80</width>
+            <height>16777215</height>
+           </size>
+          </property>
+          <property name="text">
+           <string>Select</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="label_cmrA_name">
+          <property name="font">
+           <font>
+            <pointsize>14</pointsize>
+           </font>
+          </property>
+          <property name="text">
+           <string>A: cmrA_Name</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_2">
+          <item>
+           <widget class="QLabel" name="label_nextwp_cmrA">
+            <property name="text">
+             <string>Next WP</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QSpinBox" name="spinBox_cmrA_wp"/>
+          </item>
+         </layout>
+        </item>
+       </layout>
       </item>
       <item>
-       <widget class="QPushButton" name="pushButton_rtl">
-        <property name="font">
-         <font>
-          <pointsize>13</pointsize>
-         </font>
+       <spacer name="horizontalSpacer">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
         </property>
-        <property name="styleSheet">
-         <string notr="true">background-color: rgb(138, 226, 52);</string>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>40</width>
+          <height>20</height>
+         </size>
         </property>
-        <property name="text">
-         <string>RTL</string>
-        </property>
-       </widget>
+       </spacer>
+      </item>
+      <item>
+       <layout class="QVBoxLayout" name="verticalLayout">
+        <item>
+         <widget class="QComboBox" name="comboBox_names_cmrB">
+          <property name="maximumSize">
+           <size>
+            <width>120</width>
+            <height>16777215</height>
+           </size>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="pushButton_select_cmrB">
+          <property name="maximumSize">
+           <size>
+            <width>80</width>
+            <height>16777215</height>
+           </size>
+          </property>
+          <property name="text">
+           <string>Select</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="label_cmrB_name">
+          <property name="font">
+           <font>
+            <pointsize>14</pointsize>
+           </font>
+          </property>
+          <property name="text">
+           <string>B: cmrB_Name</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_3">
+          <item>
+           <widget class="QLabel" name="label_nextwp_cmrB">
+            <property name="text">
+             <string>Next WP</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QSpinBox" name="spinBox_cmrB_wp"/>
+          </item>
+         </layout>
+        </item>
+       </layout>
       </item>
      </layout>
+    </item>
+    <item>
+     <widget class="QPushButton" name="pushButton_goto_next_cmr">
+      <property name="font">
+       <font>
+        <pointsize>13</pointsize>
+       </font>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">background-color: rgb(138, 226, 52);</string>
+      </property>
+      <property name="text">
+       <string>GO TO Next (For cmrA and cmrB)</string>
+      </property>
+     </widget>
     </item>
     <item>
      <spacer name="verticalSpacer">

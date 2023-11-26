@@ -18,10 +18,7 @@ def define_parser() -> argparse.ArgumentParser:
     )
 
     p.add_argument(
-        "-p",
-        "--password",
-        type=str,
-        help="Enter password for lager_gcs@outlook.com"
+        "-p", "--password", type=str, help="Enter password for lager_gcs@outlook.com"
     )
 
     return p
@@ -29,6 +26,7 @@ def define_parser() -> argparse.ArgumentParser:
 
 def get_match(line: str):
     return re.search('"version\s*":\s*"(\d+).(\d+).(\d+)"', line)
+
 
 def get_version() -> Tuple[int, int, int]:
     with open(VERSION_FILE, "r") as fin:
@@ -44,9 +42,7 @@ def get_version() -> Tuple[int, int, int]:
 
 
 if __name__ == "__main__":
-
     args = define_parser().parse_args()
-    
 
     # getting the current version to be deployed
     major, minor, patch = get_version()
@@ -55,15 +51,21 @@ if __name__ == "__main__":
 
     print("Logging into Lager's DockerHub account")
     if args.password is not None:
-        cmd_str = "docker login --username={:s} --password={:s}".format(DOCKER_USERNAME, args.password)
+        cmd_str = "docker login --username={:s} --password={:s}".format(
+            DOCKER_USERNAME, args.password
+        )
         subprocess.run(cmd_str, shell=True)
     else:
         raise RuntimeError("Provide ualager's DockerHub password to proceed.")
 
     print("Building the docker image for GUST")
-    cmd_str = "docker build -f {:s} -t {:s}/{:s}:{:s} .".format(DOCKERFILE_NAME, DOCKER_USERNAME, IMAGE_NAME, version_str)
+    cmd_str = "docker build -f {:s} -t {:s}/{:s}:{:s} .".format(
+        DOCKERFILE_NAME, DOCKER_USERNAME, IMAGE_NAME, version_str
+    )
     subprocess.run(cmd_str, shell=True)
 
     print("Pushing the image to DockerHub")
-    cmd_str = "docker push {:s}/{:s}:{:s}".format(DOCKER_USERNAME, IMAGE_NAME, version_str)
+    cmd_str = "docker push {:s}/{:s}:{:s}".format(
+        DOCKER_USERNAME, IMAGE_NAME, version_str
+    )
     subprocess.run(cmd_str, shell=True)

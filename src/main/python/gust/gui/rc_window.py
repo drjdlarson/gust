@@ -4,6 +4,7 @@ from PyQt5 import QtWidgets, QtCore
 from PyQt5.QtWidgets import QApplication, QMainWindow, QVBoxLayout
 from gust.gui.ui.generic_channels import Ui_MainWindow
 
+
 class RCWindow(QMainWindow, Ui_MainWindow):
     """Main interface for the RC channels window"""
 
@@ -93,8 +94,9 @@ class RCWindow(QMainWindow, Ui_MainWindow):
         """Sets up the user interface"""
         super().setupUi(mainWindow)
 
-if __name__ == '__main__':
-    app =QApplication(sys.argv)
+
+if __name__ == "__main__":
+    app = QApplication(sys.argv)
     myApp = RCWindow()
     myApp.show()
 
@@ -103,4 +105,4 @@ if __name__ == '__main__':
     try:
         sys.exit(app.exec_())
     except SystemExit:
-        print('Closing Window...')
+        print("Closing Window...")

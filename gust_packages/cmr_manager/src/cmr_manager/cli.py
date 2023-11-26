@@ -16,33 +16,36 @@ from cmr_manager import logger
 def define_parser():
     parser = ArgumentParser(description="Process command line options for CMR Manager")
 
-    default = '9850'
+    default = "9850"
     parser.add_argument(
         "--port",
         type=str,
         help="Port for CMR manager process. The default is {}".format(default),
-        default=default
-        )
+        default=default,
+    )
 
-    default = '127.0.0.1'
+    default = "127.0.0.1"
     parser.add_argument(
         "--ip",
         type=str,
         help="IP for CMR manager process. The default is {}".format(default),
         default=default,
-        )
+    )
 
     parser.add_argument(
-        "-d", "--debug",
+        "-d",
+        "--debug",
         action="store_true",
         help="Run in debug mode",
     )
 
     return parser
 
+
 def _cleanup_handler(signum, frame, conn):
     conn.close()
     os._exit(0)
+
 
 _handleable_sigs = (
     signal.SIGKILL,
@@ -54,7 +57,6 @@ _handleable_sigs = (
 )
 
 if __name__ == "__main__":
-
     args = define_parser().parse_args()
     cmr_ip = args.ip
     cmr_port = args.port
@@ -72,7 +74,9 @@ if __name__ == "__main__":
     else:
         logger.setLevel(logging.INFO)
         ch.setLevel(logging.INFO)
-    formatter = logging.Formatter('[CMR_manager] %(levelname)s %(asctime)s - %(message)s')
+    formatter = logging.Formatter(
+        "[CMR_manager] %(levelname)s %(asctime)s - %(message)s"
+    )
     ch.setFormatter(formatter)
     logger.addHandler(ch)
 
@@ -97,7 +101,6 @@ if __name__ == "__main__":
     # The code architecture and IPC has been verified, just need to write the logic
     # here.
 
-
     # # just verifying next waypoint signal
     # next_wp_info = {'name': names[0], 'next_wp': 4, 'extra': 'random msg from cmr backend'}
     # succ, info = send_info_to_udp_server(next_wp_info, conn_settings.GOTO_NEXT_WP)
@@ -107,7 +110,6 @@ if __name__ == "__main__":
     # else:
     #     database.add_vehicle("Doesnt work", '/dev/ttysfas', 'black')
     #
-
 
     while True:
         # put all the stuff here

@@ -9,8 +9,8 @@ import ntpath
 import subprocess
 
 
-PROGRAM = 'pyuic5'
-UI_DIR = '/workspaces/gust/src/main/python/gust/gui/ui'
+PROGRAM = "pyuic5"
+UI_DIR = "/workspaces/gust/src/main/python/gust/gui/ui"
 
 
 def path_leaf(path):
@@ -32,9 +32,14 @@ def path_leaf(path):
 
 
 if __name__ == "__main__":
-    for file in glob('{:s}/*.ui'.format(UI_DIR)):
+    for file in glob("{:s}/*.ui".format(UI_DIR)):
         f_name = splitext(path_leaf(file))[0]
-        args = [PROGRAM, '-x', '{:s}/{:s}.ui'.format(UI_DIR, f_name),
-                '-o', '{:s}/{:s}.py'.format(UI_DIR, f_name)]
-        print(' '.join(args))
+        args = [
+            PROGRAM,
+            "-x",
+            "{:s}/{:s}.ui".format(UI_DIR, f_name),
+            "-o",
+            "{:s}/{:s}.py".format(UI_DIR, f_name),
+        ]
+        print(" ".join(args))
         subprocess.run(args)

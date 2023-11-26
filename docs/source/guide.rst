@@ -169,6 +169,18 @@ For example, on GUST's root directory, run
 Now, you should be able to run SITL with GUST normally. If you need to add new vehicle type, just run the sim_vehicle.py inside respective directory and it should generate the executable file. You'll also need to modify the build_ardupilot_sil.sh script to copy the new executable.
 
 
+Code Formatting
+###############
+
+Please follow the code style and conventions used in each package. The scripts are formatted using Black and the docstrings should follow NumPy's style. 
+
+After you are done editing, just run Black command at docker's project root (i.e. /workspaces/gust#) for formatting all the source code properly. 
+
+    .. code-block::
+
+        black .
+        
+
 Packaging and deploying GUST
 ############################
 

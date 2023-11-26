@@ -22,14 +22,18 @@ class Ui_SensorsWindow(object):
         self.verticalLayout.setObjectName("verticalLayout")
         self.gridLayout_2 = QtWidgets.QGridLayout()
         self.gridLayout_2.setObjectName("gridLayout_2")
-        spacerItem = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
+        spacerItem = QtWidgets.QSpacerItem(
+            40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum
+        )
         self.gridLayout_2.addItem(spacerItem, 1, 1, 1, 1)
         self.pushButton_zed = QtWidgets.QPushButton(self.centralwidget)
         self.pushButton_zed.setContextMenuPolicy(QtCore.Qt.NoContextMenu)
         self.pushButton_zed.setFlat(False)
         self.pushButton_zed.setObjectName("pushButton_zed")
         self.gridLayout_2.addWidget(self.pushButton_zed, 0, 0, 1, 1)
-        spacerItem1 = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
+        spacerItem1 = QtWidgets.QSpacerItem(
+            20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding
+        )
         self.gridLayout_2.addItem(spacerItem1, 1, 0, 1, 1)
         self.verticalLayout.addLayout(self.gridLayout_2)
         SensorsWindow.setCentralWidget(self.centralwidget)
@@ -45,6 +49,7 @@ class Ui_SensorsWindow(object):
 
 if __name__ == "__main__":
     import sys
+
     app = QtWidgets.QApplication(sys.argv)
     SensorsWindow = QtWidgets.QMainWindow()
     ui = Ui_SensorsWindow()

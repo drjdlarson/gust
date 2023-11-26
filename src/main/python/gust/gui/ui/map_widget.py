@@ -113,7 +113,6 @@ class MapWidget(QtQuickWidgets.QQuickWidget):
         self.waypoint_model = WaypointModel()
         self.rootContext().setContextProperty("waypointmodel", self.waypoint_model)
 
-
     def recenter_map(self, center_coordinates):
         """Center the map at the given position.
         Not currently implemented"""
@@ -235,7 +234,6 @@ class MapWidget(QtQuickWidgets.QQuickWidget):
         """Removing the Vehicle's related map elements from the Map."""
 
         if name in self._vehicles:
-
             # removing the Position, Yaw, Heading, Home Models
             self._vehicles[name].remove_all_models()
             del self._vehicles[name]
@@ -245,6 +243,7 @@ class MapWidget(QtQuickWidgets.QQuickWidget):
             if name in self._vehicles_mission:
                 self._vehicles_mission[name].remove_waypoints_and_lines()
                 del self._vehicles_mission[name]
+
 
 class FlightPlanHelper:
     """Helper Class for displaying uploaded flight plans."""
@@ -497,7 +496,6 @@ class MapHelper:
         lon_2 = math.degrees(lon_2)
         return (lat_2, lon_2)
 
-
     def drone_icon_selector(self):
         """Selects icon based on current flight mode"""
 
@@ -566,7 +564,6 @@ class MarkerModel(QAbstractListModel):
     def setData(self, index, value, role=Qt.EditRole):
         """Set the value of the required index (in _markers) and role (in _roles)"""
         if index.isValid():
-
             # Find the marker object stores in selected index of _markers
             marker = self._markers[index.row()]
 
@@ -614,7 +611,6 @@ class MarkerModel(QAbstractListModel):
         """Update the marker with a new marker object"""
 
         if name in self.vehicle_names:
-
             # finding the index of the vehicle's marker object.
             # this is done indirectly by finding the index of vehicle's name in
             # vehicle_names list.
@@ -683,7 +679,6 @@ class WaypointModel(QAbstractListModel):
 
     def setData(self, index, value, role=Qt.EditRole):
         if index.isValid():
-
             waypoint = self._waypoints[index.row()]
             if role == WaypointModel.PositionRole:
                 waypoint.setPosition(value)
@@ -705,7 +700,6 @@ class WaypointModel(QAbstractListModel):
         return QAbstractListModel.flags(index) | Qt.ItemIsEditable
 
     def remove_all_waypoint_markers(self, name):
-
         # Finding the indices of all items with the vehicle's name
         indices = [ind for ind, ele in enumerate(self.vehicle_names) if ele == name]
 

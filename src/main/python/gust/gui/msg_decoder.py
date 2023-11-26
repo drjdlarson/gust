@@ -1,6 +1,7 @@
 """A common file for all message encodings and enums"""
 import math
 
+
 class MessageDecoder:
     """Decodes different message and enums"""
 
@@ -78,7 +79,7 @@ class MessageDecoder:
             return "NONE"
 
         x = int(x)
-        pos_of_one = int(math.log2(x&-x) + 1)
+        pos_of_one = int(math.log2(x & -x) + 1)
         if pos_of_one == 2:
             ans = "Test"
         elif pos_of_one == 3:

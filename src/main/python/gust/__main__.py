@@ -21,7 +21,7 @@ DEBUG = False
 def parse_args():
     global DAEMON, DEBUG
 
-    parser = argparse.ArgumentParser(description='Start the ground station backend.')
+    parser = argparse.ArgumentParser(description="Start the ground station backend.")
 
     # msg = ('Environment to run the rest api app in. '
     #        + 'The default is {:s}'.format(api_settings.ENV))
@@ -31,18 +31,24 @@ def parse_args():
     # msg = 'Flag indicating the server should start in the background with no GUI launcher'
     # parser.add_argument('--daemon', '-d', action='store_true', help=msg)
 
-    msg = ('Port number to listen on. '
-           + 'The default is {:d}'.format(server_settings.PORT))
-    parser.add_argument('--port', '-p',
-                        help=msg, default=server_settings.PORT, type=int)
+    msg = "Port number to listen on. " + "The default is {:d}".format(
+        server_settings.PORT
+    )
+    parser.add_argument(
+        "--port", "-p", help=msg, default=server_settings.PORT, type=int
+    )
 
-    msg = ('Number of worker threads to start for the server. '
-           + 'The default is {:d}'.format(server_settings.NUM_WORKERS))
-    parser.add_argument('--num-workers', help=msg, default=server_settings.NUM_WORKERS,
-                        type=int)
+    msg = (
+        "Number of worker threads to start for the server. "
+        + "The default is {:d}".format(server_settings.NUM_WORKERS)
+    )
+    parser.add_argument(
+        "--num-workers", help=msg, default=server_settings.NUM_WORKERS, type=int
+    )
 
     parser.add_argument(
-        "-d", "--debug",
+        "-d",
+        "--debug",
         action="store_true",
         help="Run in debug mode",
     )
@@ -83,11 +89,11 @@ def main():
     parse_args()
 
     if DAEMON:
-        print('Not implemented yet!!')
+        print("Not implemented yet!!")
         # server.start_server()
         sys.exit(1)
 
-    appctxt = ApplicationContext()       # 1. Instantiate ApplicationContext
+    appctxt = ApplicationContext()  # 1. Instantiate ApplicationContext
 
     window = Launcher(appctxt, appctxt.app.processEvents, DEBUG)
     window.show()
@@ -95,10 +101,10 @@ def main():
     register_sigterm(window)
     register_sigint(window)
 
-    plug_readme = appctxt.get_resource('plugins/README.rst')
+    plug_readme = appctxt.get_resource("plugins/README.rst")
     pluginMonitor.plugin_dir = os.path.dirname(plug_readme)
 
-    exit_code = appctxt.app.exec_()      # 2. Invoke appctxt.app.exec_()
+    exit_code = appctxt.app.exec_()  # 2. Invoke appctxt.app.exec_()
     sys.exit(exit_code)
 
 

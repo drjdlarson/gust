@@ -3,6 +3,6 @@ import pathlib
 from PIL import Image
 
 
-for path in pathlib.Path('offline_folders').rglob('*.jpeg'):
+for path in pathlib.Path("offline_folders").rglob("*.jpeg"):
     im1 = Image.open(path)
-    im1.save(str(path).replace('.jpeg', '.png'))
+    im1.save(str(path).replace(".jpeg", ".png"))

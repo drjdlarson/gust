@@ -30,7 +30,9 @@ class Ui_MainWindow(object):
         self.pushButton_refresh = QtWidgets.QPushButton(self.centralwidget)
         self.pushButton_refresh.setObjectName("pushButton_refresh")
         self.horizontalLayout_checkboxes.addWidget(self.pushButton_refresh)
-        spacerItem = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
+        spacerItem = QtWidgets.QSpacerItem(
+            40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum
+        )
         self.horizontalLayout_checkboxes.addItem(spacerItem)
         self.verticalLayout.addLayout(self.horizontalLayout_checkboxes)
         self.line_2 = QtWidgets.QFrame(self.centralwidget)
@@ -99,7 +101,9 @@ class Ui_MainWindow(object):
         self.line_5.setFrameShadow(QtWidgets.QFrame.Sunken)
         self.line_5.setObjectName("line_5")
         self.verticalLayout_2.addWidget(self.line_5)
-        spacerItem1 = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
+        spacerItem1 = QtWidgets.QSpacerItem(
+            20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding
+        )
         self.verticalLayout_2.addItem(spacerItem1)
         self.line_7 = QtWidgets.QFrame(self.centralwidget)
         self.line_7.setFrameShape(QtWidgets.QFrame.HLine)
@@ -133,7 +137,9 @@ class Ui_MainWindow(object):
         self.tableWidget_missions.horizontalHeader().setMinimumSectionSize(125)
         self.tableWidget_missions.verticalHeader().setStretchLastSection(False)
         self.verticalLayout_2.addWidget(self.tableWidget_missions)
-        spacerItem2 = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
+        spacerItem2 = QtWidgets.QSpacerItem(
+            20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding
+        )
         self.verticalLayout_2.addItem(spacerItem2)
         self.line_6 = QtWidgets.QFrame(self.centralwidget)
         self.line_6.setFrameShape(QtWidgets.QFrame.HLine)
@@ -162,8 +168,12 @@ class Ui_MainWindow(object):
         item.setText(_translate("MainWindow", "Z"))
         item = self.tableWidget_waypoints.horizontalHeaderItem(3)
         item.setText(_translate("MainWindow", "COMMAND"))
-        self.label_grid_planning.setText(_translate("MainWindow", "GENERAL PLANNING WINDOW"))
-        self.pushButton_load_file.setText(_translate("MainWindow", "Load Waypoints File"))
+        self.label_grid_planning.setText(
+            _translate("MainWindow", "GENERAL PLANNING WINDOW")
+        )
+        self.pushButton_load_file.setText(
+            _translate("MainWindow", "Load Waypoints File")
+        )
         self.label_mission.setText(_translate("MainWindow", "MISSIONS"))
         item = self.tableWidget_missions.horizontalHeaderItem(0)
         item.setText(_translate("MainWindow", "WAYPOINTS"))
@@ -173,11 +183,14 @@ class Ui_MainWindow(object):
         item.setText(_translate("MainWindow", "UPLOAD"))
         item = self.tableWidget_missions.horizontalHeaderItem(3)
         item.setText(_translate("MainWindow", "REMOVE"))
+
+
 from gust.gui.ui.planning_map_widget import PlanningMapWidget
 
 
 if __name__ == "__main__":
     import sys
+
     app = QtWidgets.QApplication(sys.argv)
     MainWindow = QtWidgets.QMainWindow()
     ui = Ui_MainWindow()

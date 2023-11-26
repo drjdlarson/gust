@@ -4,6 +4,7 @@ from flask import Flask
 from flask_restx import Api
 
 import utilities.database as database
+
 # from gust.wsgi_apps.api.settings import env_config
 from wsgi_apps.api.url_bases import BASE
 
@@ -12,6 +13,7 @@ api = Api(prefix="/{:s}".format(BASE))
 
 def create_app():
     from wsgi_apps.api.resources.drone_namespace import DRONE_NS
+
     # from wsgi_apps.api.resources.zed_namespace import ZED_NS
 
     app = Flask("rest_api")
@@ -21,7 +23,7 @@ def create_app():
     # see https://stackoverflow.com/questions/53548536/how-to-use-the-logging-module-in-python-with-gunicorn
     # and https://docs.gunicorn.org/en/stable/settings.html#logconfig for a cleaner way with config files that can be passed where we start the process
     # and https://trstringer.com/logging-flask-gunicorn-the-manageable-way/
-    gunicorn_logger = logging.getLogger('gunicorn.error')
+    gunicorn_logger = logging.getLogger("gunicorn.error")
     app.logger.handlers = gunicorn_logger.handlers
     app.logger.setLevel(gunicorn_logger.level)
 

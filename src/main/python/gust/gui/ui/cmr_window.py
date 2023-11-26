@@ -33,7 +33,9 @@ class Ui_MainWindow(object):
         self.checkBox_waypoints = QtWidgets.QCheckBox(self.centralwidget)
         self.checkBox_waypoints.setObjectName("checkBox_waypoints")
         self.horizontalLayout_checkboxes.addWidget(self.checkBox_waypoints)
-        spacerItem = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
+        spacerItem = QtWidgets.QSpacerItem(
+            40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum
+        )
         self.horizontalLayout_checkboxes.addItem(spacerItem)
         self.comboBox_saved_locations = QtWidgets.QComboBox(self.centralwidget)
         self.comboBox_saved_locations.setObjectName("comboBox_saved_locations")
@@ -98,38 +100,62 @@ class Ui_MainWindow(object):
         self.formLayout_grid_planning.setObjectName("formLayout_grid_planning")
         self.lineEdit_start_lat = QtWidgets.QLineEdit(self.centralwidget)
         self.lineEdit_start_lat.setObjectName("lineEdit_start_lat")
-        self.formLayout_grid_planning.setWidget(0, QtWidgets.QFormLayout.LabelRole, self.lineEdit_start_lat)
+        self.formLayout_grid_planning.setWidget(
+            0, QtWidgets.QFormLayout.LabelRole, self.lineEdit_start_lat
+        )
         self.label = QtWidgets.QLabel(self.centralwidget)
         self.label.setObjectName("label")
-        self.formLayout_grid_planning.setWidget(0, QtWidgets.QFormLayout.FieldRole, self.label)
+        self.formLayout_grid_planning.setWidget(
+            0, QtWidgets.QFormLayout.FieldRole, self.label
+        )
         self.lineEdit_start_lon = QtWidgets.QLineEdit(self.centralwidget)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Fixed)
+        sizePolicy = QtWidgets.QSizePolicy(
+            QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Fixed
+        )
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.lineEdit_start_lon.sizePolicy().hasHeightForWidth())
+        sizePolicy.setHeightForWidth(
+            self.lineEdit_start_lon.sizePolicy().hasHeightForWidth()
+        )
         self.lineEdit_start_lon.setSizePolicy(sizePolicy)
         self.lineEdit_start_lon.setObjectName("lineEdit_start_lon")
-        self.formLayout_grid_planning.setWidget(1, QtWidgets.QFormLayout.LabelRole, self.lineEdit_start_lon)
+        self.formLayout_grid_planning.setWidget(
+            1, QtWidgets.QFormLayout.LabelRole, self.lineEdit_start_lon
+        )
         self.label_2 = QtWidgets.QLabel(self.centralwidget)
         self.label_2.setObjectName("label_2")
-        self.formLayout_grid_planning.setWidget(1, QtWidgets.QFormLayout.FieldRole, self.label_2)
+        self.formLayout_grid_planning.setWidget(
+            1, QtWidgets.QFormLayout.FieldRole, self.label_2
+        )
         self.lineEdit_end_lat = QtWidgets.QLineEdit(self.centralwidget)
         self.lineEdit_end_lat.setObjectName("lineEdit_end_lat")
-        self.formLayout_grid_planning.setWidget(2, QtWidgets.QFormLayout.LabelRole, self.lineEdit_end_lat)
+        self.formLayout_grid_planning.setWidget(
+            2, QtWidgets.QFormLayout.LabelRole, self.lineEdit_end_lat
+        )
         self.label_4 = QtWidgets.QLabel(self.centralwidget)
         self.label_4.setObjectName("label_4")
-        self.formLayout_grid_planning.setWidget(2, QtWidgets.QFormLayout.FieldRole, self.label_4)
+        self.formLayout_grid_planning.setWidget(
+            2, QtWidgets.QFormLayout.FieldRole, self.label_4
+        )
         self.lineEdit_end_lon = QtWidgets.QLineEdit(self.centralwidget)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Fixed)
+        sizePolicy = QtWidgets.QSizePolicy(
+            QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Fixed
+        )
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.lineEdit_end_lon.sizePolicy().hasHeightForWidth())
+        sizePolicy.setHeightForWidth(
+            self.lineEdit_end_lon.sizePolicy().hasHeightForWidth()
+        )
         self.lineEdit_end_lon.setSizePolicy(sizePolicy)
         self.lineEdit_end_lon.setObjectName("lineEdit_end_lon")
-        self.formLayout_grid_planning.setWidget(3, QtWidgets.QFormLayout.LabelRole, self.lineEdit_end_lon)
+        self.formLayout_grid_planning.setWidget(
+            3, QtWidgets.QFormLayout.LabelRole, self.lineEdit_end_lon
+        )
         self.label_5 = QtWidgets.QLabel(self.centralwidget)
         self.label_5.setObjectName("label_5")
-        self.formLayout_grid_planning.setWidget(3, QtWidgets.QFormLayout.FieldRole, self.label_5)
+        self.formLayout_grid_planning.setWidget(
+            3, QtWidgets.QFormLayout.FieldRole, self.label_5
+        )
         self.verticalLayout_2.addLayout(self.formLayout_grid_planning)
         self.pushButton_draw_grid = QtWidgets.QPushButton(self.centralwidget)
         self.pushButton_draw_grid.setObjectName("pushButton_draw_grid")
@@ -147,28 +173,44 @@ class Ui_MainWindow(object):
         self.formLayout_cmr_planning.setObjectName("formLayout_cmr_planning")
         self.lineEdit_rel_height = QtWidgets.QLineEdit(self.centralwidget)
         self.lineEdit_rel_height.setObjectName("lineEdit_rel_height")
-        self.formLayout_cmr_planning.setWidget(0, QtWidgets.QFormLayout.LabelRole, self.lineEdit_rel_height)
+        self.formLayout_cmr_planning.setWidget(
+            0, QtWidgets.QFormLayout.LabelRole, self.lineEdit_rel_height
+        )
         self.label_rel_height = QtWidgets.QLabel(self.centralwidget)
         self.label_rel_height.setObjectName("label_rel_height")
-        self.formLayout_cmr_planning.setWidget(0, QtWidgets.QFormLayout.FieldRole, self.label_rel_height)
+        self.formLayout_cmr_planning.setWidget(
+            0, QtWidgets.QFormLayout.FieldRole, self.label_rel_height
+        )
         self.lineEdit_spacing = QtWidgets.QLineEdit(self.centralwidget)
         self.lineEdit_spacing.setObjectName("lineEdit_spacing")
-        self.formLayout_cmr_planning.setWidget(1, QtWidgets.QFormLayout.LabelRole, self.lineEdit_spacing)
+        self.formLayout_cmr_planning.setWidget(
+            1, QtWidgets.QFormLayout.LabelRole, self.lineEdit_spacing
+        )
         self.label_spacing = QtWidgets.QLabel(self.centralwidget)
         self.label_spacing.setObjectName("label_spacing")
-        self.formLayout_cmr_planning.setWidget(1, QtWidgets.QFormLayout.FieldRole, self.label_spacing)
+        self.formLayout_cmr_planning.setWidget(
+            1, QtWidgets.QFormLayout.FieldRole, self.label_spacing
+        )
         self.lineEdit_theta_max = QtWidgets.QLineEdit(self.centralwidget)
         self.lineEdit_theta_max.setObjectName("lineEdit_theta_max")
-        self.formLayout_cmr_planning.setWidget(2, QtWidgets.QFormLayout.LabelRole, self.lineEdit_theta_max)
+        self.formLayout_cmr_planning.setWidget(
+            2, QtWidgets.QFormLayout.LabelRole, self.lineEdit_theta_max
+        )
         self.label_theta_max = QtWidgets.QLabel(self.centralwidget)
         self.label_theta_max.setObjectName("label_theta_max")
-        self.formLayout_cmr_planning.setWidget(2, QtWidgets.QFormLayout.FieldRole, self.label_theta_max)
+        self.formLayout_cmr_planning.setWidget(
+            2, QtWidgets.QFormLayout.FieldRole, self.label_theta_max
+        )
         self.lineEdit_theta_min = QtWidgets.QLineEdit(self.centralwidget)
         self.lineEdit_theta_min.setObjectName("lineEdit_theta_min")
-        self.formLayout_cmr_planning.setWidget(3, QtWidgets.QFormLayout.LabelRole, self.lineEdit_theta_min)
+        self.formLayout_cmr_planning.setWidget(
+            3, QtWidgets.QFormLayout.LabelRole, self.lineEdit_theta_min
+        )
         self.label_theta_min = QtWidgets.QLabel(self.centralwidget)
         self.label_theta_min.setObjectName("label_theta_min")
-        self.formLayout_cmr_planning.setWidget(3, QtWidgets.QFormLayout.FieldRole, self.label_theta_min)
+        self.formLayout_cmr_planning.setWidget(
+            3, QtWidgets.QFormLayout.FieldRole, self.label_theta_min
+        )
         self.verticalLayout_2.addLayout(self.formLayout_cmr_planning)
         self.line_4 = QtWidgets.QFrame(self.centralwidget)
         self.line_4.setFrameShape(QtWidgets.QFrame.HLine)
@@ -200,10 +242,16 @@ class Ui_MainWindow(object):
         self.line_9.setFrameShadow(QtWidgets.QFrame.Sunken)
         self.line_9.setObjectName("line_9")
         self.verticalLayout_2.addWidget(self.line_9)
-        spacerItem1 = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
+        spacerItem1 = QtWidgets.QSpacerItem(
+            20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding
+        )
         self.verticalLayout_2.addItem(spacerItem1)
-        self.pushButton_test_upload_waypoints = QtWidgets.QPushButton(self.centralwidget)
-        self.pushButton_test_upload_waypoints.setObjectName("pushButton_test_upload_waypoints")
+        self.pushButton_test_upload_waypoints = QtWidgets.QPushButton(
+            self.centralwidget
+        )
+        self.pushButton_test_upload_waypoints.setObjectName(
+            "pushButton_test_upload_waypoints"
+        )
         self.verticalLayout_2.addWidget(self.pushButton_test_upload_waypoints)
         self.pushButton_test_goto_next = QtWidgets.QPushButton(self.centralwidget)
         self.pushButton_test_goto_next.setObjectName("pushButton_test_goto_next")
@@ -246,21 +294,41 @@ class Ui_MainWindow(object):
         self.label_5.setText(_translate("MainWindow", "End Longitude"))
         self.pushButton_draw_grid.setText(_translate("MainWindow", "Draw Grid"))
         self.label_cmr_planning.setText(_translate("MainWindow", "CMR Planning"))
-        self.label_rel_height.setText(_translate("MainWindow", "<html><head/><body><p>Rel. Height H (m)</p></body></html>"))
+        self.label_rel_height.setText(
+            _translate(
+                "MainWindow",
+                "<html><head/><body><p>Rel. Height H (m)</p></body></html>",
+            )
+        )
         self.label_spacing.setText(_translate("MainWindow", "Spacing (m)"))
-        self.label_theta_max.setText(_translate("MainWindow", "<html><head/><body><p>Max. θ</p></body></html>"))
-        self.label_theta_min.setText(_translate("MainWindow", "<html><head/><body><p>Min. θ</p></body></html>"))
+        self.label_theta_max.setText(
+            _translate("MainWindow", "<html><head/><body><p>Max. θ</p></body></html>")
+        )
+        self.label_theta_min.setText(
+            _translate("MainWindow", "<html><head/><body><p>Min. θ</p></body></html>")
+        )
         self.pushButton_load_wp.setText(_translate("MainWindow", "Load Waypoints"))
-        self.pushButton_generate_wp.setText(_translate("MainWindow", "Generate Waypoints"))
-        self.pushButton_start_cmr.setText(_translate("MainWindow", "Start CMR operation"))
+        self.pushButton_generate_wp.setText(
+            _translate("MainWindow", "Generate Waypoints")
+        )
+        self.pushButton_start_cmr.setText(
+            _translate("MainWindow", "Start CMR operation")
+        )
         self.pushButton_stop_cmr.setText(_translate("MainWindow", "Stop CMR operation"))
-        self.pushButton_test_upload_waypoints.setText(_translate("MainWindow", "TEST-upload waypoints"))
-        self.pushButton_test_goto_next.setText(_translate("MainWindow", "TEST-goto_next"))
+        self.pushButton_test_upload_waypoints.setText(
+            _translate("MainWindow", "TEST-upload waypoints")
+        )
+        self.pushButton_test_goto_next.setText(
+            _translate("MainWindow", "TEST-goto_next")
+        )
+
+
 from gust.gui.ui.planning_map_widget import PlanningMapWidget
 
 
 if __name__ == "__main__":
     import sys
+
     app = QtWidgets.QApplication(sys.argv)
     MainWindow = QtWidgets.QMainWindow()
     ui = Ui_MainWindow()

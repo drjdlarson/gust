@@ -27,7 +27,7 @@ class PlanningSelectionWindow(QMainWindow, Ui_MainWindow):
 
     def clicked_open(self):
         """Opens the selected planning window"""
-         # Currently only includes CMR Planning Window
+        # Currently only includes CMR Planning Window
 
         sel_type = self.comboBox_planning_types.currentText()
         if sel_type == "CMR Planning":

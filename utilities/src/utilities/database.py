@@ -24,12 +24,15 @@ logger = logging.getLogger(__name__)
 def set_db_file(f):
     os.environ[DB_FILE_KEY] = f
 
+
 def DB_FILE():
     """Returns the file name as saved in Resources"""
     return os.environ.get(DB_FILE_KEY, "gust_database.sqlite")
 
+
 def set_db_path(p):
     os.environ[DB_PATH_KEY] = p
+
 
 def DB_PATH():
     """Returns the file path of resources folder.
@@ -40,6 +43,7 @@ def DB_PATH():
 @enum.unique
 class DroneRates(enum.Enum):
     """Enums to define different sets of telemetry data."""
+
     RATE1 = enum.auto()
     RATE2 = enum.auto()
     RATE3 = enum.auto()
@@ -176,6 +180,7 @@ def open_db(location_file):
     if res1 and res2 and res3 and res4:
         logger.info("Database is now open")
 
+
 def write_saved_locations_in_db(location_fpath):
     """Store saved locations info in the database."""
     query = _start_query()
@@ -194,16 +199,15 @@ def write_saved_locations_in_db(location_fpath):
                 coords = tokens[1][:ind]
             else:
                 coords = tokens[1]
-            cmd = (
-                "INSERT into locations (name, coords) VALUES ('{}', '{}');".format(
-                    name, coords
-                )
+            cmd = "INSERT into locations (name, coords) VALUES ('{}', '{}');".format(
+                name, coords
             )
             logger.debug(cmd)
             res = query.exec_(cmd)
             results.append(res)
     # Returns True only if all queries are successful.
     return all(results)
+
 
 def connect_db():
     """Connect to the database. This is required before interacting with the database."""
@@ -646,7 +650,7 @@ def add_zed(name, config):
 def add_vehicle(name, port, color):
     """
     Add a new vehicle in the database with all necessary tables.
-    
+
     Parameters
     ----------
     name : str
@@ -1131,6 +1135,7 @@ def add_cmr_vehicle(name, wp_color):
             "Unable to add {} with {} waypoints to cmr_table".format(name, wp_color)
         )
     return res
+
 
 def get_saved_locations():
     """Returns a dict with information about saved locations."""

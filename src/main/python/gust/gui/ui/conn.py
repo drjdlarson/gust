@@ -17,8 +17,9 @@ class Ui_MainWindow(object):
         MainWindow.resize(540, 260)
         MainWindow.setMinimumSize(QtCore.QSize(340, 190))
         MainWindow.setMaximumSize(QtCore.QSize(540, 260))
-        MainWindow.setStyleSheet("background-color: rgb(211, 215, 207);\n"
-"color: rgb(0, 0, 0);")
+        MainWindow.setStyleSheet(
+            "background-color: rgb(211, 215, 207);\n" "color: rgb(0, 0, 0);"
+        )
         self.gridLayout = QtWidgets.QGridLayout(MainWindow)
         self.gridLayout.setObjectName("gridLayout")
         self.label_conn_type = QtWidgets.QLabel(MainWindow)
@@ -48,7 +49,9 @@ class Ui_MainWindow(object):
         self.comboBox_sil_name = QtWidgets.QComboBox(MainWindow)
         self.comboBox_sil_name.setObjectName("comboBox_sil_name")
         self.horizontalLayout_2.addWidget(self.comboBox_sil_name)
-        spacerItem = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
+        spacerItem = QtWidgets.QSpacerItem(
+            40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum
+        )
         self.horizontalLayout_2.addItem(spacerItem)
         self.gridLayout.addLayout(self.horizontalLayout_2, 1, 1, 1, 1)
         self.label_port = QtWidgets.QLabel(MainWindow)
@@ -82,11 +85,15 @@ class Ui_MainWindow(object):
         self.comboBox_color.setMaximumSize(QtCore.QSize(150, 16777215))
         self.comboBox_color.setObjectName("comboBox_color")
         self.gridLayout.addWidget(self.comboBox_color, 4, 1, 1, 1)
-        spacerItem1 = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
+        spacerItem1 = QtWidgets.QSpacerItem(
+            20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding
+        )
         self.gridLayout.addItem(spacerItem1, 5, 0, 1, 1)
         self.horizontalLayout = QtWidgets.QHBoxLayout()
         self.horizontalLayout.setObjectName("horizontalLayout")
-        spacerItem2 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
+        spacerItem2 = QtWidgets.QSpacerItem(
+            40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum
+        )
         self.horizontalLayout.addItem(spacerItem2)
         self.pushButton_connect = QtWidgets.QPushButton(MainWindow)
         self.pushButton_connect.setStyleSheet("background-color: rgb(138, 226, 52);")
@@ -104,7 +111,7 @@ class Ui_MainWindow(object):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
         self.label_conn_type.setText(_translate("MainWindow", "CONN TYPE"))
-        self.label_nameinput.setText(_translate("MainWindow", "Enter Vehicle\'s Name"))
+        self.label_nameinput.setText(_translate("MainWindow", "Enter Vehicle's Name"))
         self.label_port.setText(_translate("MainWindow", "PORT"))
         self.label_baud.setText(_translate("MainWindow", "BAUD"))
         self.label_color.setText(_translate("MainWindow", "COLOR ID"))
@@ -114,6 +121,7 @@ class Ui_MainWindow(object):
 
 if __name__ == "__main__":
     import sys
+
     app = QtWidgets.QApplication(sys.argv)
     MainWindow = QtWidgets.QDialog()
     ui = Ui_MainWindow()

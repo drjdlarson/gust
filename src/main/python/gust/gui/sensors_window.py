@@ -2,6 +2,7 @@
 from PyQt5.QtWidgets import QMainWindow
 from gust.gui.ui.sensors import Ui_SensorsWindow
 
+
 class SensorsWindow(QMainWindow, Ui_SensorsWindow):
     """Main interface for the sensors selection window"""
 
@@ -12,7 +13,6 @@ class SensorsWindow(QMainWindow, Ui_SensorsWindow):
         self._zed_window = None
 
         self.pushButton_zed.clicked.connect(self.zed_clicked)
-
 
     def setupUi(self, mainWindow):
         """Sets up the user interface."""

@@ -15,8 +15,9 @@ class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
         MainWindow.resize(654, 438)
-        MainWindow.setStyleSheet("background-color: rgb(203, 230, 255);\n"
-"font: 11pt \"Ubuntu Mono\";")
+        MainWindow.setStyleSheet(
+            "background-color: rgb(203, 230, 255);\n" 'font: 11pt "Ubuntu Mono";'
+        )
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
         self.verticalLayout_4 = QtWidgets.QVBoxLayout(self.centralwidget)
@@ -30,7 +31,7 @@ class Ui_MainWindow(object):
         font.setWeight(9)
         self.label_heading.setFont(font)
         self.label_heading.setAccessibleDescription("")
-        self.label_heading.setStyleSheet("font: 75 16pt \"Ubuntu Mono\";")
+        self.label_heading.setStyleSheet('font: 75 16pt "Ubuntu Mono";')
         self.label_heading.setAlignment(QtCore.Qt.AlignCenter)
         self.label_heading.setObjectName("label_heading")
         self.verticalLayout_4.addWidget(self.label_heading)
@@ -58,6 +59,7 @@ class Ui_MainWindow(object):
 
 if __name__ == "__main__":
     import sys
+
     app = QtWidgets.QApplication(sys.argv)
     MainWindow = QtWidgets.QMainWindow()
     ui = Ui_MainWindow()

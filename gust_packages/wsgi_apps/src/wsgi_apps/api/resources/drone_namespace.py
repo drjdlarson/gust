@@ -158,7 +158,6 @@ class DownloadWP(Resource):
             return {"success": False, "msg": "Unable to get latest waypoints."}
 
 
-
 @DRONE_NS.route("/upload_wp")
 class UploadWP(Resource):
     """Handles Mission upload to the vehicle"""
@@ -346,7 +345,6 @@ class SysData(Resource):
 
         # For all vehicles in the database, grab the data listed in params.
         for index, name in enumerate(names):
-
             # The tables in the database are named a certain way.
             # See utilities.database for more.
             table_name = database.create_drone_rate_table_name(

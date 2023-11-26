@@ -39,7 +39,7 @@ class StandaloneApplication(gunicorn.app.base.BaseApplication):
         }
         for key, value in config.items():
             self.cfg.set(key.lower(), value)
-        self.cfg.set('logger_class', CustomLogger)
+        self.cfg.set("logger_class", CustomLogger)
 
     def load(self):
         return self.application

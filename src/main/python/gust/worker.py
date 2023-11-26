@@ -7,6 +7,7 @@ from PyQt5.QtCore import pyqtSignal, pyqtSlot, QRunnable, QObject
 
 logger = logging.getLogger(__name__)
 
+
 class WorkerSignals(QObject):
     """Defines the signals available from a running worker thread.
 

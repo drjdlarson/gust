@@ -19,10 +19,10 @@ sys.path.append(os.path.abspath("./packages_api/"))
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
-project = 'GUST'
-copyright = '2023, LAGER'
-author = 'LAGER'
-release = '2022'
+project = "GUST"
+copyright = "2023, LAGER"
+author = "LAGER"
+release = "2022"
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
@@ -38,7 +38,7 @@ extensions = [
     "sphinx.ext.autosectionlabel",
 ]
 
-templates_path = ['_templates']
+templates_path = ["_templates"]
 exclude_patterns = []
 
 # Todo configuration
@@ -48,8 +48,8 @@ todo_link_only = True
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 
-html_theme = 'sphinx_rtd_theme'
-html_theme_options = {'style_nav_header_background': '#9e1b32'}
+html_theme = "sphinx_rtd_theme"
+html_theme_options = {"style_nav_header_background": "#9e1b32"}
 html_logo = "images/gust_logo.svg"
 html_show_sourcelink = False
 html_baseurl = "https://github.com/drjdlarson/gust"

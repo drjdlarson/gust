@@ -361,7 +361,6 @@ class pyG5AIWidget(QWidget):
         currentTape = int(self.airspeed + tapeScale / 2)
         while currentTape > max(0, self.airspeed - tapeScale / 2):
             if (currentTape % 10) == 0:
-
                 tapeHeight = (
                     1 - 2 * (currentTape - self.airspeed) / tapeScale
                 ) * g5CenterY
@@ -657,7 +656,6 @@ class pyG5AIWidget(QWidget):
         while currentTape >= 0:
             tapeHeight = (vsScale - currentTape) / vsScale * alt_tape_height
             if (currentTape % 5) == 0:
-
                 self.qp.drawLine(
                     QPointF(g5Width - 10, tapeHeight),
                     QPointF(g5Width, tapeHeight),
@@ -704,7 +702,6 @@ class pyG5AIWidget(QWidget):
 
         while currentTape > self.altitude - altTapeScale / 2:
             if (currentTape % 20) == 0:
-
                 tapeHeight = (
                     1 - 2 * (currentTape - self.altitude) / altTapeScale
                 ) * g5CenterY
@@ -713,7 +710,6 @@ class pyG5AIWidget(QWidget):
                     QPointF(altTapeLeftAlign - altBoxSpikedimension / 2, tapeHeight),
                 )
                 if (currentTape % 100) == 0:
-
                     self.qp.drawText(
                         QRectF(
                             altTapeLeftAlign,

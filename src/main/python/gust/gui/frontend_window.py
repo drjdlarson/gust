@@ -38,6 +38,7 @@ FILES = ["home", "pos", "spos", "rtl_pos"]
 # front-end update rate in Hz.
 _FE_UPDATE_RATE = 12
 
+
 class FrontendWindow(QMainWindow, Ui_MainWindow_main):
     """Main interface for the frontend window."""
 
@@ -357,7 +358,9 @@ class FrontendWindow(QMainWindow, Ui_MainWindow_main):
 
         # Updating the Labels
         self.label_seluav.setText(str(self.flight_params[key_pos]["name"]).upper())
-        vehicle_type = msg_decoder.MessageDecoder.findType(self.flight_params[key_pos]["vehicle_type"])
+        vehicle_type = msg_decoder.MessageDecoder.findType(
+            self.flight_params[key_pos]["vehicle_type"]
+        )
         self.label_vehicle_type.setText(vehicle_type)
         self.label_status.setText(str(self.flight_params[key_pos]["sys_status"]))
 
@@ -425,7 +428,6 @@ class FrontendWindow(QMainWindow, Ui_MainWindow_main):
 
 
 class DataManager(QtCore.QObject):
-
     # signal to notify FrontendWindow once a set of data is received and packaged as dict
     signal = pyqtSignal(dict)
 

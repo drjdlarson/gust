@@ -33,6 +33,7 @@ class ConnSettings:
     # Autopilot commands
     ARM_DISARM = "arm_disarm"
     GOTO_NEXT_WP = "goto_next_waypoint"
+    GOTO_SET_WP = "goto_set_waypoint"
     TAKEOFF = "takeoff"
     SET_MODE = "set_mode"
 

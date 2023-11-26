@@ -20,6 +20,7 @@ logger.propagate = False
 # NOTE: Message types, ports, and other constants are defined in utilities.ConnSettings
 ####################
 
+
 class ConnServer:
     """Handles communication and connections between processes"""
 
@@ -44,7 +45,6 @@ class ConnServer:
     # {vehicle_name: UDP/TCP port}
     _radio_udp_port = {}
     _sil_tcp_port = {}
-
 
     @classmethod
     def start_conn_server(cls, process_events, debug, ctx):
@@ -376,7 +376,7 @@ class ConnServer:
             cls._radios[name].start(program, args)
 
             succ = cls._radios[name].waitForStarted()
-            
+
             if not succ:
                 err = "Failed to start Radio process"
                 logger.warning(err)

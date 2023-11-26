@@ -25,9 +25,13 @@ class Ui_BackendWindow(object):
         self.label_2.setObjectName("label_2")
         self.gridLayout.addWidget(self.label_2, 2, 2, 1, 1)
         self.listWidget_availPlugins = QtWidgets.QListWidget(self.centralwidget)
-        self.listWidget_availPlugins.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
+        self.listWidget_availPlugins.setEditTriggers(
+            QtWidgets.QAbstractItemView.NoEditTriggers
+        )
         self.listWidget_availPlugins.setAlternatingRowColors(True)
-        self.listWidget_availPlugins.setSelectionMode(QtWidgets.QAbstractItemView.ExtendedSelection)
+        self.listWidget_availPlugins.setSelectionMode(
+            QtWidgets.QAbstractItemView.ExtendedSelection
+        )
         self.listWidget_availPlugins.setObjectName("listWidget_availPlugins")
         self.gridLayout.addWidget(self.listWidget_availPlugins, 3, 1, 1, 1)
         self.verticalLayout_3 = QtWidgets.QVBoxLayout()
@@ -38,7 +42,9 @@ class Ui_BackendWindow(object):
         self.pushButton_stop.setFlat(False)
         self.pushButton_stop.setObjectName("pushButton_stop")
         self.gridLayout_5.addWidget(self.pushButton_stop, 2, 1, 1, 1)
-        spacerItem = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
+        spacerItem = QtWidgets.QSpacerItem(
+            20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding
+        )
         self.gridLayout_5.addItem(spacerItem, 1, 0, 1, 1)
         self.pushButton_start = QtWidgets.QPushButton(self.centralwidget)
         self.pushButton_start.setObjectName("pushButton_start")
@@ -78,7 +84,9 @@ class Ui_BackendWindow(object):
         self.selPluginsView = QtWidgets.QTableView(self.centralwidget)
         self.selPluginsView.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
         self.selPluginsView.setAlternatingRowColors(True)
-        self.selPluginsView.setSelectionMode(QtWidgets.QAbstractItemView.ExtendedSelection)
+        self.selPluginsView.setSelectionMode(
+            QtWidgets.QAbstractItemView.ExtendedSelection
+        )
         self.selPluginsView.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectRows)
         self.selPluginsView.setObjectName("selPluginsView")
         self.selPluginsView.verticalHeader().setVisible(False)
@@ -90,7 +98,9 @@ class Ui_BackendWindow(object):
         font.setPointSize(9)
         self.textEdit_output.setFont(font)
         self.textEdit_output.setLineWrapMode(QtWidgets.QTextEdit.NoWrap)
-        self.textEdit_output.setTextInteractionFlags(QtCore.Qt.TextSelectableByKeyboard|QtCore.Qt.TextSelectableByMouse)
+        self.textEdit_output.setTextInteractionFlags(
+            QtCore.Qt.TextSelectableByKeyboard | QtCore.Qt.TextSelectableByMouse
+        )
         self.textEdit_output.setObjectName("textEdit_output")
         self.verticalLayout.addWidget(self.textEdit_output)
         BackendWindow.setCentralWidget(self.centralwidget)
@@ -123,6 +133,7 @@ class Ui_BackendWindow(object):
 
 if __name__ == "__main__":
     import sys
+
     app = QtWidgets.QApplication(sys.argv)
     BackendWindow = QtWidgets.QMainWindow()
     ui = Ui_BackendWindow()

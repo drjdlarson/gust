@@ -295,6 +295,7 @@ class CmrWindow(QMainWindow, Ui_MainWindow):
                             z,
                         )
                     )
+
     def calculate_waypoints_S(self, direction):
         """
         Generate Waypoints for CMR for single survey line.
@@ -460,7 +461,6 @@ class CmrWindow(QMainWindow, Ui_MainWindow):
             total_s += self.s
 
         return waypoints
-
 
     def clicked_draw_grid(self):
         """

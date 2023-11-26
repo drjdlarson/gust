@@ -11,8 +11,8 @@ DRONE_BASE = "{}{}/".format(URL_BASE, DRONE)
 # Add to this list to add more available Ardupilot Vehicle Types
 VEHICLES = ["ArduCopter", "ArduPlane"]
 
-class StartSILWindow(QDialog, Ui_Dialog):
 
+class StartSILWindow(QDialog, Ui_Dialog):
     # signal to notify FrontEnd once a SIL is successfully started
     signal = pyqtSignal(str)
 
@@ -93,7 +93,6 @@ class StartSILWindow(QDialog, Ui_Dialog):
         # final URL
         start_sil = requests.get(url).json()
 
-
         if start_sil["success"]:
             # this signal is received by FrontendWindow after SIL is started successfully
             self.signal.emit(sil_name)
@@ -152,6 +151,6 @@ class StartSILWindow(QDialog, Ui_Dialog):
     def setupUi(self, mainWindow):
         """Sets up user interface"""
         super().setupUi(mainWindow)
-        self.home_location = 'SHELBY'
+        self.home_location = "SHELBY"
         self.lineEdit_start_altitude.setText("100")
         self.lineEdit_start_heading.setText("45")
