@@ -13,8 +13,8 @@ Item {
         id: mapCenter
         // Update this to be dynamic
         coordinate {
-            latitude: 33.19424
-            longitude: -87.48138
+            latitude: 39.0312417
+            longitude: -108.0584121
         }
 	objectName: "center_map"
     }
