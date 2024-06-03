@@ -154,25 +154,4 @@ To generate new documentation, run the script.
 
         cd ./build_scripts && ./build_documentation.sh -o
 
-If running inside dev container, this should open the documentation in Google Chrome. 
-
-Cite
-====
-..
-    BEGIN CITE INCLUDE
-
-Please cite the framework as follows
-
-.. code-block:: bibtex
-
-    @Misc{gust,
-    author       = {Jordan D. Larson and Aabhash Bhandari and Ryan W. Thomas},
-    howpublished = {Web page},
-    title        = {{GUST}: A {G}round control station (GCS) for {U}ncrewed {S}warms and {T}eams},
-    year         = {2022},
-    url          = {https://github.com/drjdlarson/gust},
-    }
-
-
-..
-    END CITE INCLUDE
+If running inside dev container, this should open the documentation in Google Chrome.
