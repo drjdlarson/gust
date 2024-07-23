@@ -32,7 +32,7 @@ Overview
     BEGIN OVERVIEW INCLUDE
 
 * Frontend includes all the UI design from QtDesigner and logic for all UI windows. To interact with the backend / database, it sends HTTP requests to WSGI App. These requests are sent as URLs formatted with requested information / commands. The HTTP requests typically return a dict to the Frontend that can be displayed in the UI with appropriate formatting.
-* WSGI App routes the HTTP requests to specific classes (in wsgi_apps/api/resources/) to perform certain tasks based on the requests' URL.
+* WSGI App routes the HTTP requests to specific classes (gust_packages/wsgi_apps/src/wsgi_apps/api/resources/) to perform certain tasks based on the requests' URL.
 * Dashed ellipses in above diagram represent components that spawn separate sub-processes. Start / end of these subprocesses are handled by the backend. All these processes have access to the common database.
 * radio_manager package handles all communication with the vehicle radios. It includes methods to connect, send, and receive MAVLink messages from the vehicle using dronekit's API.
 

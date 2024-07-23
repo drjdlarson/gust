@@ -5,9 +5,9 @@
 ############################################################
 Help()
 {
-        echo "Build Radio Manager, must be run from gust environment."
+        echo "Build WSGI apps, must be run from gust environment."
         echo
-        echo "Syntax build_radiomanager.sh [-h]"
+        echo "Syntax build_wsgi.sh [-h]"
         echo "-h        Print the help text."
         echo
 }
@@ -30,22 +30,17 @@ done
 ############################################################
 # Main program                                             #
 ############################################################
+echo "Building WSGI apps..."
 
-echo "Building radio manager app ..."
-
-rm -r ../src/main/resources/base/radio_manager
-mkdir ../src/main/resources/base/radio_manager
+rm -r ../../src/main/resources/base/wsgi_apps
+mkdir ../../src/main/resources/base/wsgi_apps
 
 pyinstaller --onefile --noconfirm --noupx --clean \
-	-n radio_manager \
-	-p ../gust_packages/radio_manager \
-	--hidden-import lxml \
-	--hidden-import lxml.etree \
-	--hidden-import urllib2 \
-	--hidden-import urlparse \
-	--collect-all pymavlink \
-	--collect-all dronekit \
-	--distpath ../src/main/resources/base/radio_manager \
-	--workpath ../gust_packages/radio_manager/build \
-	--specpath ../gust_packages/radio_manager \
-	../gust_packages/radio_manager/src/radio_manager/cli.py
+	-n wsgi_apps \
+	-p ../../gust_packages/wsgi_apps \
+	--hidden-import gunicorn.glogging \
+	--hidden-import gunicorn.workers.sync \
+	--distpath ../../src/main/resources/base/wsgi_apps \
+	--workpath ../../gust_packages/wsgi_apps/build \
+	--specpath ../../gust_packages/wsgi_apps \
+	../../gust_packages/wsgi_apps/src/wsgi_apps/cli.py

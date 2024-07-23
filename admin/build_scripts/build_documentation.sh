@@ -43,30 +43,30 @@ done
 echo "Building documentation ..."
 
 echo "Clearing previous documentation files"
-rm -rf ../docs/build/
-rm -rf ../docs/source/packages_api/
-rm -rf ../docs/source/_static/
-rm -rf ../docs/source/_templates/
-rm -rf ../docs/source/_autosummary/
+rm -rf ../../docs/build/
+rm -rf ../../docs/source/packages_api/
+rm -rf ../../docs/source/_static/
+rm -rf ../../docs/source/_templates/
+rm -rf ../../docs/source/_autosummary/
 
-mkdir ../docs/source/packages_api
+mkdir ../../docs/source/packages_api
 
 echo "Generating source for GUST"
-sphinx-apidoc --force --tocfile gust_module --no-headings --module-first -o ../docs/source/packages_api ../src/main/python/gust/
+sphinx-apidoc --force --tocfile gust_module --no-headings --module-first -o ../../docs/source/packages_api ../../src/main/python/gust/
 
 echo "Generating source for RadioManager"
-sphinx-apidoc --force --tocfile radio_manager_module --no-headings --module-first -o ../docs/source/packages_api ../gust_packages/radio_manager/src/radio_manager/
+sphinx-apidoc --force --tocfile radio_manager_module --no-headings --module-first -o ../../docs/source/packages_api ../../gust_packages/radio_manager/src/radio_manager/
 
 echo "Generating source for WSGI App"
-sphinx-apidoc --force --tocfile wsgi_apps_module --no-headings --module-first -o ../docs/source/packages_api ../gust_packages/wsgi_apps/src/wsgi_apps/
+sphinx-apidoc --force --tocfile wsgi_apps_module --no-headings --module-first -o ../../docs/source/packages_api ../../gust_packages/wsgi_apps/src/wsgi_apps/
 
 echo "Generating source for Utilities"
-sphinx-apidoc --force --tocfile utilities_module --no-headings --module-first -o ../docs/source/packages_api ../utilities/src/utilities/
+sphinx-apidoc --force --tocfile utilities_module --no-headings --module-first -o ../../docs/source/packages_api ../../utilities/src/utilities/
 
 echo "Generating source for Utilities"
-sphinx-apidoc --force --tocfile zed_manager_module --no-headings --module-first -o ../docs/source/packages_api ../gust_packages/zed_manager/src/zed_manager/
+sphinx-apidoc --force --tocfile zed_manager_module --no-headings --module-first -o ../../docs/source/packages_api ../../gust_packages/zed_manager/src/zed_manager/
 
-cd ../docs
+cd ../../docs
 make clean
 make html
 

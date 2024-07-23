@@ -5,9 +5,9 @@
 ############################################################
 Help()
 {
-        echo "Build CMR Manager, must be run from gust environment."
+        echo "Build Zed Manager, must be run from gust environment."
         echo
-        echo "Syntax build_cmr_manager.sh [-h]"
+        echo "Syntax build_zed_manager.sh [-h]"
         echo "-h        Print the help text."
         echo
 }
@@ -31,21 +31,15 @@ done
 # Main program                                             #
 ############################################################
 
-echo "Building CMR manager app ..."
+echo "Building zed manager app ..."
 
-rm -r ../src/main/resources/base/cmr_manager
-mkdir ../src/main/resources/base/cmr_manager
+rm -r ../../src/main/resources/base/zed_manager
+mkdir ../../src/main/resources/base/zed_manager
 
 pyinstaller --onefile --noconfirm --noupx --clean \
-	-n cmr_manager \
-	-p ../gust_packages/cmr_manager \
-	--hidden-import lxml \
-	--hidden-import lxml.etree \
-	--hidden-import urllib2 \
-	--hidden-import urlparse \
-	--collect-all pymavlink \
-	--collect-all dronekit \
-	--distpath ../src/main/resources/base/cmr_manager \
-	--workpath ../gust_packages/cmr_manager/build \
-	--specpath ../gust_packages/cmr_manager \
-	../gust_packages/cmr_manager/src/cmr_manager/cli.py
+	-n zed_manager \
+	-p ../../gust_packages/zed_manager \
+	--distpath ../../src/main/resources/base/zed_manager \
+	--workpath ../../gust_packages/zed_manager/build \
+	--specpath ../../gust_packages/zed_manager \
+	../../gust_packages/zed_manager/src/zed_manager/cli.py

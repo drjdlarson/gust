@@ -22,43 +22,43 @@ Help()
 while getopts ":hawrczs" option; do
 	case $option in
 		a) # build all helping executables
-			cd ./build_scripts
+			cd admin/build_scripts
 			./build_wsgi.sh
 			./build_radio_manager.sh
 			./build_cmr_manager.sh
 			./build_zed_manager.sh
 			./build_documentation.sh
-			cd ..
+			cd ../..
 			;;
 		w) # build wsgi app
-		  cd ./build_scripts
+		  	cd admin/build_scripts
 			./build_wsgi.sh
-			cd ..
+			cd ../..
 			;;
 		r) # build radio manager
-			cd ./build_scripts
+			cd admin/build_scripts
 			./build_radio_manager.sh
-			cd ..
+			cd ../..
 			;;
 		c) # build cmr manager
-		  cd ./build_scripts
+		  	cd admin/build_scripts
 			./build_cmr_manager.sh
-			cd ..
+			cd ../..
 			;;
 		z) # build zed manager
-			cd ./build_scripts
+			cd admin/build_scripts
 			./build_zed_manager.sh
-			cd ..
+			cd ../..
 			;;
-	  s) # build zed manager
-			cd ./build_scripts
+	  	s) # build SIL
+			cd admin/build_scripts
 			./build_sil.sh
 			cd ..
 			;;
-	  d) # build documentation
-	    cd ./build_scripts
-	    ./build_documentation.sh
-			cd ..
+	  	d) # build documentation
+			cd admin/build_scripts
+			./build_documentation.sh
+			cd ../..
 			;;
 		h) # display help
 			Help
@@ -71,5 +71,7 @@ while getopts ":hawrczs" option; do
 	esac
 done
 
-
+echo ""
+echo "Running Gust"
+echo ""
 fbs run

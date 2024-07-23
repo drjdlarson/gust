@@ -1,6 +1,9 @@
 #!/bin/bash
 
 
+# TODO: Get this working in a more simple way see if the binary package can be put in the container, and in a standardized location
+    # also figure out what that would mean for everything using ardupilot
+
 ############################################################
 # Help                                                     #
 ############################################################
@@ -48,18 +51,18 @@ echo
 echo "The absolute path of ardupilot dir is "
 echo $path
 
-rm -rf ./src/main/resources/base/sil_manager
-mkdir ./src/main/resources/base/sil_manager
+rm -rf ../../src/main/resources/base/sil_manager
+mkdir ../../src/main/resources/base/sil_manager
 
 echo "Copying ArduCopter Stuff"
 cp $path/build/sitl/bin/arducopter ./src/main/resources/base/sil_manager
 cp $path/Tools/autotest/default_params/copter.parm ./src/main/resources/base/sil_manager
 
 # echo "Copying ArduPlane Stuff"
-# cp $path/build/sitl/bin/arduplane ./src/main/resources/base/sil_manager
-# cp $path/Tools/autotest/default_params/plane-jet.parm ./src/main/resources/base/sil_manager
+# cp $path/build/sitl/bin/arduplane ../src/main/resources/base/sil_manager
+# cp $path/Tools/autotest/default_params/plane-jet.parm ../src/main/resources/base/sil_manager
 
-rm -rf ./terrain/
-rm -rf ./logs/
+rm -rf ../terrain/
+rm -rf ../logs/
 
 
