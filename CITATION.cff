@@ -12,7 +12,7 @@ authors:
   given-names: "Tuan D."
 - family-names: "Robertson"
   given-names: "Will"
-title: "GUST: A Ground Control Station for Uncrewed Swarms and Teams"
+title: "GUST: A Ground Control Station for Uncrewed Systems and Teams"
 version: 2.0.2
 doi: 10.5281/zenodo.11458326
 date-released: 2024-06-02
@@ -32,5 +32,5 @@ preferred-citation:
   - family-names: "Robertson"
     given-names: "Will"
   doi: "10.5281/zenodo.11458326"
-  title: "GUST: A Ground Control Station for Uncrewed Swarms and Teams"
+  title: "GUST: A Ground Control Station for Uncrewed Systems and Teams"
   year: 2024
